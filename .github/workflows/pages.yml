@@ -24,10 +24,44 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          # Need history + tags for `git describe`-derived version.
+          fetch-depth: 0
 
       - uses: actions/setup-node@v5
         with:
           node-version: '24'
+
+      - name: Compute version
+        id: version
+        run: |
+          sha=$(git rev-parse --short HEAD)
+          if last_tag=$(git describe --tags --abbrev=0 2>/dev/null); then
+            count=$(git rev-list "${last_tag}..HEAD" --count)
+          else
+            count=$(git rev-list --count HEAD)
+          fi
+          # Drop a leading `v` from the tag if present so it composes
+          # cleanly with the .<count>+<sha> suffix.
+          base=${last_tag:-1.0}
+          base=${base#v}
+          version="${base}-${count}+${sha}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Computed version: $version"
+
+      - name: Stamp version into spec
+        run: |
+          python3 - <<'PY'
+          import os, re
+          v = os.environ['VERSION']
+          p = 'reference/ldap-subscriber-api-stream.yaml'
+          s = open(p).read()
+          s = re.sub(r"^(\s*version:\s*).*$", lambda m: f"{m.group(1)}'{v}'", s, count=1, flags=re.M)
+          open(p, 'w').write(s)
+          print('stamped', v)
+          PY
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
 
       - name: Generate site
         # Run from reference/ so cross-file $refs in the AsyncAPI doc
