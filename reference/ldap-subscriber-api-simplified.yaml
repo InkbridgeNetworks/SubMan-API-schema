@@ -1,0 +1,471 @@
+openapi: 3.1.0
+x-stoplight:
+  id: y0ubu7vaf80gv
+info:
+  title: Simplified LDAP based subscriber management API
+  version: '1.1'
+  description: A simplified version of the LDAP subscriber API for integration with limited BSS/OSS systems
+  summary: Simplified LDAP API
+  contact:
+    name: ' Network RADIUS support'
+    url: http://www.networkradius.com
+    email: support@networkradius.com
+  license:
+    name: Network RADIUS commercial license
+    url: https://support.networkradius.com
+servers:
+- url: http://localhost:3000
+paths:
+  /realms/{realmId}/subscribers:
+    post:
+      summary: Create a subscriber
+      operationId: post-realms-default-subscribers
+      responses:
+        '201':
+          $ref: '#/components/responses/statusResponse'
+        '400':
+          $ref: '#/components/responses/statusResponse'
+        '409':
+          $ref: '#/components/responses/statusResponse'
+        '500':
+          $ref: '#/components/responses/statusResponse'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/subscriber'
+        description: A subscriber object definition
+      description: Add a new subscriber in the 'default' service class.
+    parameters:
+    - name: realmId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique identifier for a realm
+  /realms/{realmId}/subscribers/{subscriberId}:
+    parameters:
+    - name: realmId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique identifier for a realm
+    - name: subscriberId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique identifier for a subscriber
+    get:
+      summary: Retrieve a subscriber
+      operationId: get-realms-realmId-default-subscribers-subscriberId
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/subscriber'
+                description: A subscriber object
+              examples:
+                Example 1:
+                  value:
+                    subscriberId: A123456789
+                    serviceProfile:
+                    - dynamicSpeed
+                    serviceStatus: suspended
+                    serviceProfileSuspend: nonPaymentSuspend
+                    staticIp:
+                    - ipType: ipv4
+                      ipAddress: 192.158.1.38
+        '404':
+          $ref: '#/components/responses/statusResponse'
+        '500':
+          $ref: '#/components/responses/statusResponse'
+      description: Return a subscriber in the 'default' service class in a specified realm.
+    patch:
+      summary: Update a subscriber
+      operationId: patch-realms-realmId-subscribers-default-subscriberId
+      responses:
+        '200':
+          $ref: '#/components/responses/statusResponse'
+        '400':
+          $ref: '#/components/responses/statusResponse'
+        '404':
+          $ref: '#/components/responses/statusResponse'
+        '500':
+          $ref: '#/components/responses/statusResponse'
+      description: |-
+        Update a subscriber in the 'default' service class, for a given realm by replacing only the provided attributes.  If an attribute is null, it will be removed.
+
+        For multi-valued and nested attributes the complete set of values must be provided, and will replace all existing values.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/subscriber'
+              description: A partial subscriber object
+            examples:
+              Suspending a subscriber for non-payment:
+                value:
+                  serviceProfileSuspended: nonPaymentSuspend
+                  serviceStatus: suspended
+              Assigning multiple port bindings for grooming:
+                value:
+                  portBindingIdentifier:
+                  - client/192.168.2.0/port/6%2F1%2F1/qinq/102+102
+                  - client/192.168.2.0/port/6%2F1%2F2/qinq/102+102
+              Remove subscriber staticIp:
+                value:
+                  staticIp: null
+              Remove subscriber port binding:
+                value:
+                  portBindingIdentifier: null
+        description: Attributes to update.
+    delete:
+      summary: Delete a subscriber
+      operationId: delete-realms-realmId-subscribers-default-subscriberId
+      responses:
+        '200':
+          $ref: '#/components/responses/statusResponse'
+        '404':
+          $ref: '#/components/responses/statusResponse'
+        '500':
+          $ref: '#/components/responses/statusResponse'
+      description: Delete a subscriber in the 'default' service class from a given realm.
+  /realms/{realmId}/serviceClass/{serviceClass}/subscribers:
+    post:
+      summary: Create a subscriber
+      operationId: post-realms-subscribers
+      responses:
+        '201':
+          $ref: '#/components/responses/statusResponse'
+        '400':
+          $ref: '#/components/responses/statusResponse'
+        '409':
+          $ref: '#/components/responses/statusResponse'
+        '500':
+          $ref: '#/components/responses/statusResponse'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/subscriber'
+              description: A complete subscriber object
+            examples:
+              Example 2:
+                value:
+                  subscriberId: B012345678
+                  serviceProfile:
+                  - dynamicSpeed
+                  serviceSpeedUpload: 1G
+                  serviceSpeedDownload: 1G
+                  serviceStatus: enabled
+                  pppCredentials:
+                    username: testpppuser1
+                    password: '{sha256}E3D/UMV7I97LdXFFJa7OAVgRSZGXjW7fgY9SjrjMtCk='
+        description: A subscriber object definition
+      description: Add a new subscriber.
+    parameters:
+    - $ref: '#/components/parameters/realmId'
+    - $ref: '#/components/parameters/serviceClass'
+  /realms/{realmId}/serviceClass/{serviceClass}/subscribers/{subscriberId}:
+    parameters:
+    - $ref: '#/components/parameters/realmId'
+    - $ref: '#/components/parameters/subscriberId'
+    - $ref: '#/components/parameters/serviceClass'
+    get:
+      summary: Retrieve a subscriber
+      operationId: get-realms-realmId-subscribers-subscriberId
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/subscriber'
+                description: A subscriber object
+              examples:
+                Example 1:
+                  value:
+                    subscriberId: A123456789
+                    serviceProfile:
+                    - dynamicSpeed
+                    serviceStatus: suspended
+                    serviceProfileSuspend: nonPaymentSuspend
+                    staticIp:
+                    - ipType: ipv4
+                      ipAddress: 192.158.1.38
+        '404':
+          $ref: '#/components/responses/statusResponse'
+        '500':
+          $ref: '#/components/responses/statusResponse'
+      description: Return a subscriber in a specified realm.
+    patch:
+      summary: Update a subscriber
+      operationId: patch-realms-realmId-subscribers-subscriberId
+      responses:
+        '200':
+          $ref: '#/components/responses/statusResponse'
+        '400':
+          $ref: '#/components/responses/statusResponse'
+        '404':
+          $ref: '#/components/responses/statusResponse'
+        '500':
+          $ref: '#/components/responses/statusResponse'
+      description: |-
+        Update a subscriber for a given realm by replacing only the provided attributes.  If an attribute is null, it will be removed.
+
+        For multi-valued and nested attributes the complete set of values must be provided, and will replace all existing values.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/subscriber'
+              description: A partial subscriber object
+            examples:
+              Suspending a subscriber for non-payment:
+                value:
+                  serviceProfileSuspended: nonPaymentSuspend
+                  serviceStatus: suspended
+              Assigning multiple port bindings for grooming:
+                value:
+                  portBindingIdentifier:
+                  - client/192.168.2.0/port/6%2F1%2F1/qinq/102+102
+                  - client/192.168.2.0/port/6%2F1%2F2/qinq/102+102
+              Remove subscriber staticIp:
+                value:
+                  staticIp: null
+              Remove subscriber port binding:
+                value:
+                  portBindingIdentifier: null
+        description: Attributes to update.
+    delete:
+      summary: Delete a subscriber
+      operationId: delete-realms-realmId-subscribers-subscriberId
+      responses:
+        '200':
+          $ref: '#/components/responses/statusResponse'
+        '404':
+          $ref: '#/components/responses/statusResponse'
+        '500':
+          $ref: '#/components/responses/statusResponse'
+      description: Delete a subscriber from a given realm.
+components:
+  schemas:
+    subscriber:
+      title: subscriber
+      x-stoplight:
+        id: 7ckq4rvykpv6w
+      type: object
+      description: A subscriber - A user authenticating via the RADIUS service
+      examples:
+      - subscriberId: A123456789
+        serviceProfile:
+        - dynamicSpeed
+        - staticIp
+        serviceStatus: enabled
+        serviceSpeedUpload: 500M
+        serviceSpeedDownload: 500M
+        staticIp:
+        - ipType: ipv4
+          ipAddress: 192.158.1.38
+      - subscriberId: A123456789
+        serviceProfile:
+        - dynamicSpeed
+        serviceStatus: enabled
+        serviceSpeedUpload: 500M
+        serviceSpeedDownload: 500M
+      - subscriberId: B012345678
+        serviceProfile:
+        - dynamicSpeed
+        serviceSpeedUpload: 1G
+        serviceSpeedDownload: 1G
+        serviceStatus: enabled
+        pppCredentials:
+          username: testpppuser1
+          password: '{sha256}E3D/UMV7I97LdXFFJa7OAVgRSZGXjW7fgY9SjrjMtCk='
+      - subscriberId: A123456789
+        serviceProfile:
+        - dynamicSpeed
+        serviceStatus: enabled
+        serviceSpeedUpload: 500M
+        serviceSpeedDownload: 500M
+        portBindingId:
+        - client/172.17.0.1/port/1%2F2%2F1/qinq/2055+1999
+        - client/172.17.0.1/port/10%2F1%2F1/qinq/2055+1999
+      properties:
+        subscriberId:
+          type: string
+          description: A qnique SID (Subscriber Identifier) for the subscriber
+          example: A123456789
+        serviceProfile:
+          type: array
+          description: Service abstract profile the subscriber is assigned. Beneath the abstract profiles, there are concrete
+            profiles which are assigned based on the RADIUS client type.  These concrete profiles return attributes that configure
+            an aspect of the subscriber's service, like speed, QoS or static IP assignments.
+          example:
+          - dynamicSpeed
+          items:
+            x-stoplight:
+              id: zd928rpk7owsi
+            type: string
+            example: dynamicSpeed
+            enum:
+            - dynamicSpeed
+            - staticIp
+        serviceStatus:
+          type: string
+          enum:
+          - enabled
+          - disabled
+          - suspended
+          description: What state the subscriber's account is in
+          default: enabled
+          example: suspended
+        serviceProfileSuspended:
+          type: string
+          description: Service profile to use if the subscriber is suspended
+          example: suspend
+          x-stoplight:
+            id: fz2htbygwtiz3
+          enum:
+          - suspend
+          - nonPaymentSuspend
+        serviceSpeedUpload:
+          type: string
+          x-stoplight:
+            id: 26plowtbpqbel
+          pattern: ^[0-9]{1,5}(.[0-9]{1,5})?[BKMGTE]$
+          example: 500M
+          description: 'Upload speed with unit suffix.  Floats are allowed but will be normalised to integers.  For example
+            1.5M will be returned as 1536K. Note: This value will not be processed by the RADIUS service automatically.  It
+            must be referenced in a policy'
+        serviceSpeedDownload:
+          type: string
+          x-stoplight:
+            id: sa0sd8wfnzdvi
+          pattern: ^[0-9]{1,5}(.[0-9]{1,5})?[BKMGTE]$
+          example: 25.5M
+          description: 'Download speed with unit suffix.  Floats are allowed but will be normalised to integers.  For example
+            1.5M will be returned as 1536K. 536K. Note: This value will not be processed by the RADIUS service automatically.  It
+            must be referenced in a policy'
+        staticIp:
+          type: array
+          description: Subscriber's static IP address assignments.  For updates the complete set of IP addresses must be provided
+          items:
+            $ref: '#/components/schemas/subscriberStaticIp'
+        portBindingIdentifier:
+          type:
+          - array
+          - string
+          x-stoplight:
+            id: gr3ty7jgogcbt
+          example:
+          - client/192.168.2.0/port/6%2F1%2F1/qinq/102+101
+          - client/192.168.2.0/port/6%2F1%2F2/qinq/102+102
+          description: |-
+            An optional reference to a port which should be associated with this subscriber. If the port already points to an existing subscriber an error will be returned.  The QinQ component is written as `<stag>+<ctag>`.
+
+            Note (For multiple port bindings for grooming): After grooming is complete, the second port binding must be removed by sending a PATCH request that includes only the current (active) port binding.
+          items:
+            x-stoplight:
+              id: 7bd4tot7ztfgi
+            type: string
+        pppCredentials:
+          $ref: '#/components/schemas/pppCredentials'
+          x-stoplight:
+            id: bz9fnhaxmfsh0
+          description: Optional PPP credentials for the subscriber
+        ? ''
+        : type: string
+          x-stoplight:
+            id: 2thxskloc4exj
+    subscriberStaticIp:
+      title: subscriberStaticIp
+      x-stoplight:
+        id: dcurmfui4vdwg
+      type: object
+      description: A static IP address assignment for a subscriber
+      properties:
+        ipType:
+          type: string
+          enum:
+          - ipv4
+          - ipv6
+          - ipv4prefix
+          - ipv6prefix
+          example: ipv4
+          description: The address family of the static IP
+        ipAddress:
+          type: string
+          example: 192.158.1.0/29
+          description: An IPv4 or IPv6 address to assign to a subscriber
+          minLength: 7
+          maxLength: 43
+      required:
+      - ipType
+      - ipAddress
+    pppCredentials:
+      title: pppCredentials
+      x-stoplight:
+        id: a5dixautteqd4
+      type: object
+      description: PPPoE credentials for a subscriber
+      properties:
+        username:
+          type: string
+          x-stoplight:
+            id: r0bi03xomiyud
+          description: The PPPoE username
+          example: bob
+        password:
+          type: string
+          x-stoplight:
+            id: 9ewnf97cfan4g
+          description: 'The PPPoE password.  Must be in the form `{<scheme>}<hash>` where scheme is one of the schemes documented
+            here https://linux.die.net/man/8/slappasswd, or here https://man.archlinux.org/man/core/openldap/slapd-pw-sha2.5.en
+            and `<hash>` is the base64 encoding of the hash of the password.  '
+          example: '{SHA256}K7gNU3sdo+OL0wNhqoVWhr3g6s1xYv72ol/pe/Unols='
+          pattern: ^{[^}]+}.+$
+      required:
+      - username
+      - password
+  responses:
+    statusResponse:
+      description: A response containing the operation status and message
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: integer
+                description: HTTP status code as provided by NGINX
+              message:
+                type: string
+                description: Descriptive error message as provided by NGINX
+  parameters:
+    realmId:
+      name: realmId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique identifier for a realm
+    subscriberId:
+      name: subscriberId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique identifier for a subscriber
+    serviceClass:
+      name: serviceClass
+      in: path
+      required: true
+      schema:
+        type: string
+      description: A qualifier applied to all profile assignments and subscribers
+x-internal: false

@@ -1,0 +1,540 @@
+openapi: 3.1.0
+x-stoplight:
+  id: lznywhytwibbc
+info:
+  title: Netbox Overlay for LDAP subscriber management API
+  version: '1.0'
+  description: API overlay to allow automatic allocation of static IP addresses using Netbox.
+  contact:
+    name: Network RADIUS
+    url: https://suppor.networkradius.com
+    email: support@networkradius.com
+servers:
+- url: http://localhost:3000
+paths:
+  /netboxOverlay/realm/{realmId}/subscriber:
+    post:
+      summary: Create a subscriber
+      operationId: post-user
+      responses:
+        '200':
+          $ref: '#/components/responses/onCreate'
+        '400':
+          $ref: '#/components/responses/onBadRequest'
+        '409':
+          $ref: '#/components/responses/onConflict'
+        '500':
+          $ref: '#/components/responses/onInternalServerError'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/subscriberPostPut'
+            examples:
+              Example 1:
+                value:
+                  id: 123456789+GPON
+                  subscriberId: '123456789'
+                  serviceStatus: enabled
+                  serviceId: GPON
+                  serviceProfile: http://localhost:3000/service/GPON/profile/INETG1M
+                  netboxSubscriberName: A Subscriber
+                  netboxGroup: aNetboxGroup
+                  netboxCo: coId
+                  radiusFramedIPAddress:
+                  - 0.0.0.0
+                  - 0.0.0.0
+                  - 0.0.0.0
+                  radiusFramedIPv6Address:
+                  - '::'
+                  - '::'
+                  radiusFramedIPv6Prefix:
+                  - ::/56
+        description: Post the necessary fields for the API to create a new subscriber.
+      description: Create a new user.
+    parameters:
+    - $ref: ./ldap-subscriber-api.yaml#/components/parameters/realmId
+  /netboxOverlay/realm/{realmId}/subscriber/{subscriberId}:
+    parameters:
+    - $ref: ./ldap-subscriber-api-simplified.yaml#/components/parameters/realmId
+    - $ref: ./ldap-subscriber-api-simplified.yaml#/components/parameters/subscriberId
+    get:
+      summary: Return a subscriber
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/subscriberGet'
+              examples:
+                Example 1:
+                  value:
+                    subscriberId: '123456789'
+                    serviceStatus: enabled
+                    serviceId: GPON
+                    serviceProfile: http://localhost:3000/service/GPON/profile/INETG1M
+                    radiusFramedIPAddress:
+                    - 192.168.0.2
+                    radiusFramedIPv6Address:
+                    - ff06::c3
+                    - ff06::c4
+                    radiusFramedIPv6Prefix:
+                    - ff05::c2::/56
+                    ipV4GatewayAddress: 192.168.0.1
+                Example 2:
+                  value:
+                    subscriberId: '123456789'
+                    serviceStatus: enabled
+                    serviceId: GPON
+                    serviceProfile: http://localhost:3000/service/GPON/profile/INETG1M
+                    radiusFramedIPAddress:
+                    - 192.168.0.1
+                    - 192.168.0.2
+                    - 192.168.0.3
+                    radiusFramedIPv6Address:
+                    - ff06::c3
+                    - ff06::c4
+                    radiusFramedIPv6Prefix:
+                    - ff05::c2::/56
+                    ipV4GatewayAddress: 192.168.0.1
+                Example 3:
+                  value:
+                    subscriberId: '123456789'
+                    serviceStatus: enabled
+                    serviceId: GPON
+                    serviceProfile: http://localhost:3000/service/GPON/profile/INETG1M
+                    radiusFramedIPv6Address:
+                    - ff06::c3
+                    - ff06::c4
+                    radiusFramedIPv6Prefix:
+                    - ff05::c2::/56
+                    ipV4GatewayAddress: 192.168.0.1
+        '404':
+          $ref: '#/components/responses/onNotFound'
+        '500':
+          $ref: '#/components/responses/onInternalServerError'
+      operationId: get-users-userId
+      description: Retrieve a subscriber object.
+    patch:
+      summary: Update a subscriber
+      operationId: patch-users-userId
+      responses:
+        '200':
+          $ref: '#/components/responses/onSuccess'
+        '400':
+          $ref: '#/components/responses/onBadRequest'
+        '404':
+          $ref: '#/components/responses/onNotFound'
+        '409':
+          $ref: '#/components/responses/onConflict'
+        '500':
+          $ref: '#/components/responses/onInternalServerError'
+      description: Modify a subscriber object
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/subscriberPatch'
+        description: Patch subscriber properties to update.
+    delete:
+      summary: Delete a subscriber
+      operationId: delete-netboxOverlay-realm-realmId-subscriber-subscriberId
+      responses:
+        '200':
+          description: OK
+      description: Delete a subscriber object.
+    put:
+      summary: Replace a subscriber
+      operationId: put-netboxOverlay-realm-realmId-subscriber-subscriberId
+      responses:
+        '200':
+          $ref: '#/components/responses/onSuccess'
+        '400':
+          $ref: '#/components/responses/onBadRequest'
+        '404':
+          $ref: '#/components/responses/onNotFound'
+        '409':
+          $ref: '#/components/responses/onConflict'
+        '500':
+          $ref: '#/components/responses/onInternalServerError'
+      description: Replace a subscriber object.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/subscriberPostPut'
+            examples:
+              Example 1:
+                value:
+                  subscriberId: '123456789'
+                  serviceStatus: enabled
+                  serviceId: GPON
+                  serviceProfile: http://localhost:3000/service/GPON/profile/INETG1M
+                  netboxGroup: aNetboxGroup
+                  netboxCo: coId
+                  radiusFramedIPAddress:
+                  - 192.168.0.1
+                  radiusFramedIPv6Address:
+                  - '::'
+                  radiusFramedIPv6Prefix:
+                  - ::/56
+        description: Put subscriber object to replace.
+components:
+  schemas:
+    subscriber:
+      title: subscriber
+      x-stoplight:
+        id: 39i82q1wb1101
+      description: |-
+        A subscriber - A user authenticating via the RADIUS service.
+
+        Note: The attributes listed in the definition of the object are a subset of the attributes available.
+
+        Any attribute that's available in the relevant LDAP schema (freeradius-radius.schema, freeradius-dhcpv4.schema, freeradius-dhcpv6.schema, etc...) for the protocol, can be included in POST, PATCH, PUT actions, including generic attributes such as `radiusAttribute`.  Generic attributes take the format `<attribute> <op> <quote><value><quote>` e.g. `Reply-Message := "Welcome user %{User-Name}"`, and can be used to add any attribute allowed in the protocol dictionary.
+
+        For the NetBox overlay, radiusFramedIPAddress, radiusFramedIPv6Address, radiusFramedIPv6Prefix, are used to request or retain IP addresses.
+
+        IPv4 attributes populated with `0.0.0.0` will be replaced with allocations from Netbox.  IPv6 attributes with `::` or `::/<prefix_len>` in the case of the prefix attribute, will also be replaced with allocations from Netbox.
+
+        When PUTing, and fewer than the existing allocation of IP addresses are included in the request body, the IP addresses retained will be dictated by the ones specified.  For example, a PUT against a subscriber containing allocations `{ "staticIpV4Addr" : [ "192.68.0.1", "192.168.0.2", "192.168.0.3" ] }` with `{ "staticIpV4Addr" : [ "192.168.0.1" ] }` will cause the deallocation of `192.168.0.2` and `192.168.0.3`.  If the caller does not care which IP addresses are retained, they may submit an array containing only zeroed IP address elements, with the element count being the number of addresses to retain.
+
+        `netboxSubscriberName`, and `netboxGroup` are required the first time a static IP is allocated to a subscriber, as they are used to create the Netbox tenant.
+
+        `netboxCo` must be included in any call which modifies IP allocation or the call will fail.
+      allOf:
+      - properties:
+          statusReason:
+            type: string
+            description: Why the subscriber's service was disabled or suspended
+          serviceProfileSuspended:
+            type: string
+            description: The URI of a service profile object to apply to the subscriber
+            format: uri
+            example: http://localhost:3000/service/fixedLine/profile/suspendedNonPayment
+          clientGroup:
+            type: array
+            format: uri
+            description: The URI(s) of a clientGroup to restrict subscriber to.  Prevents subscriber from connecting RADIUS
+              clients outside of this set of groups
+            uniqueItems: true
+            items:
+              type: string
+              example: http://localhost:3000/client-groups/example.org-bngs
+              format: uri
+          subscriberGroup:
+            type: array
+            format: uri
+            description: The URI of a subscriberGroup object.  Used to apply common sets of RADIUS attributes or serviceProfiles
+              to subscriber
+            uniqueItems: true
+            items:
+              type: string
+              format: uri
+          portBindingClient:
+            type: string
+            format: uri
+            description: URI of the last client the subscriber authenticated via.  Primarily used for Change of Authorisation
+              and disconnect messages
+            example: http://localhost:3000/clients/192.0.2.1
+          portBindingIdentifier:
+            type: string
+            example: DSLAM03-D6-KTP atm 0/0/0/44:0.35
+            description: The subscriber's unique circuit ID, either learned or pre-provisioned
+          portBindingModified:
+            type: string
+            format: date-time
+            description: When port binding details were last updated
+            readOnly: true
+          portBinding:
+            type: boolean
+            description: If true, the subscriber will be unabled to authenticate via any other circuit than the one we learned
+              the first time the subscriber authenticated
+          staticIpV4Addr:
+            type: array
+            x-stoplight:
+              id: bc8fikpv6uwr2
+            description: An IPv4 address to request (0.0.0.0), or retain (any valid IPv4 address).
+            items:
+              x-stoplight:
+                id: 1nzfkbtywtttb
+              type: string
+              example: 0.0.0.0
+              pattern: ^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$
+          staticIpV6Addr:
+            type: array
+            x-stoplight:
+              id: 42b3m0cmxraq7
+            description: An IPv6 address to request (::), or retain (any valid IPv6 address)
+            items:
+              x-stoplight:
+                id: 9rlwpmxrj10lz
+              type: string
+              example: '::'
+              pattern: ^[a-f0-9:]+$
+          staticIpV6Prefix:
+            type: array
+            x-stoplight:
+              id: lrv6rxzbs5khm
+            description: An IPv6 address to request (::/<prefix_len>), or retain (any valid IPv6 prefix)
+            items:
+              x-stoplight:
+                id: 79xod2q8fgn9n
+              type: string
+              pattern: ^([a-f0-9:]+)/[0-9]{1,3}$
+              example: ::/56
+      type: object
+    subscriberPostPut:
+      title: subscriberPostPut
+      x-stoplight:
+        id: vlvimk8q16k42
+      allOf:
+      - $ref: '#/components/schemas/subscriberRequiredFields'
+        x-stoplight:
+          id: 95q7kjq6uei3u
+      - $ref: '#/components/schemas/subscriber'
+      - $ref: '#/components/schemas/subscriberNetboxFields'
+        x-stoplight:
+          id: vy1wmiwr30zr4
+      description: Subscriber fields allowed in a Put or Post
+      examples:
+      - subscriberId: '123456789'
+        serviceStatus: enabled
+        serviceId: fixedLine
+        serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
+        statusReason: string
+        serviceProfileSuspended: http://localhost:3000/service/fixedLine/profile/suspendedNonPayment
+        clientGroup:
+        - http://localhost:3000/client-groups/example.org-bngs
+        subscriberGroup:
+        - http://example.com
+        portBindingClient: http://localhost:3000/clients/192.0.2.1
+        portBindingIdentifier: DSLAM03-D6-KTP atm 0/0/0/44:0.35
+        portBindingModified: '2019-08-24T14:15:22Z'
+        portBinding: true
+        netboxSubscriberName: A Subscriber
+        netboxGroup: aNetboxGroup
+        netboxCo: string
+        radiusFramedIPAddress:
+        - 0.0.0.0
+        radiusFramedIPv6Address:
+        - '::'
+        radiusFramedIPv6Prefix:
+        - ::/56
+    subscriberPatch:
+      title: subscriberPatch
+      x-stoplight:
+        id: dcavf0hgskc0s
+      description: |-
+        PATCHing objects, and fewer than the existing allocation of IP addresses are included in the request body, the IP addresses retained will be dictated by the ones specified.  For example, a PATCH against a subscriber containing allocations `{ "radiusFramedIPAddress" : [ "192.68.0.1", "192.168.0.2", "192.168.0.3" ] }` with `{ "radiusFramedIPaddress" : [ "192.168.0.1" ] }` will cause the deallocation of `192.168.0.2` and `192.168.0.3`.  If the caller does not care which IP addresses are retained, they may submit an array containing only zeroed IP address elements, with the element count being the number of addresses to retain.
+
+        `netboxCo` must be included in any call which modifies IP allocation or the call will fail.
+      allOf:
+      - $ref: '#/components/schemas/subscriberOptionalFields'
+      - $ref: '#/components/schemas/subscriber'
+        x-stoplight:
+          id: xbyjqs0x7cn5e
+      - $ref: '#/components/schemas/subscriberNetboxFields'
+        x-stoplight:
+          id: l1qxgvzfdce6m
+      examples:
+      - serviceStatus: enabled
+        serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
+        statusReason: string
+        serviceProfileSuspended: http://localhost:3000/service/fixedLine/profile/suspendedNonPayment
+        clientGroup:
+        - http://localhost:3000/client-groups/example.org-bngs
+        subscriberGroup:
+        - http://example.com
+        portBindingClient: http://localhost:3000/clients/192.0.2.1
+        portBindingIdentifier: DSLAM03-D6-KTP atm 0/0/0/44:0.35
+        portBindingModified: '2019-08-24T14:15:22Z'
+        portBinding: true
+        netboxSubscriberName: A Subscriber
+        netboxGroup: aNetboxGroup
+        netboxCo: string
+        radiusFramedIPAddress:
+        - 0.0.0.0
+        radiusFramedIPv6Address:
+        - '::'
+        radiusFramedIPv6Prefix:
+        - ::/56
+    subscriberGet:
+      title: subscriberGet
+      x-stoplight:
+        id: 6qmocmzewwle0
+      allOf:
+      - $ref: '#/components/schemas/subscriber'
+      - $ref: '#/components/schemas/subscriberRequiredFields'
+        x-stoplight:
+          id: bmkzm9fourhn8
+      - $ref: '#/components/schemas/subscriberDynamicFields'
+        x-stoplight:
+          id: 7ie88wfatr8dq
+      examples:
+      - subscriberId: '123456789'
+        serviceStatus: enabled
+        statusReason: string
+        serviceId: fixedLine
+        serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
+        serviceProfileSuspended: http://localhost:3000/service/fixedLine/profile/suspendedNonPayment
+        clientGroup:
+        - http://localhost:3000/client-groups/example.org-bngs
+        subscriberGroup:
+        - http://example.com
+        portBindingClient: http://localhost:3000/clients/192.0.2.1
+        portBindingIdentifier: DSLAM03-D6-KTP atm 0/0/0/44:0.35
+        portBindingModified: '2019-08-24T14:15:22Z'
+        portBinding: true
+        radiusFramedIPAddress:
+        - 162.81.13.250
+        radiusFramedIPv6Address:
+        - '2606:83c0:f00::'
+        radiusFramedIPv6Prefix:
+        - 2606:83c0:c00::/56
+        netboxIPv4GatewayAddress: 162.81.12.1
+      description: Fields returned when a subscriber is returned from a GET operation
+    subscriberNetboxFields:
+      title: subscriberNetbox
+      x-stoplight:
+        id: vqkw84mi1tecr
+      type: object
+      properties:
+        netboxSubscriberName:
+          type: string
+          x-stoplight:
+            id: pz0hwcpq58e80
+          description: Firstname, Lastname of the subscriber to record in Netbox.  Not stored in LDAP
+          example: A Subscriber
+        netboxGroup:
+          type: string
+          x-stoplight:
+            id: 85l841ct6agjr
+          description: The netbox group to add a subscriber to.  Not stored in LDAP
+          example: aNetboxGroup
+        netboxCo:
+          type: string
+          x-stoplight:
+            id: rlg7lz5lw9pp0
+          description: The CO to allocate IPv4, IPv6 WAN and IPv6 PD addresses from. Not stored in LDAP
+      description: Fields that need to be provided when modifying IP address allocations
+      examples:
+      - netboxSubscriberName: A Subscriber
+        netboxGroup: aNetboxGroup
+        netboxCo: string
+    subscriberDynamicFields:
+      title: subscriberDynamicFields
+      x-stoplight:
+        id: bvkv6axk8q3lk
+      type: object
+      description: Attributes that are dynamically populated by the API
+      properties:
+        netboxIPv4GatewayAddress:
+          type: string
+          x-stoplight:
+            id: z38qz6eslxibc
+          description: The gateway address for the given prefix the subscriber is assigned.
+          example: 192.168.0.1
+    subscriberRequiredFields:
+      title: subscriberRequiredFields
+      x-stoplight:
+        id: up73vtc05lc00
+      type: object
+      properties:
+        subscriberId:
+          type: string
+          description: A unique (within a realm) identifier for a subscriber
+          example: '123456789'
+        serviceStatus:
+          type: string
+          enum:
+          - enabled
+          - disabled
+          - suspended
+          description: Whether this subscriber can access the service
+        serviceId:
+          type: string
+          description: The type of access media this subscriber object relates to, e.g. fixedLine, wireless etc... Must match
+            a configured service category
+          example: fixedLine
+        serviceProfile:
+          type: string
+          format: uri
+          description: The URI of a service profile object to apply to the subscriber
+          example: http://localhost:3000/service/fixedLine/profile/INETG1M
+      required:
+      - subscriberId
+      - serviceStatus
+      - serviceId
+      - serviceProfile
+      description: Fields that must be present in POST and PUT operations
+      x-internal: false
+    subscriberOptionalFields:
+      title: subscriberOptionalFields
+      x-stoplight:
+        id: w4e7f1hta1tz5
+      type: object
+      properties:
+        serviceStatus:
+          type: string
+          enum:
+          - enabled
+          - disabled
+          - suspended
+          description: Whether this subscriber can access the service
+        serviceProfile:
+          type: string
+          format: uri
+          description: The URI of a service profile object to apply to the subscriber
+          example: http://localhost:3000/service/fixedLine/profile/INETG1M
+      description: Optional fields that can appear in a PUT
+  responses:
+    onCreate:
+      description: Response on creating a new object
+      content:
+        application/json:
+          schema: {}
+      headers:
+        Location:
+          schema:
+            type: string
+          description: The URI of the resource that was just created
+    onInternalServerError:
+      description: An internal error has occurred while talking to one of the backend (LDAP or Postgres). For instance, an
+        attribute was missing when creating an object
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error_msg:
+                type: string
+                description: Raw error string from the service element which experienced the error
+    onSuccess:
+      description: Response sent on a successful operation which did not create an object
+      content:
+        application/json:
+          schema: {}
+    onNotFound:
+      description: Specified resource not found
+      content:
+        application/json:
+          schema: {}
+    onConflict:
+      description: The requested operation conflicts with an existing resource (for instance, trying to create a duplicate
+        resource) or you are trying to delete a node that has children
+      content:
+        application/json:
+          schema: {}
+    onBadRequest:
+      description: |
+        Can be any of the following:
+        - The requested path doesn’t correspond to the schema.
+        - Missing or invalid data for POST or PUT operations. Data should always be valid JSON.
+        - If data contains URL to another resource, the host part of the URL must be identical to the host data being created/modified.
+      content:
+        application/json:
+          schema: {}
+tags:
+- name: netbox
+  description: Endpoints in the netbox wrapper

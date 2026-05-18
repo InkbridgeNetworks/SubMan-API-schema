@@ -1,0 +1,617 @@
+openapi: 3.1.0
+x-stoplight:
+  id: 62y7xoxcmry40
+info:
+  title: Simplified RADIUS Accounting API
+  version: '1.0'
+  description: Basic RADIUS accounting API for NOC tools and general supportability
+  contact:
+    name: Arran Cudbard-Bell
+    url: https://www.networkradius.com
+    email: a.cudbardb@networkradius.com
+servers:
+- url: http://localhost:3000
+paths:
+  /session/{acctUniqueSessionId}:
+    parameters:
+    - $ref: '#/components/parameters/acctUniqueSessionId'
+    get:
+      summary: Retrieve session by acctUniqueSessionId
+      responses:
+        '200':
+          description: A session object matching the specified acctUniqueSessionId
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/acctSession'
+        '404':
+          $ref: '#/components/responses/onNotFound'
+        '500':
+          $ref: '#/components/responses/onInternalServerError'
+      operationId: get-users-userId
+      description: Return a specific session by its globally and temporaly unique session ID
+      tags:
+      - Accounting Sessions
+      parameters:
+      - $ref: '#/components/parameters/dataTransferMax'
+  /session:
+    get:
+      summary: Search for sessions
+      responses:
+        '200':
+          description: An array of sessions or session IDs
+          content:
+            application/json:
+              schema:
+                type: array
+                description: An array of either acctSession objects or acctUniqueSessionId objects.  Object type determined
+                  by the 'brief' query parameter
+                items:
+                  oneOf:
+                  - $ref: '#/components/schemas/acctSession'
+                  - $ref: '#/components/schemas/acctUniqueSessionId'
+        '400':
+          $ref: '#/components/responses/onBadRequest'
+        '500':
+          $ref: '#/components/responses/onInternalServerError'
+      operationId: get-accountingSession
+      description: Return one or more sessions matching the specified query parameters.  Query parameters are AND'
+      parameters:
+      - $ref: '#/components/parameters/brief'
+      - $ref: '#/components/parameters/subscriberId'
+      - $ref: '#/components/parameters/framedIpAddress'
+      - $ref: '#/components/parameters/framedIpV6Address'
+      - $ref: '#/components/parameters/sessionState'
+      - $ref: '#/components/parameters/sessionStart'
+      - $ref: '#/components/parameters/sessionStop'
+      - $ref: '#/components/parameters/dataTransferMax'
+      tags:
+      - Accounting Sessions
+    parameters: []
+  /accessServer/stats:
+    get:
+      summary: Statistics for all Access Servers
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/nasStatisticsAggregate'
+        '500':
+          $ref: '#/components/responses/onInternalServerError'
+      operationId: get-networkAccessServer
+      description: Return totals for the number of active sessions in the system
+      tags:
+      - Access Servers
+    parameters: []
+  /accessServer/{nasIdentifier}/stats:
+    get:
+      summary: Statistics by Access Server
+      tags:
+      - Access Servers
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/nasStatistics'
+        '404':
+          $ref: '#/components/responses/onNotFound'
+        '500':
+          $ref: '#/components/responses/onInternalServerError'
+      operationId: get-networkAccessServer-stats
+      description: Return a nasStatistics object showing basic statistics for the Access Server
+    parameters:
+    - $ref: '#/components/parameters/nasIdentifier'
+  /accessServer/{nasIdentifier}/session:
+    get:
+      summary: Search for sessions by Access Server
+      responses:
+        '200':
+          description: OK
+          headers: {}
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  oneOf:
+                  - $ref: '#/components/schemas/acctSession'
+                  - $ref: '#/components/schemas/acctUniqueSessionId'
+        '400':
+          $ref: '#/components/responses/onBadRequest'
+        '404':
+          $ref: '#/components/responses/onNotFound'
+        '500':
+          $ref: '#/components/responses/onInternalServerError'
+      operationId: get-networkAccessServer-sessions
+      description: Return sessions associated with this Access Server.  Query parameters are AND'
+      parameters:
+      - $ref: '#/components/parameters/brief'
+      - $ref: '#/components/parameters/subscriberId'
+      - $ref: '#/components/parameters/framedIpAddress'
+      - $ref: '#/components/parameters/framedIpV6Address'
+      - $ref: '#/components/parameters/sessionState'
+      - $ref: '#/components/parameters/sessionStart'
+      - $ref: '#/components/parameters/sessionStop'
+      - $ref: '#/components/parameters/dataTransferMax'
+      tags:
+      - Access Servers
+      - Accounting Sessions
+    parameters:
+    - $ref: '#/components/parameters/nasIdentifier'
+components:
+  schemas:
+    acctSession:
+      title: accountingSession
+      type: object
+      description: An active or archived accounting session for a subscriber
+      x-stoplight:
+        id: d22389d9f4ab5
+      examples:
+      - acctUniqueSessionId: 5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
+        acctSessionId: 983040;1685545642
+        subscriberId: 0123456789
+        calledStationId: B8:94:70:3E:8A:26
+        callingStationId: C9:05:81:4F:9B:37
+        serviceProfileURI: https://api.gobrightspeed.net/radius/service/default/profile
+        nasIpAddress: 10.137.105.32
+        nasIdentifier: MANTNCLAB_ASM00
+        nasPortId: la10.983040:1345-999
+        framedMtu: 2000
+        framedIpAddress: 64.158.236.108
+        framedIpv6Address: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+        framedIpv6Prefix: 2001:db8:85a3::8a2e:370:7335/64
+        startUnreliable: false
+        startTime: '2023-06-19T22:39:29Z'
+        updateTime: '2023-06-19T22:39:29Z'
+        stopUnreliable: false
+        stopTime: '2023-06-19T22:45:31Z'
+        acctDataTransfer:
+        - eventTimestamp: '2023-06-19T22:39:29Z'
+          acctInputPackets: 1
+          acctOutputPackets: 2
+          acctInputBytes: 1404
+          acctOutputBytes: 2449
+        - eventTimestamp: '2023-06-19T22:45:31Z'
+          acctInputPackets: 10
+          acctOutputPackets: 25
+          acctInputBytes: 15045
+          acctOutputBytes: 25392
+      - acctUniqueSessionId: 5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
+        acctSessionId: 983040;1685545642
+        subscriberId: 0123456789
+        calledStationId: B8:94:70:3E:8A:26
+        callingStationId: C9:05:81:4F:9B:37
+        serviceProfileURI: https://api.gobrightspeed.net/radius/service/default/profile
+        nasIpAddress: 10.137.105.32
+        nasIdentifier: MANTNCLAB_ASM00
+        nasPortId: la10.983040:1345-999
+        framedMtu: 2000
+        framedIpAddress: 64.158.236.108
+        framedIpv6Address: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+        framedIpv6Prefix: 2001:db8:85a3::8a2e:370:7335/64
+        startUnreliable: false
+        startTime: '2023-06-19T22:39:29Z'
+        updateTime: '2023-06-19T22:39:29Z'
+        acctDataTransfer:
+        - eventTimestamp: '2023-06-19T22:39:29Z'
+          acctInputPackets: 10
+          acctOutputPackets: 25
+          acctInputBytes: 15045
+          acctOutputBytes: 25392
+      properties:
+        acctUniqueSessionId:
+          type: string
+          description: Session ID guaranteed to be globally and temporally unique.  Created by hashing multiple values together
+          minLength: 64
+          maxLength: 64
+          pattern: ^[0-9a-f]+$
+          example: 5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
+          readOnly: true
+        acctSessionId:
+          type: string
+          description: Session ID guaranteed to be unique for a given NAS. Used to reference a session on a NAS when sending
+            CoA or DM requests.  Taken from the RADIUS Acct-Session-ID attribute
+          example: 983040;1685545642
+          readOnly: true
+        subscriberId:
+          type: string
+          description: Unique identifier of the subscriber.  Taken from the RADIUS User-Name attribute, or Option 82 information
+          example: '0123456789'
+          pattern: ^[0-9]+$
+          minLength: 9
+          maxLength: 10
+          readOnly: true
+        calledStationId:
+          type: string
+          description: An identifier for the OLT (if GPON) or the server side of the PPPoE tunnel (if PPPoE).  Taken from
+            the RADIUS Called-Station-ID attribute
+          example: B8:94:70:3E:8A:26
+          readOnly: true
+        callingStationId:
+          type: string
+          description: An identifier for the subscriber's ONT (if GPON) or the client side of the PPPoE tunnel (if PPPoE).  Taken
+            from the RADIUS Calling-Station-ID attribute
+          example: C9:05:81:4F:9B:37
+          readOnly: true
+        serviceProfileURI:
+          type: string
+          description: URI specifying the profile the subscriber is receiving for this session. The URI points to an object
+            in the LDAP subscriber API.  Taken from the RADIUS class attribute, OR from a RADIUS Vendor-Specific attribute
+          format: uri
+          example: https://api.gobrightspeed.net/radius/service/default/profile
+          readOnly: true
+        nasIpAddress:
+          type: string
+          description: IPv4 address of the BNG or BRAS on which the subscriber is connected.  Taken from the RADIUS NAS-IP-Address
+            attribute, or the source address of the Accounting-Request
+          format: ipv4
+          example: 10.137.105.32
+          readOnly: true
+        nasIdentifier:
+          type: string
+          description: FQDN of the BNG or BRAS on which the subscriber is connected.  Taken from the RADIUS NAS-Identifier
+            attribute
+          example: mantnclab-asm000.gobrightspeed.net
+          format: hostname
+          readOnly: true
+        nasPortId:
+          type: string
+          description: Either a numeric identifier (matching ifIndex) or a string identifier for the interface on the NAS
+            (Network Access Server) on which the subscriber is connected.  Taken from the RADIUS NAS-Port-Id attribute, or
+            NAS-Port if NAS-Port-ID is absent
+          example: la10.983040:1345-999
+          readOnly: true
+        framedMtu:
+          type: integer
+          description: MTU of the interface on which the subscriber is connected.  Taken from the RADIUS Framed-MTU attribute
+          format: int32
+          example: 2000
+          readOnly: true
+        framedIpAddress:
+          type: string
+          format: ipv4
+          description: IP address assigned to the subscriber for this session.  For DHCP driven RADIUS the session is bound
+            to a single DHCP session, so this will not change for the lengh of the session.  Taken from the RADIUS Framed-IP-Address
+            attribute
+          example: 64.158.236.108
+          readOnly: true
+        framedIpv6Address:
+          type: string
+          format: ipv6
+          description: NA IPv6 address assigned to the subscriber for this session.  This is typically the WAN address used
+            by the CPE.  Taken from the RADIUS Framed-IPv6-Address attribute
+          example: 2001:0db8:85a3:0000:0000:8a2e:0370:7334
+          readOnly: true
+        framedIpv6Prefix:
+          type: string
+          description: IP address assigned to the subscriber for this session.  This is typically the CIDR range delegated
+            to the CPE.  Devices behind the CPE are assigned IPv6 addresses from this range.  Taken from the RADIUS Framed-IPv6-Prefix
+            attribute
+          example: 2001:db8:85a3::8a2e:370:7335/64
+          readOnly: true
+        startUnreliable:
+          type: boolean
+          description: Whether the start time was sythensized from an Interim-Update or Stop packet, not containing an Acct-Session-Time
+            attribute. startTime field will show a value at least one interim interval later than the true startTime value
+          readOnly: true
+        startTime:
+          type: string
+          description: When the session started (UTC time).  Taken from the RADIUS Event-Timestamp attribute from the first
+            Accounting-Request received for a sessionOR (Event-Timestamp || now()) - Acct-Session-Time if the first packet
+            received an an Interim-Update or Stop
+          format: date-time
+          example: '2023-06-19T22:39:29Z'
+          readOnly: true
+        updateTime:
+          type: string
+          format: date-time
+          description: When the last update to the session was made (UTC time).  Taken from the RADIUS Event-Timestamp attribute
+            or now() from the last Accounting-Request received for this session
+          example: '2023-06-19T22:39:29Z'
+          readOnly: true
+        stopUnreliable:
+          type: boolean
+          description: Whether the session was terminated because multiple interim-update packets were not received, leading
+            to a session timeout.  Only present when a session has terminated
+          readOnly: true
+        stopTime:
+          type: string
+          format: date-time
+          description: When the session ended (UTC time).  Only present for sessions which have terminated.  Taken from the
+            RADIUS Event-Timestamp attribute or now() from the final Accounting-Request received for a session
+          example: '2023-06-19T22:45:31Z'
+          readOnly: true
+        acctDataTransfer:
+          type: array
+          description: Data transferred during the session.  Will only contain elements once an Interim-Update or Stop Accounting-Request
+            has been received
+          items:
+            $ref: '#/components/schemas/acctDataTransfer'
+      required:
+      - acctUniqueSessionId
+      - acctSessionId
+      - subscriberId
+      - calledStationId
+      - callingStationId
+      - serviceProfileURI
+      - nasIpAddress
+      - nasIdentifier
+      - nasPortId
+      - framedIpAddress
+      - startUnreliable
+      - startTime
+      - updateTime
+      - acctDataTransfer
+    acctUniqueSessionId:
+      title: acctUniqueSessionId
+      x-stoplight:
+        id: h7cymbwlrxehr
+      type: object
+      description: Session ID guaranteed to be globally and temporally unique
+      properties:
+        acctUniqueSessionId:
+          type: string
+          description: Session ID guaranteed to be globally and temporally unique.  Created by hashing multiple values together
+          example: 5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
+          pattern: ^[0-9a-f]+$
+          minLength: 64
+          maxLength: 64
+      readOnly: true
+      examples: []
+    acctDataTransfer:
+      title: acctDataTransfer
+      x-stoplight:
+        id: fho7vhchgafh5
+      type: object
+      description: A snapshot of data transfer statistics
+      properties:
+        eventTimestamp:
+          type: string
+          description: When the data transfer statistics were received.  Taken from the RADIUS Event-Timestamp attribute or
+            now() of the Interim-Update or Stop which contained these values
+          format: date-time
+          example: '2023-06-19T22:45:31Z'
+        acctInputPackets:
+          type: integer
+          format: int64
+          description: How many packets the BNG or BRAS received from the subscriber during this session.  Only available
+            after the first Interim-Update or Stop packet has been received.  Taken from the  RADIUS Acct-Input-Packets attribute
+          example: 10
+          readOnly: true
+        acctOutputPackets:
+          type: integer
+          description: How many packets the BNG or BRAS sent to the subscriber during this session.  Only available after
+            the first Interim-Update or Stop packet has been received.  Taken from the RADIUS Acct-Output-Packets attribute
+          format: int64
+          example: 25
+          readOnly: true
+        acctInputBytes:
+          type: integer
+          format: int64
+          description: How many bytes of data the BNG or BRAS received from the subscriber during this session.  Only available
+            after the first Interim-Update or Stop packet has been received.  Calculated from the RADIUS Acct-Input-Octets
+            and Acct-Input-Gigawords attributes
+          example: 15045
+          readOnly: true
+        acctOutputBytes:
+          type: integer
+          description: How many bytes of data the BNG or BRAS sent to the subscriber during this session.  Only available
+            after the first Interim-Update or Stop packet has been received.  Calculated from the RADIUS Acct-Output-Octets
+            and Acct-Output-Gigawords attributes
+          format: int64
+          example: 25392
+          readOnly: true
+      required:
+      - eventTimestamp
+      - acctInputPackets
+      - acctOutputPackets
+      - acctInputBytes
+      - acctOutputBytes
+    nasStatistics:
+      title: nasStatistics
+      x-stoplight:
+        id: zavglefnazie3
+      type: object
+      description: Session statistics for a BNG or BRAS
+      properties:
+        nasIdentifier:
+          type: string
+          description: 'FQDN of the BNG or BRAS on which the subscriber '
+        activeSessionCount:
+          type: integer
+          format: int64
+          description: How many active subscriber sessions are currently on this NAS
+        archiveSessionCount:
+          type: integer
+          format: int64
+          description: How many archived subscriber sessions are currently running on this NAS
+        oldestArchiveSession:
+          type: string
+          description: The timestamp of the oldest archived session
+          format: date-time
+        lastSessionUpdate:
+          type: string
+          description: Timestamp for the last Accounting-Request received from this NAS
+          format: date-time
+      required:
+      - nasIdentifier
+      - activeSessionCount
+      - archiveSessionCount
+      - oldestArchiveSession
+      - lastSessionUpdate
+    nasStatisticsAggregate:
+      title: nasStatisticsAggregate
+      type: object
+      description: Session statistics for multiple BNGs or BRAS
+      x-stoplight:
+        id: a009db3cfdee7
+      properties:
+        activeSessionCount:
+          type: integer
+          format: int64
+          description: How many active subscriber sessions are currently on this NAS
+        archiveSessionCount:
+          type: integer
+          format: int64
+          description: How many archived subscriber sessions are currently running on this NAS
+        oldestArchiveSession:
+          type: string
+          description: The timestamp of the oldest archived session
+          format: date-time
+        lastSessionUpdate:
+          type: string
+          description: Timestamp for the last Accounting-Request received from this NAS
+          format: date-time
+      required:
+      - activeSessionCount
+      - archiveSessionCount
+      - oldestArchiveSession
+      - lastSessionUpdate
+  parameters:
+    acctUniqueSessionId:
+      name: acctUniqueSessionId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Session ID guaranteed to be globally and temporally unique
+    framedIpAddress:
+      name: framedIpAddress
+      in: query
+      required: false
+      schema:
+        type: string
+        example: 64.158.236.108
+        format: ipv4
+      description: IPv4 address assigned to a subscriber
+    framedIpV6Address:
+      name: framedIpV6Address
+      in: query
+      required: false
+      schema:
+        type: string
+        format: ipv6
+      description: IPv6 address assigned to a subscriber
+    nasIdentifier:
+      name: nasIdentifier
+      in: path
+      required: true
+      schema:
+        type: string
+        format: hostname
+        example: mantnclab-asm000.gobrightspeed.net
+      description: FQDN of the BNG or BRAS on which the subscriber is connected
+    brief:
+      name: brief
+      in: query
+      required: false
+      schema:
+        type: boolean
+      description: If true, return session IDs instead of complete session objects
+    sessionState:
+      name: sessionState
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - active
+        - archived
+        - all
+        default: all
+      description: Only return sessions in this state
+    sessionStart:
+      name: sessionStart
+      in: query
+      required: false
+      schema:
+        type: string
+      description: When a session started.  May be combined with sessionStop to restrict return sessions in a time range.  Does
+        not filter active sessions
+    sessionStop:
+      name: sessionStop
+      in: query
+      required: false
+      schema:
+        type: string
+      description: When a session stopped.  May be combined with sessionSart to restrict return sessions in a time range.  Does
+        not filter active sessions
+    subscriberId:
+      name: subscriberId
+      in: query
+      required: false
+      schema:
+        type: string
+        minLength: 9
+        maxLength: 10
+        pattern: ^[0-9]+
+      description: Unique identifier of the subscriber
+    dataTransferMax:
+      name: dataTransferMax
+      in: query
+      required: false
+      schema:
+        type: integer
+      description: Limit the number of transfer stats entries to the N most recent
+  responses:
+    onInternalServerError:
+      description: An internal error has occurred while talking to one of the backends
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error_msg:
+                type: string
+                description: Raw error string from the service element which experienced the error
+            required:
+            - error_msg
+          examples:
+            Example 1:
+              value:
+                error_msg: BigQuery unreachable - Could not contact service
+    onBadRequest:
+      description: One or more query parameters were invalid for this request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error_msg:
+                type: string
+                description: Which query parameters were invalid
+                example: Invalid format for nasIpAddress
+            required:
+            - error_msg
+          examples:
+            Example 1:
+              value:
+                error_msg: Invalid format for nasIpAddress
+    onNotFound:
+      description: An error returned when the specified object cannot be found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error_msg:
+                type: string
+                description: A description of what could not be found
+                example: No accountingSession found with specified acctUniqueSessionId
+            required:
+            - error_msg
+          examples:
+            Example 1:
+              value:
+                error_msg: No accountingSession found with specified acctUniqueSessionId
+tags:
+- name: Access Servers
+  description: Operations related to Access Servers
+- name: Accounting Sessions
+  description: Operations related to Accounting Sessions

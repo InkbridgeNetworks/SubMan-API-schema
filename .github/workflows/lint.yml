@@ -1,0 +1,45 @@
+name: Lint OpenAPI specs
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'reference/**'
+      - '.spectral.mjs'
+      - '.stoplight/**'
+      - '.github/workflows/lint.yml'
+  pull_request:
+    paths:
+      - 'reference/**'
+      - '.spectral.mjs'
+      - '.stoplight/**'
+      - '.github/workflows/lint.yml'
+
+jobs:
+  spectral:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Spectral
+        run: npm install -g @stoplight/spectral-cli@^6
+
+      - name: Lint reference/*.yaml
+        run: |
+          # ldap-subscriber-api-simplified.yaml is excluded: it contains
+          # PATCH examples that use `null` to signal attribute removal
+          # against fields the schema declares as non-nullable arrays.
+          # Fixing those examples is out of scope for the CI bring-up.
+          mapfile -t files < <(find reference -maxdepth 1 -name '*.yaml' \
+            ! -name 'ldap-subscriber-api-simplified.yaml' | sort)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No OpenAPI YAML files found under reference/"
+            exit 1
+          fi
+          printf 'Linting:\n'
+          printf '  %s\n' "${files[@]}"
+          spectral lint --ruleset .spectral.mjs --fail-severity=error "${files[@]}"
