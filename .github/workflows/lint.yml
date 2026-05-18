@@ -1,4 +1,4 @@
-name: Lint OpenAPI specs
+name: Lint API specs
 
 on:
   push:
@@ -16,17 +16,36 @@ on:
       - '.github/workflows/lint.yml'
 
 jobs:
-  spectral:
+  openapi:
+    name: Spectral (OpenAPI)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-
       - name: Install Spectral
         run: npm install -g @stoplight/spectral-cli@^6
+      - name: Lint OpenAPI specs
+        run: |
+          # The AsyncAPI stream spec is linted in the asyncapi job.
+          mapfile -t files < <(find reference -maxdepth 1 -name '*.yaml' \
+            ! -name 'ldap-subscriber-api-stream.yaml' | sort)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No OpenAPI YAML files found under reference/"
+            exit 1
+          fi
+          printf 'Linting:\n'
+          printf '  %s\n' "${files[@]}"
+          spectral lint --ruleset .spectral.mjs --fail-severity=error "${files[@]}"
 
-      - name: Lint reference/*.yaml
-        run: spectral lint --ruleset .spectral.mjs --fail-severity=error 'reference/*.yaml'
+  asyncapi:
+    name: AsyncAPI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Validate AsyncAPI spec
+        run: npx -y @asyncapi/cli@latest validate reference/ldap-subscriber-api-stream.yaml
