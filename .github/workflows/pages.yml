@@ -75,6 +75,40 @@ jobs:
             --output ../_site \
             --force-write
 
+      - name: Cache-bust assets and add no-cache meta
+        # GitHub Pages can't set real HTTP cache headers, so we do
+        # two things in the HTML itself:
+        #   1. append ?v=<sha> to every script/link src so each deploy
+        #      uses a unique URL (defeats stale browser caches),
+        #   2. add a Cache-Control meta tag so browsers revalidate
+        #      index.html on every load.
+        run: |
+          python3 - <<'PY'
+          import os, re
+          sha = os.environ['SHA']
+          p = '_site/index.html'
+          s = open(p).read()
+          # bust js/css references that don't already have a ?v=
+          def bust(m):
+              attr, url = m.group(1), m.group(2)
+              if '?' in url:
+                  return m.group(0)
+              return f'{attr}="{url}?v={sha}"'
+          s = re.sub(r'(src|href)="(js/[^"]+|css/[^"]+)"', bust, s)
+          # add a no-cache meta into <head>
+          meta = (
+              '<meta http-equiv="Cache-Control" '
+              'content="no-cache, no-store, must-revalidate" />'
+              '<meta http-equiv="Pragma" content="no-cache" />'
+              '<meta http-equiv="Expires" content="0" />'
+          )
+          s = s.replace('<head>', '<head>' + meta, 1)
+          open(p, 'w').write(s)
+          print('bust applied with sha=', sha)
+          PY
+        env:
+          SHA: ${{ steps.version.outputs.version }}
+
       - name: Auto-expand collapsibles
         # The html-template ships with most disclosure widgets closed.
         # Inject a small script that opens everything once the page
