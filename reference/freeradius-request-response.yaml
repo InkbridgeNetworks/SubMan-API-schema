@@ -11,6 +11,9 @@ info:
     name: ' Network RADIUS support'
     url: http://www.networkradius.com
     email: support@networkradius.com
+  license:
+    name: Proprietary
+    url: https://www.networkradius.com
 servers:
 - url: http://localhost:3000
 paths:

@@ -9,6 +9,9 @@ info:
     name: Network RADIUS
     url: https://suppor.networkradius.com
     email: support@networkradius.com
+  license:
+    name: Proprietary
+    url: https://www.networkradius.com
 servers:
 - url: http://localhost:3000
 paths:
