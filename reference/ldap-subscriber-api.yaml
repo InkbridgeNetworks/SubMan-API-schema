@@ -105,6 +105,11 @@ paths:
       security:
       - OIDC:
         - write:realm
+      parameters:
+      - &id001
+        $ref: '#/components/parameters/copy_uri'
+      - &id002
+        $ref: '#/components/parameters/copy_recursive'
   /realm/{realmId}:
     parameters:
     - $ref: '#/components/parameters/realmId'
@@ -136,6 +141,8 @@ paths:
         - read:realm
       parameters:
       - $ref: '#/components/parameters/subscribe'
+      - *id001
+      - *id002
     put:
       operationId: put-realm-realmId
       responses:
@@ -164,6 +171,9 @@ paths:
       security:
       - OIDC:
         - write:realm
+      parameters:
+      - *id001
+      - *id002
     patch:
       operationId: patch-realm-realmId
       responses:
@@ -197,6 +207,9 @@ paths:
       security:
       - OIDC:
         - write:realm
+      parameters:
+      - *id001
+      - *id002
     delete:
       operationId: delete-realm-realmId
       responses:
@@ -210,6 +223,8 @@ paths:
           $ref: '#/components/responses/onInternalServerError'
       parameters:
       - $ref: '#/components/parameters/prune'
+      - *id001
+      - *id002
       description: Delete a realm.  The prune param must be true if the realm contains subscribers
       tags:
       - Realm
@@ -277,6 +292,9 @@ paths:
       security:
       - OIDC:
         - write:subscriber
+      parameters:
+      - *id001
+      - *id002
   /realm/{realmId}/subscriber/{compoundSubscriberId}:
     parameters:
     - $ref: '#/components/parameters/realmId'
@@ -306,6 +324,8 @@ paths:
         - read:subscriber
       parameters:
       - $ref: '#/components/parameters/subscribe'
+      - *id001
+      - *id002
     put:
       operationId: put-realm-realmId-subscriber-compoundSubscriberId
       responses:
@@ -330,6 +350,9 @@ paths:
       security:
       - OIDC:
         - write:subscriber
+      parameters:
+      - *id001
+      - *id002
     patch:
       operationId: patch-realm-realmId-subscriber-compoundSubscriberId
       responses:
@@ -359,6 +382,9 @@ paths:
       security:
       - OIDC:
         - write:subscriber
+      parameters:
+      - *id001
+      - *id002
     delete:
       operationId: delete-realm-realmId-subscriber-compoundSubscriberId
       responses:
@@ -373,6 +399,8 @@ paths:
       - Subscriber
       parameters:
       - $ref: '#/components/parameters/prune'
+      - *id001
+      - *id002
       summary: Delete a subscriber
       security:
       - OIDC:
@@ -428,6 +456,9 @@ paths:
       security:
       - OIDC:
         - write:subscriber
+      parameters:
+      - *id001
+      - *id002
   /group/{subscriberGroupId}:
     parameters:
     - $ref: '#/components/parameters/subscriberGroupId'
@@ -456,6 +487,8 @@ paths:
         - read:subscriber
       parameters:
       - $ref: '#/components/parameters/subscribe'
+      - *id001
+      - *id002
     put:
       operationId: put-group-subscriberGroupId
       responses:
@@ -480,6 +513,9 @@ paths:
       security:
       - OIDC:
         - write:subscriber
+      parameters:
+      - *id001
+      - *id002
     patch:
       operationId: patch-group-subscriberGroupId
       responses:
@@ -503,6 +539,9 @@ paths:
       security:
       - OIDC:
         - write:subscriber
+      parameters:
+      - *id001
+      - *id002
     delete:
       operationId: delete-group-subscriberGroupId
       responses:
@@ -514,6 +553,8 @@ paths:
       summary: Delete a subscriberGroup
       parameters:
       - $ref: '#/components/parameters/prune'
+      - *id001
+      - *id002
       security:
       - OIDC:
         - write:subscriber
@@ -569,6 +610,9 @@ paths:
       security:
       - OIDC:
         - write:service
+      parameters:
+      - *id001
+      - *id002
   /service/{serviceId}:
     parameters:
     - $ref: '#/components/parameters/serviceId'
@@ -597,6 +641,8 @@ paths:
         - read:service
       parameters:
       - $ref: '#/components/parameters/subscribe'
+      - *id001
+      - *id002
     put:
       operationId: put-service-serviceId
       responses:
@@ -621,6 +667,9 @@ paths:
       security:
       - OIDC:
         - write:service
+      parameters:
+      - *id001
+      - *id002
     patch:
       operationId: patch-service-serviceId
       responses:
@@ -650,6 +699,9 @@ paths:
       security:
       - OIDC:
         - write:service
+      parameters:
+      - *id001
+      - *id002
     delete:
       operationId: delete-service-serviceId
       responses:
@@ -662,6 +714,8 @@ paths:
       description: Delete a service
       parameters:
       - $ref: '#/components/parameters/prune'
+      - *id001
+      - *id002
       tags:
       - Service
       security:
@@ -722,6 +776,9 @@ paths:
       security:
       - OIDC:
         - write:profile
+      parameters:
+      - *id001
+      - *id002
   /service/{serviceId}/profile/{profileId}:
     parameters:
     - $ref: '#/components/parameters/serviceId'
@@ -751,6 +808,8 @@ paths:
         - read:profile
       parameters:
       - $ref: '#/components/parameters/subscribe'
+      - *id001
+      - *id002
     put:
       operationId: put-service-serviceId-profile-profileId
       responses:
@@ -775,6 +834,9 @@ paths:
       security:
       - OIDC:
         - write:profile
+      parameters:
+      - *id001
+      - *id002
     patch:
       operationId: patch-service-serviceId-profile-profileId
       responses:
@@ -804,6 +866,9 @@ paths:
       security:
       - OIDC:
         - write:profile
+      parameters:
+      - *id001
+      - *id002
     delete:
       operationId: delete-service-serviceId-profile-profileId
       responses:
@@ -816,6 +881,8 @@ paths:
       description: Delete a serviceProfile
       parameters:
       - $ref: '#/components/parameters/prune'
+      - *id001
+      - *id002
       summary: Delete a serviceProfile
       tags:
       - Abstract profile (serviceProfile)
@@ -878,6 +945,9 @@ paths:
       security:
       - OIDC:
         - write:profile
+      parameters:
+      - *id001
+      - *id002
   /service/{serviceId}/profile/{profileId}/policy/{policyId}:
     parameters:
     - $ref: '#/components/parameters/serviceId'
@@ -910,6 +980,8 @@ paths:
         - read:profile
       parameters:
       - $ref: '#/components/parameters/subscribe'
+      - *id001
+      - *id002
     put:
       operationId: put-service-serviceId-profile-profileId-policy-policyId
       responses:
@@ -936,6 +1008,9 @@ paths:
       security:
       - OIDC:
         - write:profile
+      parameters:
+      - *id001
+      - *id002
     patch:
       operationId: patch-service-serviceId-profile-profileId-policy-policyId
       responses:
@@ -967,6 +1042,9 @@ paths:
       security:
       - OIDC:
         - write:profile
+      parameters:
+      - *id001
+      - *id002
     delete:
       operationId: delete-service-serviceId-profile-profileId-policy-policyId
       responses:
@@ -982,6 +1060,8 @@ paths:
       - Concrete profile (freeradiusProfile)
       parameters:
       - $ref: '#/components/parameters/prune'
+      - *id001
+      - *id002
       x-stoplight:
         id: onq9wcmzdz2df
       security:
@@ -1041,6 +1121,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
   /client/{clientId}:
     parameters:
     - $ref: '#/components/parameters/clientId'
@@ -1069,6 +1152,8 @@ paths:
         - read:client
       parameters:
       - $ref: '#/components/parameters/subscribe'
+      - *id001
+      - *id002
     put:
       operationId: put-client-clientId
       responses:
@@ -1093,6 +1178,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
     patch:
       operationId: patch-client-clientId
       responses:
@@ -1122,6 +1210,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
     delete:
       operationId: delete-client-clientId
       responses:
@@ -1137,6 +1228,8 @@ paths:
       summary: Delete an client
       parameters:
       - $ref: '#/components/parameters/prune'
+      - *id001
+      - *id002
       security:
       - OIDC:
         - write:client
@@ -1194,6 +1287,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
     parameters:
     - $ref: '#/components/parameters/clientId'
   /client/{clientId}/port/{portId}:
@@ -1225,6 +1321,8 @@ paths:
         - read:client
       parameters:
       - $ref: '#/components/parameters/subscribe'
+      - *id001
+      - *id002
     put:
       operationId: put-client-clientId-port-portId
       responses:
@@ -1249,6 +1347,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
     patch:
       operationId: patch-client-clientId-port-portId
       responses:
@@ -1273,6 +1374,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
     delete:
       operationId: delete-client-clientId-port-portId
       responses:
@@ -1288,6 +1392,8 @@ paths:
       summary: Delete an client
       parameters:
       - $ref: '#/components/parameters/prune'
+      - *id001
+      - *id002
       security:
       - OIDC:
         - write:client
@@ -1349,6 +1455,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
   /client/{clientId}/port/{portId}/qinq/{qinqId}:
     parameters:
     - $ref: '#/components/parameters/clientId'
@@ -1379,6 +1488,8 @@ paths:
         - read:client
       parameters:
       - $ref: '#/components/parameters/subscribe'
+      - *id001
+      - *id002
     put:
       tags:
       - Client
@@ -1403,6 +1514,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
     patch:
       tags:
       - Client
@@ -1427,6 +1541,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
     delete:
       tags:
       - Client
@@ -1443,6 +1560,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
   /client/{clientId}/port/{portId}/stag:
     parameters:
     - $ref: '#/components/parameters/clientId'
@@ -1501,6 +1621,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
   /client/{clientId}/port/{portId}/stag/{svlan}:
     parameters:
     - $ref: '#/components/parameters/clientId'
@@ -1531,6 +1654,8 @@ paths:
         - read:client
       parameters:
       - $ref: '#/components/parameters/subscribe'
+      - *id001
+      - *id002
     put:
       tags:
       - Client
@@ -1555,6 +1680,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
     patch:
       tags:
       - Client
@@ -1579,6 +1707,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
     delete:
       tags:
       - Client
@@ -1595,6 +1726,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
   /clientGroup:
     get:
       responses:
@@ -1647,6 +1781,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
   /clientGroup/{clientGroupId}:
     parameters:
     - $ref: '#/components/parameters/clientGroupId'
@@ -1675,6 +1812,8 @@ paths:
         - read:client
       parameters:
       - $ref: '#/components/parameters/subscribe'
+      - *id001
+      - *id002
     put:
       operationId: put-clientGroup-clientGroupId
       responses:
@@ -1697,6 +1836,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
     patch:
       operationId: patch-clientGroup-clientGroupId
       responses:
@@ -1726,6 +1868,9 @@ paths:
       security:
       - OIDC:
         - write:client
+      parameters:
+      - *id001
+      - *id002
     delete:
       operationId: delete-clientGroup-clientGroupId
       responses:
@@ -1741,6 +1886,8 @@ paths:
       summary: Delete an clientGroup
       parameters:
       - $ref: '#/components/parameters/prune'
+      - *id001
+      - *id002
       security:
       - OIDC:
         - write:client
@@ -1798,6 +1945,9 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
+      parameters:
+      - *id001
+      - *id002
   /accessDevice/{accessDeviceId}:
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
@@ -1826,6 +1976,8 @@ paths:
         - read:accessDevice
       parameters:
       - $ref: '#/components/parameters/subscribe'
+      - *id001
+      - *id002
     put:
       operationId: put-accessDevice-accessDeviceId
       responses:
@@ -1850,6 +2002,9 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
+      parameters:
+      - *id001
+      - *id002
     patch:
       operationId: patch-accessDevice-accessDeviceId
       responses:
@@ -1879,6 +2034,9 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
+      parameters:
+      - *id001
+      - *id002
     delete:
       operationId: delete-accessDevice-accessDeviceId
       responses:
@@ -1894,6 +2052,8 @@ paths:
       summary: Delete an accessDevice
       parameters:
       - $ref: '#/components/parameters/prune'
+      - *id001
+      - *id002
       security:
       - OIDC:
         - write:accessDevice
@@ -1951,6 +2111,9 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
+      parameters:
+      - *id001
+      - *id002
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
   /accessDevice/{accessDeviceId}/port/{portId}:
@@ -1982,6 +2145,8 @@ paths:
         - read:client
       parameters:
       - $ref: '#/components/parameters/subscribe'
+      - *id001
+      - *id002
     put:
       operationId: put-accessDevice-accessDeviceId-port-portId
       responses:
@@ -2006,6 +2171,9 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
+      parameters:
+      - *id001
+      - *id002
     patch:
       operationId: patch-accessDevice-accessDeviceId-port-portId
       responses:
@@ -2030,6 +2198,9 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
+      parameters:
+      - *id001
+      - *id002
     delete:
       operationId: delete-accessDevice-accessDeviceId-port-portId
       responses:
@@ -2045,6 +2216,8 @@ paths:
       summary: Delete a port associated with a client
       parameters:
       - $ref: '#/components/parameters/prune'
+      - *id001
+      - *id002
       security:
       - OIDC:
         - write:accessDevice
@@ -2106,6 +2279,9 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
+      parameters:
+      - *id001
+      - *id002
   /accessDevice/{accessDeviceId}/port/{portId}/qinq/{qinqId}:
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
@@ -2136,6 +2312,8 @@ paths:
         - read:accessDevice
       parameters:
       - $ref: '#/components/parameters/subscribe'
+      - *id001
+      - *id002
     put:
       tags:
       - accessDevice
@@ -2160,6 +2338,9 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
+      parameters:
+      - *id001
+      - *id002
     patch:
       tags:
       - accessDevice
@@ -2184,6 +2365,9 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
+      parameters:
+      - *id001
+      - *id002
     delete:
       tags:
       - accessDevice
@@ -2200,6 +2384,9 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
+      parameters:
+      - *id001
+      - *id002
   /accessDevice/{accessDeviceId}/port/{portId}/stag:
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
@@ -2258,6 +2445,9 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
+      parameters:
+      - *id001
+      - *id002
   /accessDevice/{accessDeviceId}/port/{portId}/stag/{svlan}:
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
@@ -2288,6 +2478,8 @@ paths:
         - read:accessDevice
       parameters:
       - $ref: '#/components/parameters/subscribe'
+      - *id001
+      - *id002
     put:
       tags:
       - accessDevice
@@ -2312,6 +2504,9 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
+      parameters:
+      - *id001
+      - *id002
     patch:
       tags:
       - accessDevice
@@ -2336,6 +2531,9 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
+      parameters:
+      - *id001
+      - *id002
     delete:
       tags:
       - accessDevice
@@ -2352,6 +2550,9 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
+      parameters:
+      - *id001
+      - *id002
   /:
     get:
       summary: Global parameters and headers
@@ -2369,19 +2570,6 @@ paths:
         name: x-permissions
         description: If true, returns endpoints directly under the current path that the user can access, and their permissions.  Returns
           "permissionsResponse"
-      - schema:
-          type: string
-        in: query
-        name: copy_uri
-        description: If specified URL is the same resource type as the endpoint called, a copy will be initiated.  The behaviour
-          of the copy depends on the presence of the `copy_recursive` flag, and the HTTP verb used.  `POST` will result in
-          objects being created, `PUT` will replace existing objects, `PATCH` will modify existing objects. `POST` only is
-          allowed to contain a JSON payload, which can be used to alter the ID of the destination object.
-      - schema:
-          type: boolean
-        in: query
-        name: copy_recursive
-        description: 'If true, copy the object specified by `copy_uri` and its decedents. '
       - $ref: '#/components/parameters/subscribe'
       description: "This endpoint demonstrates certain operations which apply globally to all endpoints.  \nThe OpenAPI specification\
         \ is not flexible enough to represent this.\n\nGlobal endpoints are triggered by using a specific header or query\
@@ -2980,6 +3168,25 @@ components:
       description: When `subscribe=1`, the server upgrades the response to Server-Sent Events (`text/event-stream`). The initial
         state is delivered as one or more events, followed by change events as the underlying data mutates. The connection
         stays open until the client closes it.
+    copy_uri:
+      name: copy_uri
+      in: query
+      required: false
+      schema:
+        type: string
+        format: uri
+      description: 'URL of an existing resource to copy into the target of this request. The source must be the same resource
+        type as the endpoint being called. The HTTP verb determines what happens with the copy: `POST` creates new objects,
+        `PUT` replaces existing objects, `PATCH` modifies existing objects. Pair with `copy_recursive=true` to also copy descendants.
+        When `POST` is used, the request body may carry a JSON payload that overrides the destination object''s id.'
+    copy_recursive:
+      name: copy_recursive
+      in: query
+      required: false
+      schema:
+        type: boolean
+      description: When combined with `copy_uri`, copy the source object and all of its descendants into the target subtree.
+        Has no effect if `copy_uri` is not set.
   responses:
     onCreate:
       description: Response on creating a new object
