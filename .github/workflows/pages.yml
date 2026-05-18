@@ -30,15 +30,16 @@ jobs:
           node-version: '24'
 
       - name: Generate site
+        # Run from reference/ so cross-file $refs in the AsyncAPI doc
+        # (e.g. './ldap-subscriber-api.yaml#/components/schemas/subscriber')
+        # resolve relative to the AsyncAPI file rather than to cwd.
         run: |
+          cd reference
           npx -y @asyncapi/cli@latest generate fromTemplate \
-            reference/ldap-subscriber-api-stream.yaml \
+            ldap-subscriber-api-stream.yaml \
             @asyncapi/html-template@latest \
-            --output _site \
+            --output ../_site \
             --force-write
-          # Landing index points at the generated file (the template
-          # writes index.html, so nothing further is needed; add a
-          # CNAME / 404 here later if we want a custom domain).
 
       - uses: actions/upload-pages-artifact@v3
         with:
