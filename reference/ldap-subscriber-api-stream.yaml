@@ -1,6 +1,6 @@
 asyncapi: 3.0.0
 info:
-  title: SubMan async event streams
+  title: SubMan async event streams (SSE)
   version: '1.0'
   description: |
     Every listing endpoint in `ldap-subscriber-api.yaml` accepts
