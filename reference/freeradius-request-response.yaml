@@ -13,7 +13,7 @@ info:
     email: support@networkradius.com
   license:
     name: Proprietary
-    url: https://www.networkradius.com
+    url: https://freeradius.org
 servers:
 - url: http://localhost:3000
 paths:
@@ -61,13 +61,16 @@ paths:
             schema:
               $ref: '#/components/schemas/RequestPacket'
         description: The request packet to send
+      tags:
+      - Request
   /request/{protocol}/id/{requestId}:
     parameters:
     - $ref: '#/components/parameters/protocol'
     - $ref: '#/components/parameters/requestId'
     get:
       summary: Retrieve an asychronous request
-      tags: []
+      tags:
+      - Request
       responses:
         '200':
           description: OK
@@ -96,12 +99,15 @@ paths:
         '500':
           $ref: '#/components/responses/internalErrorResponse'
       description: Delete an asynchronous request, cancelling any requests in progress
+      tags:
+      - Request
   /request/{protocol}/id:
     parameters:
     - $ref: '#/components/parameters/protocol'
     get:
       summary: Get an array of completed responses
-      tags: []
+      tags:
+      - Request
       responses:
         '200':
           description: OK
@@ -453,3 +459,6 @@ components:
             Example 1:
               value:
                 message: Response timed out
+tags:
+- name: Request
+  description: Endpoints for inspecting in-flight and recently-completed FreeRADIUS requests.

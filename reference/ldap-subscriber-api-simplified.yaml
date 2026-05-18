@@ -11,8 +11,8 @@ info:
     url: http://www.networkradius.com
     email: support@networkradius.com
   license:
-    name: Network RADIUS commercial license
-    url: https://support.networkradius.com
+    name: Proprietary
+    url: https://freeradius.org
 servers:
 - url: http://localhost:3000
 paths:
@@ -36,6 +36,8 @@ paths:
               $ref: '#/components/schemas/subscriber'
         description: A subscriber object definition
       description: Add a new subscriber in the 'default' service class.
+      tags:
+      - Subscriber
     parameters:
     - name: realmId
       in: path
@@ -84,6 +86,8 @@ paths:
         '500':
           $ref: '#/components/responses/statusResponse'
       description: Return a subscriber in the 'default' service class in a specified realm.
+      tags:
+      - Subscriber
     patch:
       summary: Update a subscriber
       operationId: patch-realms-realmId-subscribers-default-subscriberId
@@ -123,6 +127,8 @@ paths:
                 value:
                   portBindingIdentifier: null
         description: Attributes to update.
+      tags:
+      - Subscriber
     delete:
       summary: Delete a subscriber
       operationId: delete-realms-realmId-subscribers-default-subscriberId
@@ -134,6 +140,8 @@ paths:
         '500':
           $ref: '#/components/responses/statusResponse'
       description: Delete a subscriber in the 'default' service class from a given realm.
+      tags:
+      - Subscriber
   /realms/{realmId}/serviceClass/{serviceClass}/subscribers:
     post:
       summary: Create a subscriber
@@ -167,6 +175,8 @@ paths:
                     password: '{sha256}E3D/UMV7I97LdXFFJa7OAVgRSZGXjW7fgY9SjrjMtCk='
         description: A subscriber object definition
       description: Add a new subscriber.
+      tags:
+      - Subscriber
     parameters:
     - $ref: '#/components/parameters/realmId'
     - $ref: '#/components/parameters/serviceClass'
@@ -202,6 +212,8 @@ paths:
         '500':
           $ref: '#/components/responses/statusResponse'
       description: Return a subscriber in a specified realm.
+      tags:
+      - Subscriber
     patch:
       summary: Update a subscriber
       operationId: patch-realms-realmId-subscribers-subscriberId
@@ -241,6 +253,8 @@ paths:
                 value:
                   portBindingIdentifier: null
         description: Attributes to update.
+      tags:
+      - Subscriber
     delete:
       summary: Delete a subscriber
       operationId: delete-realms-realmId-subscribers-subscriberId
@@ -252,6 +266,8 @@ paths:
         '500':
           $ref: '#/components/responses/statusResponse'
       description: Delete a subscriber from a given realm.
+      tags:
+      - Subscriber
 components:
   schemas:
     subscriber:
@@ -473,3 +489,6 @@ components:
         type: string
       description: A qualifier applied to all profile assignments and subscribers
 x-internal: false
+tags:
+- name: Subscriber
+  description: Endpoints for managing subscribers via the simplified BSS/OSS-friendly interface.

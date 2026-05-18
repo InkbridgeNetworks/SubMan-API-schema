@@ -11,7 +11,7 @@ info:
     email: a.cudbardb@networkradius.com
   license:
     name: Proprietary
-    url: https://www.networkradius.com
+    url: https://freeradius.org
 servers:
 - url: http://localhost:3000
 paths:

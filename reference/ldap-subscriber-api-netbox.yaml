@@ -11,7 +11,7 @@ info:
     email: support@networkradius.com
   license:
     name: Proprietary
-    url: https://www.networkradius.com
+    url: https://freeradius.org
 servers:
 - url: http://localhost:3000
 paths:
@@ -55,6 +55,8 @@ paths:
                   - ::/56
         description: Post the necessary fields for the API to create a new subscriber.
       description: Create a new user.
+      tags:
+      - netbox
     parameters:
     - $ref: ./ldap-subscriber-api.yaml#/components/parameters/realmId
   /netboxOverlay/realm/{realmId}/subscriber/{subscriberId}:
@@ -119,6 +121,8 @@ paths:
           $ref: '#/components/responses/onInternalServerError'
       operationId: get-users-userId
       description: Retrieve a subscriber object.
+      tags:
+      - netbox
     patch:
       summary: Update a subscriber
       operationId: patch-users-userId
@@ -140,6 +144,8 @@ paths:
             schema:
               $ref: '#/components/schemas/subscriberPatch'
         description: Patch subscriber properties to update.
+      tags:
+      - netbox
     delete:
       summary: Delete a subscriber
       operationId: delete-netboxOverlay-realm-realmId-subscriber-subscriberId
@@ -147,6 +153,8 @@ paths:
         '200':
           description: OK
       description: Delete a subscriber object.
+      tags:
+      - netbox
     put:
       summary: Replace a subscriber
       operationId: put-netboxOverlay-realm-realmId-subscriber-subscriberId
@@ -183,6 +191,8 @@ paths:
                   radiusFramedIPv6Prefix:
                   - ::/56
         description: Put subscriber object to replace.
+      tags:
+      - netbox
 components:
   schemas:
     subscriber:

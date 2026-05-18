@@ -41,8 +41,8 @@ info:
     url: http://www.networkradius.com
     email: support@networkradius.com
   license:
-    name: Network RADIUS commercial license
-    url: https://support.networkradius.com
+    name: Proprietary
+    url: https://freeradius.org
 servers:
 - url: http://localhost:3000
 paths:
@@ -3020,11 +3020,6 @@ components:
       content:
         application/json:
           schema: {}
-    onNotAllowed:
-      description: The requested operation is not allowed for the given resource
-      content:
-        application/json:
-          schema: {}
     onBadRequest:
       description: |
         Can be any of the following:
@@ -3171,20 +3166,22 @@ tags:
 - name: accessDevice
   description: Endpoints for managing accessDevices.  Network elements with policies associated that do not communicate directly
     with the RADIUS service.
-- name: Client group
-  description: Endpoints for managing groups or categories of client.
 - name: Client
   description: Endpoints for managing clients.  Network elements that communicate directly with the service.
+- name: Client group
+  description: Endpoints for managing groups or categories of client.
 - name: Concrete profile (freeradiusProfile)
   description: Endpoints for managing concrete profiles, i.e. sets of attributes which will be returned to the NAS.
+- name: Global
+  description: Top-level metadata endpoints not scoped to a single resource type.
 - name: Realm
   description: Endpoints for managing realms.  Groups of subscribers based on virtual service.
 - name: Service
   description: Endpoints for managing broad categories of service, i.e. 'GPON', 'Wireless802.11', ADSL...
-- name: Subscriber group
-  description: Endpoints for managing groups of subscribers.
 - name: Subscriber
   description: Endpoints for managing subscribers.
+- name: Subscriber group
+  description: Endpoints for managing groups of subscribers.
 security:
 - OIDC: []
 - AccessToken: []
