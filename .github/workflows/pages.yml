@@ -1,0 +1,56 @@
+name: Publish AsyncAPI docs to GitHub Pages
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'reference/ldap-subscriber-api-stream.yaml'
+      - 'reference/ldap-subscriber-api.yaml'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Render AsyncAPI HTML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+
+      - name: Generate site
+        run: |
+          npx -y @asyncapi/cli@latest generate fromTemplate \
+            reference/ldap-subscriber-api-stream.yaml \
+            @asyncapi/html-template@latest \
+            --output _site \
+            --force-write
+          # Landing index points at the generated file (the template
+          # writes index.html, so nothing further is needed; add a
+          # CNAME / 404 here later if we want a custom domain).
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy to Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

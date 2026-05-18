@@ -1,4 +1,4 @@
-asyncapi: 2.0.0
+asyncapi: 3.0.0
 info:
   title: LDAP subscriber API event streams
   version: '1.0'
@@ -66,6 +66,7 @@ info:
     protocol. Consumers do not need to know about LDAP to use the
     stream: the events describe REST resources, and `body` contains
     the same JSON shape returned by the corresponding GET endpoint.
+
   contact:
     name: Network RADIUS support
     url: http://www.networkradius.com
@@ -73,219 +74,238 @@ info:
   license:
     name: Proprietary
     url: https://freeradius.org
+
 servers:
   default:
-    url: localhost:3000
+    host: localhost:3000
     protocol: sse
     description: |
       The same host that serves the REST API. Streams are reached by
       appending `?subscribe=1` to the corresponding listing endpoint
       (and any of the supported `filter_*` query parameters).
+
 defaultContentType: application/json
+
 channels:
-  /realm?subscribe=1:
-    description: Realm stream. Changes to the set of realms.
-    subscribe:
-      operationId: receiveRealmStream
-      summary: Subscribe to realm changes
-      message:
-        oneOf:
-        - $ref: '#/components/messages/ready'
-        - $ref: '#/components/messages/realmEntry'
-  /realm/{realmId}/subscriber?subscribe=1:
-    description: Subscribers in a realm. Changes to the subscribers that belong to a single realm.
+  realmStream:
+    address: /realm?subscribe=1
+    title: Realm stream
+    description: Changes to the set of realms.
+    messages:
+      ready: { $ref: '#/components/messages/ready' }
+      entry: { $ref: '#/components/messages/realmEntry' }
+
+  realmSubscriberStream:
+    address: /realm/{realmId}/subscriber?subscribe=1
+    title: Subscribers in a realm
+    description: Changes to the subscribers that belong to a single realm.
     parameters:
       realmId:
-        schema:
-          type: string
         description: Identifier of the parent realm.
-    subscribe:
-      operationId: receiveRealmSubscriberStream
-      summary: Subscribe to subscriber changes in a realm
-      message:
-        oneOf:
-        - $ref: '#/components/messages/ready'
-        - $ref: '#/components/messages/subscriberEntry'
-  /group?subscribe=1:
-    description: Subscriber group stream. Changes to subscriber groups.
-    subscribe:
-      operationId: receiveGroupStream
-      summary: Subscribe to subscriber-group changes
-      message:
-        oneOf:
-        - $ref: '#/components/messages/ready'
-        - $ref: '#/components/messages/subscriberGroupEntry'
-  /service?subscribe=1:
-    description: Service stream. Changes to top-level service definitions.
-    subscribe:
-      operationId: receiveServiceStream
-      summary: Subscribe to service changes
-      message:
-        oneOf:
-        - $ref: '#/components/messages/ready'
-        - $ref: '#/components/messages/serviceEntry'
-  /service/{serviceId}/profile?subscribe=1:
-    description: Service profiles for a service. Changes to service profiles within one service.
+    messages:
+      ready: { $ref: '#/components/messages/ready' }
+      entry: { $ref: '#/components/messages/subscriberEntry' }
+
+  groupStream:
+    address: /group?subscribe=1
+    title: Subscriber group stream
+    description: Changes to subscriber groups.
+    messages:
+      ready: { $ref: '#/components/messages/ready' }
+      entry: { $ref: '#/components/messages/subscriberGroupEntry' }
+
+  serviceStream:
+    address: /service?subscribe=1
+    title: Service stream
+    description: Changes to top-level service definitions.
+    messages:
+      ready: { $ref: '#/components/messages/ready' }
+      entry: { $ref: '#/components/messages/serviceEntry' }
+
+  serviceProfileStream:
+    address: /service/{serviceId}/profile?subscribe=1
+    title: Service profiles for a service
+    description: Changes to service profiles within one service.
     parameters:
       serviceId:
-        schema:
-          type: string
         description: Identifier of the parent service.
-    subscribe:
-      operationId: receiveServiceProfileStream
-      summary: Subscribe to service-profile changes for one service
-      message:
-        oneOf:
-        - $ref: '#/components/messages/ready'
-        - $ref: '#/components/messages/serviceProfileEntry'
-  /service/{serviceId}/profile/{profileId}/policy?subscribe=1:
-    description: Policies for a service profile. Changes to policies attached to a single service profile.
+    messages:
+      ready: { $ref: '#/components/messages/ready' }
+      entry: { $ref: '#/components/messages/serviceProfileEntry' }
+
+  policyStream:
+    address: /service/{serviceId}/profile/{profileId}/policy?subscribe=1
+    title: Policies for a service profile
+    description: Changes to policies attached to a single service profile.
     parameters:
       serviceId:
-        schema:
-          type: string
         description: Identifier of the parent service.
       profileId:
-        schema:
-          type: string
         description: Identifier of the parent service profile.
-    subscribe:
-      operationId: receivePolicyStream
-      summary: Subscribe to policy changes for one service profile
-      message:
-        oneOf:
-        - $ref: '#/components/messages/ready'
-        - $ref: '#/components/messages/policyEntry'
-  /client?subscribe=1:
-    description: Client stream. Changes to RADIUS clients.
-    subscribe:
-      operationId: receiveClientStream
-      summary: Subscribe to client changes
-      message:
-        oneOf:
-        - $ref: '#/components/messages/ready'
-        - $ref: '#/components/messages/clientEntry'
-  /client/{clientId}/port?subscribe=1:
-    description: Physical ports on a client. Changes to the physical ports configured on one client.
+    messages:
+      ready: { $ref: '#/components/messages/ready' }
+      entry: { $ref: '#/components/messages/policyEntry' }
+
+  clientStream:
+    address: /client?subscribe=1
+    title: Client stream
+    description: Changes to RADIUS clients.
+    messages:
+      ready: { $ref: '#/components/messages/ready' }
+      entry: { $ref: '#/components/messages/clientEntry' }
+
+  clientPortStream:
+    address: /client/{clientId}/port?subscribe=1
+    title: Physical ports on a client
+    description: Changes to the physical ports configured on one client.
     parameters:
       clientId:
-        schema:
-          type: string
         description: Identifier of the parent client.
-    subscribe:
-      operationId: receiveClientPortStream
-      summary: Subscribe to physical-port changes on one client
-      message:
-        oneOf:
-        - $ref: '#/components/messages/ready'
-        - $ref: '#/components/messages/portPhysicalEntry'
-  /client/{clientId}/port/{portId}/qinq?subscribe=1:
-    description: QinQ taggings on a client port. Changes to the QinQ taggings configured on one physical port of a client.
+    messages:
+      ready: { $ref: '#/components/messages/ready' }
+      entry: { $ref: '#/components/messages/portPhysicalEntry' }
+
+  clientPortQinqStream:
+    address: /client/{clientId}/port/{portId}/qinq?subscribe=1
+    title: QinQ taggings on a client port
+    description: Changes to the QinQ taggings configured on one physical port of a client.
     parameters:
       clientId:
-        schema:
-          type: string
         description: Identifier of the parent client.
       portId:
-        schema:
-          type: string
         description: Identifier of the parent physical port.
-    subscribe:
-      operationId: receiveClientPortQinqStream
-      summary: Subscribe to QinQ tagging changes on one client port
-      message:
-        oneOf:
-        - $ref: '#/components/messages/ready'
-        - $ref: '#/components/messages/portQinqEntry'
-  /client/{clientId}/port/{portId}/stag?subscribe=1:
-    description: S-tag taggings on a client port. Changes to the single-tag (S-tag) taggings configured on one physical port
-      of a client.
+    messages:
+      ready: { $ref: '#/components/messages/ready' }
+      entry: { $ref: '#/components/messages/portQinqEntry' }
+
+  clientPortStagStream:
+    address: /client/{clientId}/port/{portId}/stag?subscribe=1
+    title: S-tag taggings on a client port
+    description: Changes to the single-tag (S-tag) taggings configured on one physical port of a client.
     parameters:
       clientId:
-        schema:
-          type: string
         description: Identifier of the parent client.
       portId:
-        schema:
-          type: string
         description: Identifier of the parent physical port.
-    subscribe:
-      operationId: receiveClientPortStagStream
-      summary: Subscribe to S-tag tagging changes on one client port
-      message:
-        oneOf:
-        - $ref: '#/components/messages/ready'
-        - $ref: '#/components/messages/portStagEntry'
-  /clientGroup?subscribe=1:
-    description: Client group stream. Changes to client groups.
-    subscribe:
-      operationId: receiveClientGroupStream
-      summary: Subscribe to client-group changes
-      message:
-        oneOf:
-        - $ref: '#/components/messages/ready'
-        - $ref: '#/components/messages/clientGroupEntry'
-  /accessDevice?subscribe=1:
-    description: Access device stream. Changes to access devices.
-    subscribe:
-      operationId: receiveAccessDeviceStream
-      summary: Subscribe to access-device changes
-      message:
-        oneOf:
-        - $ref: '#/components/messages/ready'
-        - $ref: '#/components/messages/accessDeviceEntry'
-  /accessDevice/{accessDeviceId}/port?subscribe=1:
-    description: Physical ports on an access device. Changes to the physical ports configured on one access device.
+    messages:
+      ready: { $ref: '#/components/messages/ready' }
+      entry: { $ref: '#/components/messages/portStagEntry' }
+
+  clientGroupStream:
+    address: /clientGroup?subscribe=1
+    title: Client group stream
+    description: Changes to client groups.
+    messages:
+      ready: { $ref: '#/components/messages/ready' }
+      entry: { $ref: '#/components/messages/clientGroupEntry' }
+
+  accessDeviceStream:
+    address: /accessDevice?subscribe=1
+    title: Access device stream
+    description: Changes to access devices.
+    messages:
+      ready: { $ref: '#/components/messages/ready' }
+      entry: { $ref: '#/components/messages/accessDeviceEntry' }
+
+  accessDevicePortStream:
+    address: /accessDevice/{accessDeviceId}/port?subscribe=1
+    title: Physical ports on an access device
+    description: Changes to the physical ports configured on one access device.
     parameters:
       accessDeviceId:
-        schema:
-          type: string
         description: Identifier of the parent access device.
-    subscribe:
-      operationId: receiveAccessDevicePortStream
-      summary: Subscribe to physical-port changes on one access device
-      message:
-        oneOf:
-        - $ref: '#/components/messages/ready'
-        - $ref: '#/components/messages/portPhysicalEntry'
-  /accessDevice/{accessDeviceId}/port/{portId}/qinq?subscribe=1:
-    description: QinQ taggings on an access device port. Changes to the QinQ taggings configured on one physical port of an
-      access device.
+    messages:
+      ready: { $ref: '#/components/messages/ready' }
+      entry: { $ref: '#/components/messages/portPhysicalEntry' }
+
+  accessDevicePortQinqStream:
+    address: /accessDevice/{accessDeviceId}/port/{portId}/qinq?subscribe=1
+    title: QinQ taggings on an access device port
+    description: Changes to the QinQ taggings configured on one physical port of an access device.
     parameters:
       accessDeviceId:
-        schema:
-          type: string
         description: Identifier of the parent access device.
       portId:
-        schema:
-          type: string
         description: Identifier of the parent physical port.
-    subscribe:
-      operationId: receiveAccessDevicePortQinqStream
-      summary: Subscribe to QinQ tagging changes on one access device port
-      message:
-        oneOf:
-        - $ref: '#/components/messages/ready'
-        - $ref: '#/components/messages/portQinqEntry'
-  /accessDevice/{accessDeviceId}/port/{portId}/stag?subscribe=1:
-    description: S-tag taggings on an access device port. Changes to the single-tag (S-tag) taggings configured on one physical
-      port of an access device.
+    messages:
+      ready: { $ref: '#/components/messages/ready' }
+      entry: { $ref: '#/components/messages/portQinqEntry' }
+
+  accessDevicePortStagStream:
+    address: /accessDevice/{accessDeviceId}/port/{portId}/stag?subscribe=1
+    title: S-tag taggings on an access device port
+    description: Changes to the single-tag (S-tag) taggings configured on one physical port of an access device.
     parameters:
       accessDeviceId:
-        schema:
-          type: string
         description: Identifier of the parent access device.
       portId:
-        schema:
-          type: string
         description: Identifier of the parent physical port.
-    subscribe:
-      operationId: receiveAccessDevicePortStagStream
-      summary: Subscribe to S-tag tagging changes on one access device port
-      message:
-        oneOf:
-        - $ref: '#/components/messages/ready'
-        - $ref: '#/components/messages/portStagEntry'
+    messages:
+      ready: { $ref: '#/components/messages/ready' }
+      entry: { $ref: '#/components/messages/portStagEntry' }
+
+operations:
+  receiveRealmStream:
+    action: receive
+    channel: { $ref: '#/channels/realmStream' }
+    summary: Subscribe to realm changes
+  receiveRealmSubscriberStream:
+    action: receive
+    channel: { $ref: '#/channels/realmSubscriberStream' }
+    summary: Subscribe to subscriber changes in a realm
+  receiveGroupStream:
+    action: receive
+    channel: { $ref: '#/channels/groupStream' }
+    summary: Subscribe to subscriber-group changes
+  receiveServiceStream:
+    action: receive
+    channel: { $ref: '#/channels/serviceStream' }
+    summary: Subscribe to service changes
+  receiveServiceProfileStream:
+    action: receive
+    channel: { $ref: '#/channels/serviceProfileStream' }
+    summary: Subscribe to service-profile changes for one service
+  receivePolicyStream:
+    action: receive
+    channel: { $ref: '#/channels/policyStream' }
+    summary: Subscribe to policy changes for one service profile
+  receiveClientStream:
+    action: receive
+    channel: { $ref: '#/channels/clientStream' }
+    summary: Subscribe to client changes
+  receiveClientPortStream:
+    action: receive
+    channel: { $ref: '#/channels/clientPortStream' }
+    summary: Subscribe to physical-port changes on one client
+  receiveClientPortQinqStream:
+    action: receive
+    channel: { $ref: '#/channels/clientPortQinqStream' }
+    summary: Subscribe to QinQ tagging changes on one client port
+  receiveClientPortStagStream:
+    action: receive
+    channel: { $ref: '#/channels/clientPortStagStream' }
+    summary: Subscribe to S-tag tagging changes on one client port
+  receiveClientGroupStream:
+    action: receive
+    channel: { $ref: '#/channels/clientGroupStream' }
+    summary: Subscribe to client-group changes
+  receiveAccessDeviceStream:
+    action: receive
+    channel: { $ref: '#/channels/accessDeviceStream' }
+    summary: Subscribe to access-device changes
+  receiveAccessDevicePortStream:
+    action: receive
+    channel: { $ref: '#/channels/accessDevicePortStream' }
+    summary: Subscribe to physical-port changes on one access device
+  receiveAccessDevicePortQinqStream:
+    action: receive
+    channel: { $ref: '#/channels/accessDevicePortQinqStream' }
+    summary: Subscribe to QinQ tagging changes on one access device port
+  receiveAccessDevicePortStagStream:
+    action: receive
+    channel: { $ref: '#/channels/accessDevicePortStagStream' }
+    summary: Subscribe to S-tag tagging changes on one access device port
+
 components:
   messages:
     ready:
@@ -296,180 +316,187 @@ components:
       payload:
         type: object
         additionalProperties: false
+
     realmEntry:
       name: entry
       title: Realm event
       contentType: application/json
       payload:
         allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/realmBody'
-              - $ref: '#/components/schemas/tombstone'
+          - $ref: '#/components/schemas/entryEnvelope'
+          - type: object
+            properties:
+              body:
+                oneOf:
+                  - $ref: '#/components/schemas/realmBody'
+                  - $ref: '#/components/schemas/tombstone'
+
     subscriberEntry:
       name: entry
       title: Subscriber event
       contentType: application/json
       payload:
         allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/subscriberBody'
-              - $ref: '#/components/schemas/tombstone'
+          - $ref: '#/components/schemas/entryEnvelope'
+          - type: object
+            properties:
+              body:
+                oneOf:
+                  - $ref: '#/components/schemas/subscriberBody'
+                  - $ref: '#/components/schemas/tombstone'
+
     subscriberGroupEntry:
       name: entry
       title: Subscriber group event
       contentType: application/json
       payload:
         allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/subscriberGroupBody'
-              - $ref: '#/components/schemas/tombstone'
+          - $ref: '#/components/schemas/entryEnvelope'
+          - type: object
+            properties:
+              body:
+                oneOf:
+                  - $ref: '#/components/schemas/subscriberGroupBody'
+                  - $ref: '#/components/schemas/tombstone'
+
     serviceEntry:
       name: entry
       title: Service event
       contentType: application/json
       payload:
         allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/serviceBody'
-              - $ref: '#/components/schemas/tombstone'
+          - $ref: '#/components/schemas/entryEnvelope'
+          - type: object
+            properties:
+              body:
+                oneOf:
+                  - $ref: '#/components/schemas/serviceBody'
+                  - $ref: '#/components/schemas/tombstone'
+
     serviceProfileEntry:
       name: entry
       title: Service profile event
       contentType: application/json
       payload:
         allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/serviceProfileBody'
-              - $ref: '#/components/schemas/tombstone'
+          - $ref: '#/components/schemas/entryEnvelope'
+          - type: object
+            properties:
+              body:
+                oneOf:
+                  - $ref: '#/components/schemas/serviceProfileBody'
+                  - $ref: '#/components/schemas/tombstone'
+
     policyEntry:
       name: entry
       title: Policy event
       contentType: application/json
       payload:
         allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/policyBody'
-              - $ref: '#/components/schemas/tombstone'
+          - $ref: '#/components/schemas/entryEnvelope'
+          - type: object
+            properties:
+              body:
+                oneOf:
+                  - $ref: '#/components/schemas/policyBody'
+                  - $ref: '#/components/schemas/tombstone'
+
     clientEntry:
       name: entry
       title: Client event
       contentType: application/json
       payload:
         allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/clientBody'
-              - $ref: '#/components/schemas/tombstone'
+          - $ref: '#/components/schemas/entryEnvelope'
+          - type: object
+            properties:
+              body:
+                oneOf:
+                  - $ref: '#/components/schemas/clientBody'
+                  - $ref: '#/components/schemas/tombstone'
+
     portPhysicalEntry:
       name: entry
       title: Physical port event
       contentType: application/json
       payload:
         allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/portPhysicalBody'
-              - $ref: '#/components/schemas/tombstone'
+          - $ref: '#/components/schemas/entryEnvelope'
+          - type: object
+            properties:
+              body:
+                oneOf:
+                  - $ref: '#/components/schemas/portPhysicalBody'
+                  - $ref: '#/components/schemas/tombstone'
+
     portQinqEntry:
       name: entry
       title: QinQ tagging event
       contentType: application/json
       payload:
         allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/portQinqBody'
-              - $ref: '#/components/schemas/tombstone'
+          - $ref: '#/components/schemas/entryEnvelope'
+          - type: object
+            properties:
+              body:
+                oneOf:
+                  - $ref: '#/components/schemas/portQinqBody'
+                  - $ref: '#/components/schemas/tombstone'
+
     portStagEntry:
       name: entry
       title: S-tag tagging event
       contentType: application/json
       payload:
         allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/portStagBody'
-              - $ref: '#/components/schemas/tombstone'
+          - $ref: '#/components/schemas/entryEnvelope'
+          - type: object
+            properties:
+              body:
+                oneOf:
+                  - $ref: '#/components/schemas/portStagBody'
+                  - $ref: '#/components/schemas/tombstone'
+
     clientGroupEntry:
       name: entry
       title: Client group event
       contentType: application/json
       payload:
         allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/clientGroupBody'
-              - $ref: '#/components/schemas/tombstone'
+          - $ref: '#/components/schemas/entryEnvelope'
+          - type: object
+            properties:
+              body:
+                oneOf:
+                  - $ref: '#/components/schemas/clientGroupBody'
+                  - $ref: '#/components/schemas/tombstone'
+
     accessDeviceEntry:
       name: entry
       title: Access device event
       contentType: application/json
       payload:
         allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/accessDeviceBody'
-              - $ref: '#/components/schemas/tombstone'
+          - $ref: '#/components/schemas/entryEnvelope'
+          - type: object
+            properties:
+              body:
+                oneOf:
+                  - $ref: '#/components/schemas/accessDeviceBody'
+                  - $ref: '#/components/schemas/tombstone'
+
+
   schemas:
     entryEnvelope:
       type: object
-      required:
-      - entryUUID
-      - syncOp
-      - body
+      required: [entryUUID, syncOp, body]
       properties:
         entryUUID:
           type: string
           description: Stable identifier for the record, persistent across updates.
         syncOp:
           type: string
-          enum:
-          - present
-          - add
-          - modify
-          - delete
+          enum: [present, add, modify, delete]
           description: |
             What kind of event this is.
 
@@ -481,11 +508,10 @@ components:
               contains the full new state, not a patch.
             * `delete` is sent when a record is removed. `body`
               contains only `id` and `_url`.
+
     tombstone:
       type: object
-      required:
-      - id
-      - _url
+      required: [id, _url]
       description: |
         Stand-in body for `delete` events. Only enough information to
         identify which record went away.
@@ -495,10 +521,10 @@ components:
         _url:
           type: string
           format: uri
+
     urlExtension:
       type: object
-      required:
-      - _url
+      required: [_url]
       properties:
         _url:
           type: string
@@ -507,51 +533,52 @@ components:
             URL of the corresponding REST resource. Not present in
             normal REST GET responses; added by the stream so clients
             can hand the event straight to a URL-keyed cache.
+
     realmBody:
       allOf:
-      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/realm
-      - $ref: '#/components/schemas/urlExtension'
+        - $ref: './ldap-subscriber-api.yaml#/components/schemas/realm'
+        - $ref: '#/components/schemas/urlExtension'
     subscriberBody:
       allOf:
-      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/subscriber
-      - $ref: '#/components/schemas/urlExtension'
+        - $ref: './ldap-subscriber-api.yaml#/components/schemas/subscriber'
+        - $ref: '#/components/schemas/urlExtension'
     subscriberGroupBody:
       allOf:
-      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/subscriberGroup
-      - $ref: '#/components/schemas/urlExtension'
+        - $ref: './ldap-subscriber-api.yaml#/components/schemas/subscriberGroup'
+        - $ref: '#/components/schemas/urlExtension'
     serviceBody:
       allOf:
-      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/service
-      - $ref: '#/components/schemas/urlExtension'
+        - $ref: './ldap-subscriber-api.yaml#/components/schemas/service'
+        - $ref: '#/components/schemas/urlExtension'
     serviceProfileBody:
       allOf:
-      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/serviceProfile
-      - $ref: '#/components/schemas/urlExtension'
+        - $ref: './ldap-subscriber-api.yaml#/components/schemas/serviceProfile'
+        - $ref: '#/components/schemas/urlExtension'
     policyBody:
       allOf:
-      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/freeradiusPolicy
-      - $ref: '#/components/schemas/urlExtension'
+        - $ref: './ldap-subscriber-api.yaml#/components/schemas/freeradiusPolicy'
+        - $ref: '#/components/schemas/urlExtension'
     clientBody:
       allOf:
-      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/client
-      - $ref: '#/components/schemas/urlExtension'
+        - $ref: './ldap-subscriber-api.yaml#/components/schemas/client'
+        - $ref: '#/components/schemas/urlExtension'
     clientGroupBody:
       allOf:
-      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/clientGroup
-      - $ref: '#/components/schemas/urlExtension'
+        - $ref: './ldap-subscriber-api.yaml#/components/schemas/clientGroup'
+        - $ref: '#/components/schemas/urlExtension'
     accessDeviceBody:
       allOf:
-      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/accessDevice
-      - $ref: '#/components/schemas/urlExtension'
+        - $ref: './ldap-subscriber-api.yaml#/components/schemas/accessDevice'
+        - $ref: '#/components/schemas/urlExtension'
     portPhysicalBody:
       allOf:
-      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/portPhysical
-      - $ref: '#/components/schemas/urlExtension'
+        - $ref: './ldap-subscriber-api.yaml#/components/schemas/portPhysical'
+        - $ref: '#/components/schemas/urlExtension'
     portQinqBody:
       allOf:
-      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/portQinQ
-      - $ref: '#/components/schemas/urlExtension'
+        - $ref: './ldap-subscriber-api.yaml#/components/schemas/portQinQ'
+        - $ref: '#/components/schemas/urlExtension'
     portStagBody:
       allOf:
-      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/portPhysStag
-      - $ref: '#/components/schemas/urlExtension'
+        - $ref: './ldap-subscriber-api.yaml#/components/schemas/portPhysStag'
+        - $ref: '#/components/schemas/urlExtension'
