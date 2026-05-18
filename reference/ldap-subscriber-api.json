@@ -7,7 +7,7 @@
     "title": "LDAP subscriber API for carriers and ISPs",
     "version": "1.0",
     "summary": "A Lua-based, lightweight wrapper around OpenLDAP",
-    "description": "This API runs natively in OpenResty/NGINX to provide a high performance restful layer around an LDAP instance.  It should be mostly object agonistic, but has some special endpoints",
+    "description": "This API runs natively in OpenResty/NGINX to provide a high performance restful layer around an LDAP instance.  It should be mostly object agonistic, but has some special endpoints\n\n## URL filter encoding\n\nSeveral listing endpoints expose `filter_*` query parameters whose value is a URI (for example `filter_serviceProfile`, `filter_portBindingClient`).\n\nURIs contain characters (`:`, `/`, `?`, `#`, `+`, etc.) that have meaning inside a query string, so the URI has to be percent-encoded before being passed as a filter value. In some cases the URI you want to filter on itself contains percent-encoded characters (because, for example, one of its path segments contains a literal `/` or `+`). When that happens, a single round of encoding is ambiguous: the server cannot tell whether `%2F` in the received value means a `/` in the URI or a literal `%2F` inside one of the URI's path segments.\n\nTo remove the ambiguity, the server uses the following rule:\n\n* If the first `/` in the value is **literal**, the value is treated as **single-encoded**: one round of percent-decoding is applied, and the result is the URI.\n* If the first `/` in the value is **percent-encoded** (the value begins with something like `http%3A%2F%2F...` or `%2Fpath%2F...`), the server assumes the *whole* value has been encoded twice and applies a second round of percent-decoding before using the result as the URI.\n\nIn short: do not encode the structural slashes of the URI unless you also encoded every other reserved character inside it twice.\n\n### Examples\n\nSingle-encoded (first `/` is literal):\n\n```\nfilter_portBindingClient=http://localhost/client/192.0.2.1\n```\n\nDouble-encoded (first `/` is `%2F`, every other reserved character is also encoded twice):\n\n```\nfilter_portBindingClient=http%253A%252F%252Flocalhost%252Fclient%252F192.0.2.1\n```\n\nUse the double-encoded form when the URI itself contains a percent-encoded character that you need to preserve (for example a literal `+` inside an RDN value, encoded as `%2B` in the URI). The double encoding survives the outer query-string decode, and the inner decode then yields the original URI with the `%2B` intact.",
     "contact": {
       "name": " Network RADIUS support",
       "url": "http://www.networkradius.com",
@@ -40,6 +40,12 @@
                     "$ref": "#/components/schemas/realm"
                   }
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/realm"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -61,6 +67,14 @@
             "OIDC": [
               "read:realm"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filter_serviceProfile"
+          },
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -155,6 +169,11 @@
             "OIDC": [
               "read:realm"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -304,6 +323,12 @@
                     "$ref": "#/components/schemas/subscriber"
                   }
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/subscriber"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -319,6 +344,35 @@
             "OIDC": [
               "read:subscriber"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filter_subscriberId"
+          },
+          {
+            "$ref": "#/components/parameters/filter_serviceStatus"
+          },
+          {
+            "$ref": "#/components/parameters/filter_serviceId"
+          },
+          {
+            "$ref": "#/components/parameters/filter_serviceProfile"
+          },
+          {
+            "$ref": "#/components/parameters/filter_subscriberGroup"
+          },
+          {
+            "$ref": "#/components/parameters/filter_clientGroup"
+          },
+          {
+            "$ref": "#/components/parameters/filter_portBindingClient"
+          },
+          {
+            "$ref": "#/components/parameters/filter_portBindingIdentifier"
+          },
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -383,6 +437,12 @@
                 "schema": {
                   "$ref": "#/components/schemas/subscriber"
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/subscriber"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -393,7 +453,7 @@
             "$ref": "#/components/responses/onInternalServerError"
           }
         },
-        "operationId": "get-realm-realmId-subscriber-subscriberId",
+        "operationId": "get-realm-realmId-subscriber-compoundSubscriberId",
         "description": "Get specific subscriber for a given realm",
         "summary": "Return a subscriber",
         "security": [
@@ -402,10 +462,15 @@
               "read:subscriber"
             ]
           }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
+          }
         ]
       },
       "put": {
-        "operationId": "put-realm-realmId-subscriber-subscriberId",
+        "operationId": "put-realm-realmId-subscriber-compoundSubscriberId",
         "responses": {
           "200": {
             "$ref": "#/components/responses/onSuccess"
@@ -444,7 +509,7 @@
         ]
       },
       "patch": {
-        "operationId": "patch-realm-realmId-subscriber-subscriberId",
+        "operationId": "patch-realm-realmId-subscriber-compoundSubscriberId",
         "responses": {
           "200": {
             "$ref": "#/components/responses/onSuccess"
@@ -483,7 +548,7 @@
         ]
       },
       "delete": {
-        "operationId": "delete-realm-realmId-subscriber-subscriberId",
+        "operationId": "delete-realm-realmId-subscriber-compoundSubscriberId",
         "responses": {
           "200": {
             "$ref": "#/components/responses/onSuccess"
@@ -530,6 +595,12 @@
                     "$ref": "#/components/schemas/subscriberGroup"
                   }
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/subscriberGroup"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -545,6 +616,11 @@
             "OIDC": [
               "read:subscriber"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -605,6 +681,12 @@
                 "schema": {
                   "$ref": "#/components/schemas/subscriberGroup"
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/subscriberGroup"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -625,6 +707,11 @@
             "OIDC": [
               "read:subscriber"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -736,6 +823,12 @@
                     "$ref": "#/components/schemas/service"
                   }
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/service"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -757,6 +850,11 @@
             "OIDC": [
               "read:service"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -815,6 +913,12 @@
                 "schema": {
                   "$ref": "#/components/schemas/service"
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/service"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -836,6 +940,11 @@
             "OIDC": [
               "read:service"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -966,6 +1075,12 @@
                     "$ref": "#/components/schemas/serviceProfile"
                   }
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/serviceProfile"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -987,6 +1102,14 @@
             "OIDC": [
               "read:profile"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filter_allowSuspension"
+          },
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -1048,6 +1171,12 @@
                 "schema": {
                   "$ref": "#/components/schemas/serviceProfile"
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/serviceProfile"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -1069,6 +1198,11 @@
             "OIDC": [
               "read:profile"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -1200,9 +1334,15 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/freeradusPolicy"
+                    "$ref": "#/components/schemas/freeradiusPolicy"
                   }
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/freeradiusPolicy"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -1224,6 +1364,11 @@
             "OIDC": [
               "write:profile"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -1248,7 +1393,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/freeradusPolicy"
+                "$ref": "#/components/schemas/freeradiusPolicy"
               }
             }
           },
@@ -1286,8 +1431,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/freeradusPolicy"
+                  "$ref": "#/components/schemas/freeradiusPolicy"
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/freeradiusPolicy"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -1298,7 +1449,7 @@
             "$ref": "#/components/responses/onInternalServerError"
           }
         },
-        "operationId": "get-service-serviceId-profile-profileId-policy-clientGroup-Id",
+        "operationId": "get-service-serviceId-profile-profileId-policy-policyId",
         "description": "Return a freeradiusPolicy (a concrete profile)",
         "summary": "Return a freeradiusProfile associated with a serviceProfile",
         "tags": [
@@ -1313,10 +1464,15 @@
               "read:profile"
             ]
           }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
+          }
         ]
       },
       "put": {
-        "operationId": "put-service-serviceId-profile-profileId-policy-clientGroupId",
+        "operationId": "put-service-serviceId-profile-profileId-policy-policyId",
         "responses": {
           "200": {
             "$ref": "#/components/responses/onSuccess"
@@ -1336,7 +1492,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/freeradusPolicy"
+                "$ref": "#/components/schemas/freeradiusPolicy"
               }
             }
           },
@@ -1358,7 +1514,7 @@
         ]
       },
       "patch": {
-        "operationId": "patch-service-serviceId-profile-profileId-policy-clientGroupId",
+        "operationId": "patch-service-serviceId-profile-profileId-policy-policyId",
         "responses": {
           "200": {
             "$ref": "#/components/responses/onSuccess"
@@ -1378,7 +1534,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/freeradusPolicy"
+                "$ref": "#/components/schemas/freeradiusPolicy"
               }
             }
           },
@@ -1400,7 +1556,7 @@
         ]
       },
       "delete": {
-        "operationId": "delete-service-serviceId-profile-profileId-policy-clientGroupId",
+        "operationId": "delete-service-serviceId-profile-profileId-policy-policyId",
         "responses": {
           "200": {
             "$ref": "#/components/responses/onSuccess"
@@ -1450,6 +1606,12 @@
                     "$ref": "#/components/schemas/client"
                   }
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/client"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -1468,6 +1630,17 @@
             "OIDC": [
               "read:client"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filter_freeradiusClientShortname"
+          },
+          {
+            "$ref": "#/components/parameters/filter_freeradiusClientGroup"
+          },
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -1526,6 +1699,12 @@
                 "schema": {
                   "$ref": "#/components/schemas/client"
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/client"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -1547,6 +1726,11 @@
             "OIDC": [
               "read:client"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -1673,26 +1857,15 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "anyOf": [
-                      {
-                        "anyOf": [
-                          {
-                            "$ref": "#/components/schemas/portQinQ"
-                          },
-                          {
-                            "$ref": "#/components/schemas/portPhysical"
-                          },
-                          {
-                            "$ref": "#/components/schemas/portPhysStag",
-                            "x-stoplight": {
-                              "id": "8nu0jewp9xoj2"
-                            }
-                          }
-                        ]
-                      }
-                    ]
+                    "$ref": "#/components/schemas/portPhysical"
                   }
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/portPhysical"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -1703,7 +1876,7 @@
             "$ref": "#/components/responses/onInternalServerError"
           }
         },
-        "operationId": "get-client-port",
+        "operationId": "get-client-clientId-port",
         "description": "Return an array of ports associated with an client",
         "summary": "List ports associated with a client",
         "security": [
@@ -1712,10 +1885,21 @@
               "read:client"
             ]
           }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filter_port"
+          },
+          {
+            "$ref": "#/components/parameters/filter_remoteAssociation"
+          },
+          {
+            "$ref": "#/components/parameters/subscribe"
+          }
         ]
       },
       "post": {
-        "operationId": "post-client-port",
+        "operationId": "post-client-clientId-port",
         "responses": {
           "201": {
             "$ref": "#/components/responses/onCreate"
@@ -1735,14 +1919,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "anyOf": [
-                  {
-                    "$ref": "#/components/schemas/portQinQ"
-                  },
-                  {
-                    "$ref": "#/components/schemas/portPhysical"
-                  }
-                ]
+                "$ref": "#/components/schemas/portPhysical"
               }
             }
           },
@@ -1782,15 +1959,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "anyOf": [
-                    {
-                      "$ref": "#/components/schemas/portQinQ"
-                    },
-                    {
-                      "$ref": "#/components/schemas/portPhysical"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/portPhysical"
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/portPhysical"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -1801,7 +1977,7 @@
             "$ref": "#/components/responses/onInternalServerError"
           }
         },
-        "operationId": "get-client-portId",
+        "operationId": "get-client-clientId-port-portId",
         "description": "Return a port associated with an access deivce",
         "tags": [
           "Client"
@@ -1813,10 +1989,15 @@
               "read:client"
             ]
           }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
+          }
         ]
       },
       "put": {
-        "operationId": "put-client-portId",
+        "operationId": "put-client-clientId-port-portId",
         "responses": {
           "200": {
             "description": "OK"
@@ -1836,14 +2017,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "anyOf": [
-                  {
-                    "$ref": "#/components/schemas/portQinQ"
-                  },
-                  {
-                    "$ref": "#/components/schemas/portPhysical"
-                  }
-                ]
+                "$ref": "#/components/schemas/portPhysical"
               }
             }
           },
@@ -1862,7 +2036,7 @@
         ]
       },
       "patch": {
-        "operationId": "patch-client-portId",
+        "operationId": "patch-client-clientId-port-portId",
         "responses": {
           "200": {
             "description": "OK"
@@ -1882,14 +2056,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "anyOf": [
-                  {
-                    "$ref": "#/components/schemas/portQinQ"
-                  },
-                  {
-                    "$ref": "#/components/schemas/portPhysical"
-                  }
-                ]
+                "$ref": "#/components/schemas/portPhysical"
               }
             }
           },
@@ -1908,7 +2075,7 @@
         ]
       },
       "delete": {
-        "operationId": "delete-client-portd",
+        "operationId": "delete-client-clientId-port-portId",
         "responses": {
           "200": {
             "description": "OK"
@@ -1939,6 +2106,532 @@
         ]
       }
     },
+    "/client/{clientId}/port/{portId}/qinq": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/clientId"
+        },
+        {
+          "$ref": "#/components/parameters/portId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "List QinQ taggings on a port",
+        "description": "Return an array of QinQ taggings on a physical port",
+        "operationId": "get-client-clientId-port-portId-qinq",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/portQinQ"
+                  }
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/portQinQ"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "read:client"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filter_remoteAssociation"
+          },
+          {
+            "$ref": "#/components/parameters/subscribe"
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Add a QinQ tagging to a port",
+        "description": "Add a new QinQ tagging on a physical port",
+        "operationId": "post-client-clientId-port-portId-qinq",
+        "requestBody": {
+          "description": "Definition of the QinQ tagging",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/portQinQ"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/onCreate"
+          },
+          "400": {
+            "$ref": "#/components/responses/onBadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/onConflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:client"
+            ]
+          }
+        ]
+      }
+    },
+    "/client/{clientId}/port/{portId}/qinq/{qinqId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/clientId"
+        },
+        {
+          "$ref": "#/components/parameters/portId"
+        },
+        {
+          "$ref": "#/components/parameters/qinqId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Get a QinQ tagging",
+        "description": "Return a QinQ tagging on a physical port",
+        "operationId": "get-client-clientId-port-portId-qinq-qinqId",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portQinQ"
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/portQinQ"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "read:client"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Replace a QinQ tagging",
+        "description": "Replace a QinQ tagging on a physical port",
+        "operationId": "put-client-clientId-port-portId-qinq-qinqId",
+        "requestBody": {
+          "description": "New definition of the QinQ tagging",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/portQinQ"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/onBadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:client"
+            ]
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Update a QinQ tagging",
+        "description": "Partially update a QinQ tagging on a physical port",
+        "operationId": "patch-client-clientId-port-portId-qinq-qinqId",
+        "requestBody": {
+          "description": "Partial definition of the QinQ tagging",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/portQinQ"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/onBadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:client"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Delete a QinQ tagging",
+        "description": "Delete a QinQ tagging on a physical port",
+        "operationId": "delete-client-clientId-port-portId-qinq-qinqId",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:client"
+            ]
+          }
+        ]
+      }
+    },
+    "/client/{clientId}/port/{portId}/stag": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/clientId"
+        },
+        {
+          "$ref": "#/components/parameters/portId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "List S-tag taggings on a port",
+        "description": "Return an array of S-tag taggings on a physical port",
+        "operationId": "get-client-clientId-port-portId-stag",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/portPhysStag"
+                  }
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/portPhysStag"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "read:client"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filter_remoteAssociation"
+          },
+          {
+            "$ref": "#/components/parameters/subscribe"
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Add a S-tag tagging to a port",
+        "description": "Add a new S-tag tagging on a physical port",
+        "operationId": "post-client-clientId-port-portId-stag",
+        "requestBody": {
+          "description": "Definition of the S-tag tagging",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/portPhysStag"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/onCreate"
+          },
+          "400": {
+            "$ref": "#/components/responses/onBadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/onConflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:client"
+            ]
+          }
+        ]
+      }
+    },
+    "/client/{clientId}/port/{portId}/stag/{svlan}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/clientId"
+        },
+        {
+          "$ref": "#/components/parameters/portId"
+        },
+        {
+          "$ref": "#/components/parameters/svlan"
+        }
+      ],
+      "get": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Get a S-tag tagging",
+        "description": "Return a S-tag tagging on a physical port",
+        "operationId": "get-client-clientId-port-portId-stag-svlan",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portPhysStag"
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/portPhysStag"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "read:client"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Replace a S-tag tagging",
+        "description": "Replace a S-tag tagging on a physical port",
+        "operationId": "put-client-clientId-port-portId-stag-svlan",
+        "requestBody": {
+          "description": "New definition of the S-tag tagging",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/portPhysStag"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/onBadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:client"
+            ]
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Update a S-tag tagging",
+        "description": "Partially update a S-tag tagging on a physical port",
+        "operationId": "patch-client-clientId-port-portId-stag-svlan",
+        "requestBody": {
+          "description": "Partial definition of the S-tag tagging",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/portPhysStag"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/onBadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:client"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Delete a S-tag tagging",
+        "description": "Delete a S-tag tagging on a physical port",
+        "operationId": "delete-client-clientId-port-portId-stag-svlan",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:client"
+            ]
+          }
+        ]
+      }
+    },
     "/clientGroup": {
       "get": {
         "responses": {
@@ -1952,6 +2645,12 @@
                     "$ref": "#/components/schemas/clientGroup"
                   }
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/clientGroup"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -1962,7 +2661,7 @@
             "description": "Internal Server Error"
           }
         },
-        "operationId": "get-client-group",
+        "operationId": "get-clientGroup",
         "description": "Return an array of clientGroups",
         "tags": [
           "Client group"
@@ -1973,6 +2672,11 @@
             "OIDC": [
               "read:client"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -2034,6 +2738,12 @@
                 "schema": {
                   "$ref": "#/components/schemas/clientGroup"
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/clientGroup"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -2044,7 +2754,7 @@
             "$ref": "#/components/responses/onInternalServerError"
           }
         },
-        "operationId": "get-client-group-clientGroupId",
+        "operationId": "get-clientGroup-clientGroupId",
         "description": "Return an clientGroup",
         "summary": "Return an clientGroup",
         "security": [
@@ -2052,6 +2762,11 @@
             "OIDC": [
               "read:client"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -2178,6 +2893,12 @@
                     "$ref": "#/components/schemas/accessDevice"
                   }
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/accessDevice"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -2196,6 +2917,17 @@
             "OIDC": [
               "read:accessDevice"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filter_freeradiusClientShortname"
+          },
+          {
+            "$ref": "#/components/parameters/filter_freeradiusClientType"
+          },
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -2254,6 +2986,12 @@
                 "schema": {
                   "$ref": "#/components/schemas/accessDevice"
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/accessDevice"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -2275,6 +3013,11 @@
             "OIDC": [
               "read:accessDevice"
             ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ]
       },
@@ -2401,26 +3144,15 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "anyOf": [
-                      {
-                        "anyOf": [
-                          {
-                            "$ref": "#/components/schemas/portQinQ"
-                          },
-                          {
-                            "$ref": "#/components/schemas/portPhysical"
-                          },
-                          {
-                            "$ref": "#/components/schemas/portPhysStag",
-                            "x-stoplight": {
-                              "id": "te15kztsdqslv"
-                            }
-                          }
-                        ]
-                      }
-                    ]
+                    "$ref": "#/components/schemas/portPhysical"
                   }
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/portPhysical"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -2431,7 +3163,7 @@
             "$ref": "#/components/responses/onInternalServerError"
           }
         },
-        "operationId": "get-accessDevice-port",
+        "operationId": "get-accessDevice-accessDeviceId-port",
         "description": "Return an array of ports associated with an accessDevice",
         "summary": "List ports associated with an accessDevice",
         "security": [
@@ -2440,10 +3172,21 @@
               "read:accessDevice"
             ]
           }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filter_port"
+          },
+          {
+            "$ref": "#/components/parameters/filter_remoteAssociation"
+          },
+          {
+            "$ref": "#/components/parameters/subscribe"
+          }
         ]
       },
       "post": {
-        "operationId": "post-accessDevice-port",
+        "operationId": "post-accessDevice-accessDeviceId-port",
         "responses": {
           "201": {
             "$ref": "#/components/responses/onCreate"
@@ -2463,14 +3206,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "anyOf": [
-                  {
-                    "$ref": "#/components/schemas/portQinQ"
-                  },
-                  {
-                    "$ref": "#/components/schemas/portPhysical"
-                  }
-                ]
+                "$ref": "#/components/schemas/portPhysical"
               }
             }
           },
@@ -2510,15 +3246,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "anyOf": [
-                    {
-                      "$ref": "#/components/schemas/portQinQ"
-                    },
-                    {
-                      "$ref": "#/components/schemas/portPhysical"
-                    }
-                  ]
+                  "$ref": "#/components/schemas/portPhysical"
                 }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/portPhysical"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
               }
             }
           },
@@ -2529,7 +3264,7 @@
             "$ref": "#/components/responses/onInternalServerError"
           }
         },
-        "operationId": "get-accessDevice-portId",
+        "operationId": "get-accessDevice-accessDeviceId-port-portId",
         "description": "Return a port associated with an access deivce",
         "tags": [
           "accessDevice"
@@ -2541,10 +3276,15 @@
               "read:client"
             ]
           }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
+          }
         ]
       },
       "put": {
-        "operationId": "put-accessDevice-portId",
+        "operationId": "put-accessDevice-accessDeviceId-port-portId",
         "responses": {
           "200": {
             "description": "OK"
@@ -2564,14 +3304,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "anyOf": [
-                  {
-                    "$ref": "#/components/schemas/portQinQ"
-                  },
-                  {
-                    "$ref": "#/components/schemas/portPhysical"
-                  }
-                ]
+                "$ref": "#/components/schemas/portPhysical"
               }
             }
           },
@@ -2590,7 +3323,7 @@
         ]
       },
       "patch": {
-        "operationId": "patch-accessDevice-portId",
+        "operationId": "patch-accessDevice-accessDeviceId-port-portId",
         "responses": {
           "200": {
             "description": "OK"
@@ -2610,14 +3343,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "anyOf": [
-                  {
-                    "$ref": "#/components/schemas/portQinQ"
-                  },
-                  {
-                    "$ref": "#/components/schemas/portPhysical"
-                  }
-                ]
+                "$ref": "#/components/schemas/portPhysical"
               }
             }
           },
@@ -2636,7 +3362,7 @@
         ]
       },
       "delete": {
-        "operationId": "delete-accessDevice-portd",
+        "operationId": "delete-accessDevice-accessDeviceId-port-portId",
         "responses": {
           "200": {
             "description": "OK"
@@ -2667,6 +3393,532 @@
         ]
       }
     },
+    "/accessDevice/{accessDeviceId}/port/{portId}/qinq": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/accessDeviceId"
+        },
+        {
+          "$ref": "#/components/parameters/portId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "accessDevice"
+        ],
+        "summary": "List QinQ taggings on a port",
+        "description": "Return an array of QinQ taggings on a physical port",
+        "operationId": "get-accessDevice-accessDeviceId-port-portId-qinq",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/portQinQ"
+                  }
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/portQinQ"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "read:accessDevice"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filter_remoteAssociation"
+          },
+          {
+            "$ref": "#/components/parameters/subscribe"
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "accessDevice"
+        ],
+        "summary": "Add a QinQ tagging to a port",
+        "description": "Add a new QinQ tagging on a physical port",
+        "operationId": "post-accessDevice-accessDeviceId-port-portId-qinq",
+        "requestBody": {
+          "description": "Definition of the QinQ tagging",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/portQinQ"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/onCreate"
+          },
+          "400": {
+            "$ref": "#/components/responses/onBadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/onConflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:accessDevice"
+            ]
+          }
+        ]
+      }
+    },
+    "/accessDevice/{accessDeviceId}/port/{portId}/qinq/{qinqId}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/accessDeviceId"
+        },
+        {
+          "$ref": "#/components/parameters/portId"
+        },
+        {
+          "$ref": "#/components/parameters/qinqId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "accessDevice"
+        ],
+        "summary": "Get a QinQ tagging",
+        "description": "Return a QinQ tagging on a physical port",
+        "operationId": "get-accessDevice-accessDeviceId-port-portId-qinq-qinqId",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portQinQ"
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/portQinQ"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "read:accessDevice"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "accessDevice"
+        ],
+        "summary": "Replace a QinQ tagging",
+        "description": "Replace a QinQ tagging on a physical port",
+        "operationId": "put-accessDevice-accessDeviceId-port-portId-qinq-qinqId",
+        "requestBody": {
+          "description": "New definition of the QinQ tagging",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/portQinQ"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/onBadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:accessDevice"
+            ]
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "accessDevice"
+        ],
+        "summary": "Update a QinQ tagging",
+        "description": "Partially update a QinQ tagging on a physical port",
+        "operationId": "patch-accessDevice-accessDeviceId-port-portId-qinq-qinqId",
+        "requestBody": {
+          "description": "Partial definition of the QinQ tagging",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/portQinQ"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/onBadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:accessDevice"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "accessDevice"
+        ],
+        "summary": "Delete a QinQ tagging",
+        "description": "Delete a QinQ tagging on a physical port",
+        "operationId": "delete-accessDevice-accessDeviceId-port-portId-qinq-qinqId",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:accessDevice"
+            ]
+          }
+        ]
+      }
+    },
+    "/accessDevice/{accessDeviceId}/port/{portId}/stag": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/accessDeviceId"
+        },
+        {
+          "$ref": "#/components/parameters/portId"
+        }
+      ],
+      "get": {
+        "tags": [
+          "accessDevice"
+        ],
+        "summary": "List S-tag taggings on a port",
+        "description": "Return an array of S-tag taggings on a physical port",
+        "operationId": "get-accessDevice-accessDeviceId-port-portId-stag",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/portPhysStag"
+                  }
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/portPhysStag"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "read:accessDevice"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/filter_remoteAssociation"
+          },
+          {
+            "$ref": "#/components/parameters/subscribe"
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "accessDevice"
+        ],
+        "summary": "Add a S-tag tagging to a port",
+        "description": "Add a new S-tag tagging on a physical port",
+        "operationId": "post-accessDevice-accessDeviceId-port-portId-stag",
+        "requestBody": {
+          "description": "Definition of the S-tag tagging",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/portPhysStag"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/onCreate"
+          },
+          "400": {
+            "$ref": "#/components/responses/onBadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/onConflict"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:accessDevice"
+            ]
+          }
+        ]
+      }
+    },
+    "/accessDevice/{accessDeviceId}/port/{portId}/stag/{svlan}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/accessDeviceId"
+        },
+        {
+          "$ref": "#/components/parameters/portId"
+        },
+        {
+          "$ref": "#/components/parameters/svlan"
+        }
+      ],
+      "get": {
+        "tags": [
+          "accessDevice"
+        ],
+        "summary": "Get a S-tag tagging",
+        "description": "Return a S-tag tagging on a physical port",
+        "operationId": "get-accessDevice-accessDeviceId-port-portId-stag-svlan",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/portPhysStag"
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/portPhysStag"
+                },
+                "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "read:accessDevice"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/subscribe"
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "accessDevice"
+        ],
+        "summary": "Replace a S-tag tagging",
+        "description": "Replace a S-tag tagging on a physical port",
+        "operationId": "put-accessDevice-accessDeviceId-port-portId-stag-svlan",
+        "requestBody": {
+          "description": "New definition of the S-tag tagging",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/portPhysStag"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/onBadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:accessDevice"
+            ]
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "accessDevice"
+        ],
+        "summary": "Update a S-tag tagging",
+        "description": "Partially update a S-tag tagging on a physical port",
+        "operationId": "patch-accessDevice-accessDeviceId-port-portId-stag-svlan",
+        "requestBody": {
+          "description": "Partial definition of the S-tag tagging",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/portPhysStag"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "$ref": "#/components/responses/onBadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:accessDevice"
+            ]
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "accessDevice"
+        ],
+        "summary": "Delete a S-tag tagging",
+        "description": "Delete a S-tag tagging on a physical port",
+        "operationId": "delete-accessDevice-accessDeviceId-port-portId-stag-svlan",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "$ref": "#/components/responses/onNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/onInternalServerError"
+          }
+        },
+        "security": [
+          {
+            "OIDC": [
+              "write:accessDevice"
+            ]
+          }
+        ]
+      }
+    },
     "/": {
       "get": {
         "summary": "Global parameters and headers",
@@ -2675,7 +3927,7 @@
             "$ref": "#/components/responses/permissionsResponse"
           }
         },
-        "operationId": "get-global",
+        "operationId": "get-root",
         "x-stoplight": {
           "id": "awyakbe5d2ujc"
         },
@@ -2704,6 +3956,9 @@
             "in": "query",
             "name": "copy_recursive",
             "description": "If true, copy the object specified by `copy_uri` and its decedents. "
+          },
+          {
+            "$ref": "#/components/parameters/subscribe"
           }
         ],
         "description": "This endpoint demonstrates certain operations which apply globally to all endpoints.  \nThe OpenAPI specification is not flexible enough to represent this.\n\nGlobal endpoints are triggered by using a specific header or query parameter.\n\nThe documentation for those parameters states the response type that'll be received.",
@@ -2733,15 +3988,6 @@
             "type": "string",
             "description": "A humanly readable description of the realm",
             "example": "example.org subscriber are actually foo subscriber, who we are authenticating on behalf of bar"
-          },
-          "servicePrecedence": {
-            "type": "string",
-            "enum": [
-              "primary",
-              "secondary"
-            ],
-            "example": "primary",
-            "description": "If a subscriber did not authenticate using a qualified NAI, and appears in multiple realm, the first primary realm with take precedence"
           },
           "serviceProfile": {
             "type": "string",
@@ -2787,15 +4033,6 @@
             "description": "The type of access media this subscriber object relates to, e.g. fixedLine, wireless etc... Must match a configured service category",
             "example": "fixedLine"
           },
-          "servicePrecedence": {
-            "type": "string",
-            "enum": [
-              "primary",
-              "secondary"
-            ],
-            "description": "If multiple subscriber objects match an incoming Access-Request, the first subscriber object with \"primary\" will be used",
-            "example": "primary"
-          },
           "serviceProfile": {
             "type": "string",
             "format": "uri",
@@ -2829,7 +4066,7 @@
               "format": "uri"
             }
           },
-          "portBindingclient": {
+          "portBindingClient": {
             "type": "string",
             "format": "uri",
             "description": "URI of the last client the subscriber authenticated via.  Primarily used for Change of Authorisation and disconnect messages",
@@ -2857,7 +4094,6 @@
           "subscriberId",
           "serviceStatus",
           "serviceId",
-          "servicePrecedence",
           "serviceProfile"
         ]
       },
@@ -2874,7 +4110,7 @@
             "description": "A unique identifier for the subscriberGroup"
           },
           "policy": {
-            "$ref": "#/components/schemas/freeradusPolicy"
+            "$ref": "#/components/schemas/freeradiusPolicy"
           }
         }
       },
@@ -2941,7 +4177,7 @@
             "example": "192.0.2.1",
             "description": "An IP address or subnet (cidr format) that uniquely identifies the RADIUS client"
           },
-          "freeradiusaClientShortname": {
+          "freeradiusClientShortname": {
             "type": "string",
             "example": "my-test-client",
             "description": "A friendly name that will be shown in logs"
@@ -3039,7 +4275,7 @@
           "id"
         ]
       },
-      "freeradusPolicy": {
+      "freeradiusPolicy": {
         "title": "freeradiusPolicy",
         "x-stoplight": {
           "id": "ebjv3rkkgvqou"
@@ -3282,6 +4518,204 @@
           "type": "string"
         },
         "description": "Identifier for an concrete class of service profile"
+      },
+      "filter_serviceProfile": {
+        "name": "filter_serviceProfile",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "uri"
+        },
+        "description": "Filter by serviceProfile URI. See \"URL filter encoding\" in the API description for how to encode the value."
+      },
+      "filter_subscriberId": {
+        "name": "filter_subscriberId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Filter by subscriberId (exact match)."
+      },
+      "filter_serviceStatus": {
+        "name": "filter_serviceStatus",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "enabled",
+            "disabled",
+            "suspended"
+          ]
+        },
+        "description": "Filter by serviceStatus."
+      },
+      "filter_serviceId": {
+        "name": "filter_serviceId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Filter by serviceId (e.g. fixedLine, GPON)."
+      },
+      "filter_subscriberGroup": {
+        "name": "filter_subscriberGroup",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "uri"
+        },
+        "description": "Filter by subscriberGroup URI membership. See \"URL filter encoding\" in the API description for how to encode the value."
+      },
+      "filter_clientGroup": {
+        "name": "filter_clientGroup",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "uri"
+        },
+        "description": "Filter by clientGroup URI membership. See \"URL filter encoding\" in the API description for how to encode the value."
+      },
+      "filter_portBindingClient": {
+        "name": "filter_portBindingClient",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "uri"
+        },
+        "description": "Filter by portBindingClient URI. See \"URL filter encoding\" in the API description for how to encode the value."
+      },
+      "filter_portBindingIdentifier": {
+        "name": "filter_portBindingIdentifier",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "uri"
+        },
+        "description": "Filter by portBindingIdentifier URI. See \"URL filter encoding\" in the API description for how to encode the value."
+      },
+      "filter_allowSuspension": {
+        "name": "filter_allowSuspension",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        },
+        "description": "Filter by allowSuspension."
+      },
+      "filter_freeradiusClientShortname": {
+        "name": "filter_freeradiusClientShortname",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Filter by freeradiusClientShortname (exact match)."
+      },
+      "filter_freeradiusClientGroup": {
+        "name": "filter_freeradiusClientGroup",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Filter by freeradiusClientGroup (exact match)."
+      },
+      "filter_freeradiusClientType": {
+        "name": "filter_freeradiusClientType",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Filter by freeradiusClientType."
+      },
+      "filter_portType": {
+        "name": "filter_portType",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Filter ports by type (qinq, physical, physStag)."
+      },
+      "filter_port": {
+        "name": "filter_port",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Filter by port identifier. Value must be URI-encoded."
+      },
+      "filter_svlan": {
+        "name": "filter_svlan",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Filter by outer VLAN (S-VLAN)."
+      },
+      "filter_cvlan": {
+        "name": "filter_cvlan",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        },
+        "description": "Filter by inner VLAN (C-VLAN)."
+      },
+      "filter_remoteAssociation": {
+        "name": "filter_remoteAssociation",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Filter by remoteAssociation."
+      },
+      "qinqId": {
+        "name": "qinqId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^\\d+\\+\\d+$"
+        },
+        "description": "QinQ tagging identifier in the form `<svlan>+<cvlan>`. The `+` must be URI-encoded as `%2B` in the request URL.",
+        "example": "100+25"
+      },
+      "svlan": {
+        "name": "svlan",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4094
+        },
+        "description": "Outer VLAN (S-VLAN) identifier.",
+        "example": 100
+      },
+      "subscribe": {
+        "name": "subscribe",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "enum": [
+            1
+          ]
+        },
+        "description": "When `subscribe=1`, the server upgrades the response to Server-Sent Events (`text/event-stream`). The initial state is delivered as one or more events, followed by change events as the underlying data mutates. The connection stays open until the client closes it."
       }
     },
     "responses": {
@@ -3322,6 +4756,10 @@
         "content": {
           "application/json": {
             "schema": {}
+          },
+          "text/event-stream": {
+            "schema": {},
+            "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
           }
         }
       },
@@ -3350,7 +4788,7 @@
         }
       },
       "onBadRequest": {
-        "description": "Can be any of the following:\n- The requested path doesn’t correspond to the schema.\n- Missing or invalid data for POST or PUT operations. Data should always be valid JSON.\n- If data contains URL to another resource, the host part of the URL must be identical to the host data being created/modified.\n",
+        "description": "Can be any of the following:\n- The requested path doesn\u2019t correspond to the schema.\n- Missing or invalid data for POST or PUT operations. Data should always be valid JSON.\n- If data contains URL to another resource, the host part of the URL must be identical to the host data being created/modified.\n",
         "content": {
           "application/json": {
             "schema": {}
@@ -3405,6 +4843,33 @@
                 }
               }
             }
+          },
+          "text/event-stream": {
+            "schema": {
+              "type": "object",
+              "additionalProperties": {
+                "x-stoplight": {
+                  "id": "sejmivgbh3y7g"
+                },
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 2,
+                "uniqueItems": true,
+                "items": {
+                  "x-stoplight": {
+                    "id": "e7yz6nsdxgkln"
+                  },
+                  "enum": [
+                    "read",
+                    "write"
+                  ],
+                  "readOnly": true
+                },
+                "readOnly": true
+              },
+              "readOnly": true
+            },
+            "description": "One event per item (for collection endpoints) or per change (for resource endpoints). Each SSE `data:` line contains the JSON payload described by this schema."
           }
         }
       },

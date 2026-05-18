@@ -50,7 +50,6 @@
                     "subscriberId": "123456789",
                     "serviceStatus": "enabled",
                     "serviceId": "GPON",
-                    "servicePrecedence": "primary",
                     "serviceProfile": "http://localhost:3000/service/GPON/profile/INETG1M",
                     "netboxSubscriberName": "A Subscriber",
                     "netboxGroup": "aNetboxGroup",
@@ -107,7 +106,6 @@
                       "subscriberId": "123456789",
                       "serviceStatus": "enabled",
                       "serviceId": "GPON",
-                      "servicePrecedence": "primary",
                       "serviceProfile": "http://localhost:3000/service/GPON/profile/INETG1M",
                       "radiusFramedIPAddress": [
                         "192.168.0.2"
@@ -127,7 +125,6 @@
                       "subscriberId": "123456789",
                       "serviceStatus": "enabled",
                       "serviceId": "GPON",
-                      "servicePrecedence": "primary",
                       "serviceProfile": "http://localhost:3000/service/GPON/profile/INETG1M",
                       "radiusFramedIPAddress": [
                         "192.168.0.1",
@@ -149,7 +146,6 @@
                       "subscriberId": "123456789",
                       "serviceStatus": "enabled",
                       "serviceId": "GPON",
-                      "servicePrecedence": "primary",
                       "serviceProfile": "http://localhost:3000/service/GPON/profile/INETG1M",
                       "radiusFramedIPv6Address": [
                         "ff06::c3",
@@ -250,7 +246,6 @@
                     "subscriberId": "123456789",
                     "serviceStatus": "enabled",
                     "serviceId": "GPON",
-                    "servicePrecedence": "primary",
                     "serviceProfile": "http://localhost:3000/service/GPON/profile/INETG1M",
                     "netboxGroup": "aNetboxGroup",
                     "netboxCo": "coId",
@@ -315,7 +310,7 @@
                   "format": "uri"
                 }
               },
-              "portBindingclient": {
+              "portBindingClient": {
                 "type": "string",
                 "format": "uri",
                 "description": "URI of the last client the subscriber authenticated via.  Primarily used for Change of Authorisation and disconnect messages",
@@ -414,7 +409,6 @@
             "subscriberId": "123456789",
             "serviceStatus": "enabled",
             "serviceId": "fixedLine",
-            "servicePrecedence": "primary",
             "serviceProfile": "http://localhost:3000/service/fixedLine/profile/INETG1M",
             "statusReason": "string",
             "serviceProfileSuspended": "http://localhost:3000/service/fixedLine/profile/suspendedNonPayment",
@@ -424,7 +418,7 @@
             "subscriberGroup": [
               "http://example.com"
             ],
-            "portBindingclient": "http://localhost:3000/clients/192.0.2.1",
+            "portBindingClient": "http://localhost:3000/clients/192.0.2.1",
             "portBindingIdentifier": "DSLAM03-D6-KTP atm 0/0/0/44:0.35",
             "portBindingModified": "2019-08-24T14:15:22Z",
             "portBinding": true,
@@ -469,7 +463,6 @@
         "examples": [
           {
             "serviceStatus": "enabled",
-            "servicePrecedence": "primary",
             "serviceProfile": "http://localhost:3000/service/fixedLine/profile/INETG1M",
             "statusReason": "string",
             "serviceProfileSuspended": "http://localhost:3000/service/fixedLine/profile/suspendedNonPayment",
@@ -479,7 +472,7 @@
             "subscriberGroup": [
               "http://example.com"
             ],
-            "portBindingclient": "http://localhost:3000/clients/192.0.2.1",
+            "portBindingClient": "http://localhost:3000/clients/192.0.2.1",
             "portBindingIdentifier": "DSLAM03-D6-KTP atm 0/0/0/44:0.35",
             "portBindingModified": "2019-08-24T14:15:22Z",
             "portBinding": true,
@@ -526,7 +519,6 @@
             "serviceStatus": "enabled",
             "statusReason": "string",
             "serviceId": "fixedLine",
-            "servicePrecedence": "primary",
             "serviceProfile": "http://localhost:3000/service/fixedLine/profile/INETG1M",
             "serviceProfileSuspended": "http://localhost:3000/service/fixedLine/profile/suspendedNonPayment",
             "clientGroup": [
@@ -535,7 +527,7 @@
             "subscriberGroup": [
               "http://example.com"
             ],
-            "portBindingclient": "http://localhost:3000/clients/192.0.2.1",
+            "portBindingClient": "http://localhost:3000/clients/192.0.2.1",
             "portBindingIdentifier": "DSLAM03-D6-KTP atm 0/0/0/44:0.35",
             "portBindingModified": "2019-08-24T14:15:22Z",
             "portBinding": true,
@@ -637,15 +629,6 @@
             "description": "The type of access media this subscriber object relates to, e.g. fixedLine, wireless etc... Must match a configured service category",
             "example": "fixedLine"
           },
-          "servicePrecedence": {
-            "type": "string",
-            "enum": [
-              "primary",
-              "secondary"
-            ],
-            "description": "If multiple subscriber objects match an incoming Access-Request, the first subscriber object with \"primary\" will be used",
-            "example": "primary"
-          },
           "serviceProfile": {
             "type": "string",
             "format": "uri",
@@ -657,7 +640,6 @@
           "subscriberId",
           "serviceStatus",
           "serviceId",
-          "servicePrecedence",
           "serviceProfile"
         ],
         "description": "Fields that must be present in POST and PUT operations",
@@ -678,15 +660,6 @@
               "suspended"
             ],
             "description": "Whether this subscriber can access the service"
-          },
-          "servicePrecedence": {
-            "type": "string",
-            "enum": [
-              "primary",
-              "secondary"
-            ],
-            "description": "If multiple subscriber objects match an incoming Access-Request, the first subscriber object with \"primary\" will be used",
-            "example": "primary"
           },
           "serviceProfile": {
             "type": "string",
