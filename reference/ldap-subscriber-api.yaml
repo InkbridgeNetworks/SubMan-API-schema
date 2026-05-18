@@ -750,7 +750,6 @@ paths:
       - OIDC:
         - read:profile
       parameters:
-      - $ref: '#/components/parameters/filter_allowSuspension'
       - $ref: '#/components/parameters/subscribe'
     post:
       operationId: post-service-serviceId-profile
@@ -2799,13 +2798,6 @@ components:
         portBinding:
           type: boolean
           description: The default port binding state for any subscriber which uses this serviceProfile
-        generateCDR:
-          type: boolean
-          description: Generate Call Data Records for subscriber which use this subscriberProfile
-        allowSuspension:
-          type: boolean
-          description: Allow suspension for subscriber that use this serviceProfile.  If false, subscriber will be entirely
-            disabled
       required:
       - id
     serviceProfile:
@@ -2825,13 +2817,6 @@ components:
         portBinding:
           type: boolean
           description: The default port binding state for any subscriber which uses this serviceProfile
-        generateCDR:
-          type: boolean
-          description: Generate Call Data Records for subscriber which use this subscriber-profile
-        allowSuspension:
-          type: boolean
-          description: Allow suspension for subscriber that use this serviceProfile.  If false, subscriber will be entirely
-            disabled
       required:
       - id
     freeradiusPolicy:
@@ -2879,10 +2864,10 @@ components:
           example: 0
         remoteAssociation:
           format: uri
-          description: A reference to a client, accessDevice, or subscriber, that exchanges traffic with the specified cvlan
-            and svlan
+          description: URI of the accessDevice (or other upstream network element) that this port connects to. Used to discover
+            the remote end of the link.
           type: string
-          example: http://example.com/accessDevices/olt1
+          example: http://localhost:3000/accessDevice/dslam-03
     portPhysical:
       title: portPhysical
       type: object
@@ -2906,8 +2891,9 @@ components:
         remoteAssociation:
           type: string
           format: uri
-          description: A reference to an accessDevice, client or subscriber, that this port connects to.
-          example: http://example.com/realms/example.com/subscriber/123456
+          description: URI of the accessDevice (or other upstream network element) that this port connects to. Used to discover
+            the remote end of the link.
+          example: http://localhost:3000/accessDevice/dslam-03
     portPhysStag:
       title: portPhysStag
       x-stoplight:
@@ -2939,8 +2925,9 @@ components:
           type: string
           x-stoplight:
             id: y86p1ghln7zpd
-          description: A reference to an accessDevice, client or subscriber, that this port connects to.
-          example: http://example.com/realms/example.com/subscriber/123456
+          description: URI of the accessDevice (or other upstream network element) that this port connects to. Used to discover
+            the remote end of the link.
+          example: http://localhost:3000/accessDevice/dslam-03
           format: uri
   parameters:
     serviceId:
@@ -3095,13 +3082,6 @@ components:
         format: uri
       description: Filter by portBindingIdentifier URI. See "URL filter encoding" in the API description for how to encode
         the value.
-    filter_allowSuspension:
-      name: filter_allowSuspension
-      in: query
-      required: false
-      schema:
-        type: boolean
-      description: Filter by allowSuspension.
     filter_freeradiusClientShortname:
       name: filter_freeradiusClientShortname
       in: query
@@ -3136,7 +3116,9 @@ components:
       required: false
       schema:
         type: string
-      description: Filter by remoteAssociation.
+        format: uri
+      description: Filter by remoteAssociation URI. The same URL filter encoding rules as for the other URI filters apply;
+        see "URL filter encoding" in the API description.
     qinqId:
       name: qinqId
       in: path
