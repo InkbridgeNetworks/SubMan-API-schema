@@ -8,6 +8,4 @@ The API should be mostly object agonistic, but has some special endpoints for ma
 - OpenLDAP schema/ldif files for adding custom object definitions into OpenLDAP.
 
 ## For ease of consumption
-A rendered version of the Open API schemas can be found [here](https://networkradius.stoplight.io/docs/ldap-subscriber-api).
-
-The AsyncAPI spec for the SSE event streams (served by every listing endpoint when called with `?subscribe=1`) is rendered separately at <https://inkbridgenetworks.github.io/SubMan-API-schema/>.
+Rendered documentation lives at <https://inkbridgenetworks.github.io/SubMan-API-schema/>, with links from there to the OpenAPI reference (hosted on Stoplight) and the AsyncAPI reference for the SSE event streams (served by every listing endpoint when called with `?subscribe=1`).

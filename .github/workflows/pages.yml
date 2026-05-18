@@ -6,6 +6,7 @@ on:
     paths:
       - 'reference/ldap-subscriber-api-stream.yaml'
       - 'reference/ldap-subscriber-api.yaml'
+      - 'docs/**'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 
@@ -63,17 +64,28 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.version }}
 
-      - name: Generate site
-        # Run from reference/ so cross-file $refs in the AsyncAPI doc
-        # (e.g. './ldap-subscriber-api.yaml#/components/schemas/subscriber')
+      - name: Generate AsyncAPI site
+        # Output goes under sse/ so the AsyncAPI docs are reachable at
+        # /sse/ behind a landing page that links to both REST and
+        # streaming references. Runs from reference/ so cross-file
+        # $refs in the AsyncAPI doc (e.g.
+        # './ldap-subscriber-api.yaml#/components/schemas/subscriber')
         # resolve relative to the AsyncAPI file rather than to cwd.
         run: |
           cd reference
           npx -y @asyncapi/cli@latest generate fromTemplate \
             ldap-subscriber-api-stream.yaml \
             @asyncapi/html-template@latest \
-            --output ../_site \
+            --output ../_site/sse \
             --force-write
+
+      - name: Assemble landing page
+        # Copy the hand-written landing page + logo into the root of
+        # the published site. The Pages root lands the user on the
+        # landing page; AsyncAPI docs live under /sse/.
+        run: |
+          cp docs/index.html _site/index.html
+          cp docs/logo.png   _site/logo.png
 
       - name: Cache-bust assets and add no-cache meta
         # GitHub Pages can't set real HTTP cache headers, so we do
@@ -82,20 +94,20 @@ jobs:
         #      uses a unique URL (defeats stale browser caches),
         #   2. add a Cache-Control meta tag so browsers revalidate
         #      index.html on every load.
+        # Target the AsyncAPI page; the landing page is plain HTML
+        # with no asset references worth busting.
         run: |
           python3 - <<'PY'
           import os, re
           sha = os.environ['SHA']
-          p = '_site/index.html'
+          p = '_site/sse/index.html'
           s = open(p).read()
-          # bust js/css references that don't already have a ?v=
           def bust(m):
               attr, url = m.group(1), m.group(2)
               if '?' in url:
                   return m.group(0)
               return f'{attr}="{url}?v={sha}"'
           s = re.sub(r'(src|href)="(js/[^"]+|css/[^"]+)"', bust, s)
-          # add a no-cache meta into <head>
           meta = (
               '<meta http-equiv="Cache-Control" '
               'content="no-cache, no-store, must-revalidate" />'
@@ -115,7 +127,7 @@ jobs:
         # finishes loading. Tries multiple selectors because the
         # template mixes native <details> with custom accordions.
         run: |
-          cat >> _site/index.html <<'HTML'
+          cat >> _site/sse/index.html <<'HTML'
           <script>
           (function () {
             function expandAll() {
