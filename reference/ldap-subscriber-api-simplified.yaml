@@ -352,14 +352,18 @@ components:
             1.5M will be returned as 1536K. 536K. Note: This value will not be processed by the RADIUS service automatically.  It
             must be referenced in a policy'
         staticIp:
-          type: array
-          description: Subscriber's static IP address assignments.  For updates the complete set of IP addresses must be provided
+          type:
+          - array
+          - 'null'
+          description: Subscriber's static IP address assignments.  For updates the complete set of IP addresses must be provided.
+            Set to `null` in a PATCH to clear all static IP assignments.
           items:
             $ref: '#/components/schemas/subscriberStaticIp'
         portBindingIdentifier:
           type:
           - array
           - string
+          - 'null'
           x-stoplight:
             id: gr3ty7jgogcbt
           example:
