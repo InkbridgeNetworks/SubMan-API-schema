@@ -66,7 +66,6 @@ info:
     protocol. Consumers do not need to know about LDAP to use the
     stream: the events describe REST resources, and `body` contains
     the same JSON shape returned by the corresponding GET endpoint.
-
   contact:
     name: Network RADIUS support
     url: http://www.networkradius.com
@@ -74,7 +73,6 @@ info:
   license:
     name: Proprietary
     url: https://freeradius.org
-
 servers:
   default:
     host: localhost:3000
@@ -83,18 +81,17 @@ servers:
       The same host that serves the REST API. Streams are reached by
       appending `?subscribe=1` to the corresponding listing endpoint
       (and any of the supported `filter_*` query parameters).
-
 defaultContentType: application/json
-
 channels:
   realmStream:
     address: /realm?subscribe=1
     title: Realm stream
     description: Changes to the set of realms.
     messages:
-      ready: { $ref: '#/components/messages/ready' }
-      entry: { $ref: '#/components/messages/realmEntry' }
-
+      ready:
+        $ref: '#/components/messages/ready'
+      entry:
+        $ref: '#/components/messages/realmEntry'
   realmSubscriberStream:
     address: /realm/{realmId}/subscriber?subscribe=1
     title: Subscribers in a realm
@@ -103,25 +100,28 @@ channels:
       realmId:
         description: Identifier of the parent realm.
     messages:
-      ready: { $ref: '#/components/messages/ready' }
-      entry: { $ref: '#/components/messages/subscriberEntry' }
-
+      ready:
+        $ref: '#/components/messages/ready'
+      entry:
+        $ref: '#/components/messages/subscriberEntry'
   groupStream:
     address: /group?subscribe=1
     title: Subscriber group stream
     description: Changes to subscriber groups.
     messages:
-      ready: { $ref: '#/components/messages/ready' }
-      entry: { $ref: '#/components/messages/subscriberGroupEntry' }
-
+      ready:
+        $ref: '#/components/messages/ready'
+      entry:
+        $ref: '#/components/messages/subscriberGroupEntry'
   serviceStream:
     address: /service?subscribe=1
     title: Service stream
     description: Changes to top-level service definitions.
     messages:
-      ready: { $ref: '#/components/messages/ready' }
-      entry: { $ref: '#/components/messages/serviceEntry' }
-
+      ready:
+        $ref: '#/components/messages/ready'
+      entry:
+        $ref: '#/components/messages/serviceEntry'
   serviceProfileStream:
     address: /service/{serviceId}/profile?subscribe=1
     title: Service profiles for a service
@@ -130,9 +130,10 @@ channels:
       serviceId:
         description: Identifier of the parent service.
     messages:
-      ready: { $ref: '#/components/messages/ready' }
-      entry: { $ref: '#/components/messages/serviceProfileEntry' }
-
+      ready:
+        $ref: '#/components/messages/ready'
+      entry:
+        $ref: '#/components/messages/serviceProfileEntry'
   policyStream:
     address: /service/{serviceId}/profile/{profileId}/policy?subscribe=1
     title: Policies for a service profile
@@ -143,17 +144,19 @@ channels:
       profileId:
         description: Identifier of the parent service profile.
     messages:
-      ready: { $ref: '#/components/messages/ready' }
-      entry: { $ref: '#/components/messages/policyEntry' }
-
+      ready:
+        $ref: '#/components/messages/ready'
+      entry:
+        $ref: '#/components/messages/policyEntry'
   clientStream:
     address: /client?subscribe=1
     title: Client stream
     description: Changes to RADIUS clients.
     messages:
-      ready: { $ref: '#/components/messages/ready' }
-      entry: { $ref: '#/components/messages/clientEntry' }
-
+      ready:
+        $ref: '#/components/messages/ready'
+      entry:
+        $ref: '#/components/messages/clientEntry'
   clientPortStream:
     address: /client/{clientId}/port?subscribe=1
     title: Physical ports on a client
@@ -162,9 +165,10 @@ channels:
       clientId:
         description: Identifier of the parent client.
     messages:
-      ready: { $ref: '#/components/messages/ready' }
-      entry: { $ref: '#/components/messages/portPhysicalEntry' }
-
+      ready:
+        $ref: '#/components/messages/ready'
+      entry:
+        $ref: '#/components/messages/portPhysicalEntry'
   clientPortQinqStream:
     address: /client/{clientId}/port/{portId}/qinq?subscribe=1
     title: QinQ taggings on a client port
@@ -175,9 +179,10 @@ channels:
       portId:
         description: Identifier of the parent physical port.
     messages:
-      ready: { $ref: '#/components/messages/ready' }
-      entry: { $ref: '#/components/messages/portQinqEntry' }
-
+      ready:
+        $ref: '#/components/messages/ready'
+      entry:
+        $ref: '#/components/messages/portQinqEntry'
   clientPortStagStream:
     address: /client/{clientId}/port/{portId}/stag?subscribe=1
     title: S-tag taggings on a client port
@@ -188,25 +193,28 @@ channels:
       portId:
         description: Identifier of the parent physical port.
     messages:
-      ready: { $ref: '#/components/messages/ready' }
-      entry: { $ref: '#/components/messages/portStagEntry' }
-
+      ready:
+        $ref: '#/components/messages/ready'
+      entry:
+        $ref: '#/components/messages/portStagEntry'
   clientGroupStream:
     address: /clientGroup?subscribe=1
     title: Client group stream
     description: Changes to client groups.
     messages:
-      ready: { $ref: '#/components/messages/ready' }
-      entry: { $ref: '#/components/messages/clientGroupEntry' }
-
+      ready:
+        $ref: '#/components/messages/ready'
+      entry:
+        $ref: '#/components/messages/clientGroupEntry'
   accessDeviceStream:
     address: /accessDevice?subscribe=1
     title: Access device stream
     description: Changes to access devices.
     messages:
-      ready: { $ref: '#/components/messages/ready' }
-      entry: { $ref: '#/components/messages/accessDeviceEntry' }
-
+      ready:
+        $ref: '#/components/messages/ready'
+      entry:
+        $ref: '#/components/messages/accessDeviceEntry'
   accessDevicePortStream:
     address: /accessDevice/{accessDeviceId}/port?subscribe=1
     title: Physical ports on an access device
@@ -215,9 +223,10 @@ channels:
       accessDeviceId:
         description: Identifier of the parent access device.
     messages:
-      ready: { $ref: '#/components/messages/ready' }
-      entry: { $ref: '#/components/messages/portPhysicalEntry' }
-
+      ready:
+        $ref: '#/components/messages/ready'
+      entry:
+        $ref: '#/components/messages/portPhysicalEntry'
   accessDevicePortQinqStream:
     address: /accessDevice/{accessDeviceId}/port/{portId}/qinq?subscribe=1
     title: QinQ taggings on an access device port
@@ -228,9 +237,10 @@ channels:
       portId:
         description: Identifier of the parent physical port.
     messages:
-      ready: { $ref: '#/components/messages/ready' }
-      entry: { $ref: '#/components/messages/portQinqEntry' }
-
+      ready:
+        $ref: '#/components/messages/ready'
+      entry:
+        $ref: '#/components/messages/portQinqEntry'
   accessDevicePortStagStream:
     address: /accessDevice/{accessDeviceId}/port/{portId}/stag?subscribe=1
     title: S-tag taggings on an access device port
@@ -241,71 +251,86 @@ channels:
       portId:
         description: Identifier of the parent physical port.
     messages:
-      ready: { $ref: '#/components/messages/ready' }
-      entry: { $ref: '#/components/messages/portStagEntry' }
-
+      ready:
+        $ref: '#/components/messages/ready'
+      entry:
+        $ref: '#/components/messages/portStagEntry'
 operations:
   receiveRealmStream:
     action: receive
-    channel: { $ref: '#/channels/realmStream' }
+    channel:
+      $ref: '#/channels/realmStream'
     summary: Subscribe to realm changes
   receiveRealmSubscriberStream:
     action: receive
-    channel: { $ref: '#/channels/realmSubscriberStream' }
+    channel:
+      $ref: '#/channels/realmSubscriberStream'
     summary: Subscribe to subscriber changes in a realm
   receiveGroupStream:
     action: receive
-    channel: { $ref: '#/channels/groupStream' }
+    channel:
+      $ref: '#/channels/groupStream'
     summary: Subscribe to subscriber-group changes
   receiveServiceStream:
     action: receive
-    channel: { $ref: '#/channels/serviceStream' }
+    channel:
+      $ref: '#/channels/serviceStream'
     summary: Subscribe to service changes
   receiveServiceProfileStream:
     action: receive
-    channel: { $ref: '#/channels/serviceProfileStream' }
+    channel:
+      $ref: '#/channels/serviceProfileStream'
     summary: Subscribe to service-profile changes for one service
   receivePolicyStream:
     action: receive
-    channel: { $ref: '#/channels/policyStream' }
+    channel:
+      $ref: '#/channels/policyStream'
     summary: Subscribe to policy changes for one service profile
   receiveClientStream:
     action: receive
-    channel: { $ref: '#/channels/clientStream' }
+    channel:
+      $ref: '#/channels/clientStream'
     summary: Subscribe to client changes
   receiveClientPortStream:
     action: receive
-    channel: { $ref: '#/channels/clientPortStream' }
+    channel:
+      $ref: '#/channels/clientPortStream'
     summary: Subscribe to physical-port changes on one client
   receiveClientPortQinqStream:
     action: receive
-    channel: { $ref: '#/channels/clientPortQinqStream' }
+    channel:
+      $ref: '#/channels/clientPortQinqStream'
     summary: Subscribe to QinQ tagging changes on one client port
   receiveClientPortStagStream:
     action: receive
-    channel: { $ref: '#/channels/clientPortStagStream' }
+    channel:
+      $ref: '#/channels/clientPortStagStream'
     summary: Subscribe to S-tag tagging changes on one client port
   receiveClientGroupStream:
     action: receive
-    channel: { $ref: '#/channels/clientGroupStream' }
+    channel:
+      $ref: '#/channels/clientGroupStream'
     summary: Subscribe to client-group changes
   receiveAccessDeviceStream:
     action: receive
-    channel: { $ref: '#/channels/accessDeviceStream' }
+    channel:
+      $ref: '#/channels/accessDeviceStream'
     summary: Subscribe to access-device changes
   receiveAccessDevicePortStream:
     action: receive
-    channel: { $ref: '#/channels/accessDevicePortStream' }
+    channel:
+      $ref: '#/channels/accessDevicePortStream'
     summary: Subscribe to physical-port changes on one access device
   receiveAccessDevicePortQinqStream:
     action: receive
-    channel: { $ref: '#/channels/accessDevicePortQinqStream' }
+    channel:
+      $ref: '#/channels/accessDevicePortQinqStream'
     summary: Subscribe to QinQ tagging changes on one access device port
   receiveAccessDevicePortStagStream:
     action: receive
-    channel: { $ref: '#/channels/accessDevicePortStagStream' }
+    channel:
+      $ref: '#/channels/accessDevicePortStagStream'
     summary: Subscribe to S-tag tagging changes on one access device port
-
 components:
   messages:
     ready:
@@ -316,187 +341,411 @@ components:
       payload:
         type: object
         additionalProperties: false
-
+      examples:
+      - name: readyExample
+        summary: Sent once between initial replay and live changes.
+        payload: {}
     realmEntry:
       name: entry
       title: Realm event
       contentType: application/json
       payload:
         allOf:
-          - $ref: '#/components/schemas/entryEnvelope'
-          - type: object
-            properties:
-              body:
-                oneOf:
-                  - $ref: '#/components/schemas/realmBody'
-                  - $ref: '#/components/schemas/tombstone'
-
+        - $ref: '#/components/schemas/entryEnvelope'
+        - type: object
+          properties:
+            body:
+              oneOf:
+              - $ref: '#/components/schemas/realmBody'
+              - $ref: '#/components/schemas/tombstone'
+      examples:
+      - name: presentExample
+        summary: A record that already existed when the stream was opened.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: present
+          body:
+            id: example.org
+            description: Subscribers homed in example.org
+            serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
+            _url: /realm/example.org
+      - name: deleteExample
+        summary: A record that has just been removed. Body is a tombstone.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: delete
+          body:
+            id: example.org
+            _url: /realm/example.org
     subscriberEntry:
       name: entry
       title: Subscriber event
       contentType: application/json
       payload:
         allOf:
-          - $ref: '#/components/schemas/entryEnvelope'
-          - type: object
-            properties:
-              body:
-                oneOf:
-                  - $ref: '#/components/schemas/subscriberBody'
-                  - $ref: '#/components/schemas/tombstone'
-
+        - $ref: '#/components/schemas/entryEnvelope'
+        - type: object
+          properties:
+            body:
+              oneOf:
+              - $ref: '#/components/schemas/subscriberBody'
+              - $ref: '#/components/schemas/tombstone'
+      examples:
+      - name: presentExample
+        summary: A record that already existed when the stream was opened.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: present
+          body:
+            id: foo+bar
+            subscriberId: 0123456789
+            serviceStatus: enabled
+            serviceId: fixedLine
+            serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
+            _url: /realm/example.org/subscriber/foo+bar
+      - name: deleteExample
+        summary: A record that has just been removed. Body is a tombstone.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: delete
+          body:
+            id: foo+bar
+            _url: /realm/example.org/subscriber/foo+bar
     subscriberGroupEntry:
       name: entry
       title: Subscriber group event
       contentType: application/json
       payload:
         allOf:
-          - $ref: '#/components/schemas/entryEnvelope'
-          - type: object
-            properties:
-              body:
-                oneOf:
-                  - $ref: '#/components/schemas/subscriberGroupBody'
-                  - $ref: '#/components/schemas/tombstone'
-
+        - $ref: '#/components/schemas/entryEnvelope'
+        - type: object
+          properties:
+            body:
+              oneOf:
+              - $ref: '#/components/schemas/subscriberGroupBody'
+              - $ref: '#/components/schemas/tombstone'
+      examples:
+      - name: presentExample
+        summary: A record that already existed when the stream was opened.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: present
+          body:
+            id: business-subs
+            policy: business
+            _url: /group/business-subs
+      - name: deleteExample
+        summary: A record that has just been removed. Body is a tombstone.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: delete
+          body:
+            id: business-subs
+            _url: /group/business-subs
     serviceEntry:
       name: entry
       title: Service event
       contentType: application/json
       payload:
         allOf:
-          - $ref: '#/components/schemas/entryEnvelope'
-          - type: object
-            properties:
-              body:
-                oneOf:
-                  - $ref: '#/components/schemas/serviceBody'
-                  - $ref: '#/components/schemas/tombstone'
-
+        - $ref: '#/components/schemas/entryEnvelope'
+        - type: object
+          properties:
+            body:
+              oneOf:
+              - $ref: '#/components/schemas/serviceBody'
+              - $ref: '#/components/schemas/tombstone'
+      examples:
+      - name: presentExample
+        summary: A record that already existed when the stream was opened.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: present
+          body:
+            id: fixedLine
+            generateCDR: true
+            allowSuspension: true
+            _url: /service/fixedLine
+      - name: deleteExample
+        summary: A record that has just been removed. Body is a tombstone.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: delete
+          body:
+            id: fixedLine
+            _url: /service/fixedLine
     serviceProfileEntry:
       name: entry
       title: Service profile event
       contentType: application/json
       payload:
         allOf:
-          - $ref: '#/components/schemas/entryEnvelope'
-          - type: object
-            properties:
-              body:
-                oneOf:
-                  - $ref: '#/components/schemas/serviceProfileBody'
-                  - $ref: '#/components/schemas/tombstone'
-
+        - $ref: '#/components/schemas/entryEnvelope'
+        - type: object
+          properties:
+            body:
+              oneOf:
+              - $ref: '#/components/schemas/serviceProfileBody'
+              - $ref: '#/components/schemas/tombstone'
+      examples:
+      - name: presentExample
+        summary: A record that already existed when the stream was opened.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: present
+          body:
+            id: INETG1M
+            generateCDR: true
+            allowSuspension: true
+            _url: /service/fixedLine/profile/INETG1M
+      - name: deleteExample
+        summary: A record that has just been removed. Body is a tombstone.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: delete
+          body:
+            id: INETG1M
+            _url: /service/fixedLine/profile/INETG1M
     policyEntry:
       name: entry
       title: Policy event
       contentType: application/json
       payload:
         allOf:
-          - $ref: '#/components/schemas/entryEnvelope'
-          - type: object
-            properties:
-              body:
-                oneOf:
-                  - $ref: '#/components/schemas/policyBody'
-                  - $ref: '#/components/schemas/tombstone'
-
+        - $ref: '#/components/schemas/entryEnvelope'
+        - type: object
+          properties:
+            body:
+              oneOf:
+              - $ref: '#/components/schemas/policyBody'
+              - $ref: '#/components/schemas/tombstone'
+      examples:
+      - name: presentExample
+        summary: A record that already existed when the stream was opened.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: present
+          body:
+            id: allow-high-bw
+            _url: /service/fixedLine/profile/INETG1M/policy/allow-high-bw
+      - name: deleteExample
+        summary: A record that has just been removed. Body is a tombstone.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: delete
+          body:
+            id: allow-high-bw
+            _url: /service/fixedLine/profile/INETG1M/policy/allow-high-bw
     clientEntry:
       name: entry
       title: Client event
       contentType: application/json
       payload:
         allOf:
-          - $ref: '#/components/schemas/entryEnvelope'
-          - type: object
-            properties:
-              body:
-                oneOf:
-                  - $ref: '#/components/schemas/clientBody'
-                  - $ref: '#/components/schemas/tombstone'
-
+        - $ref: '#/components/schemas/entryEnvelope'
+        - type: object
+          properties:
+            body:
+              oneOf:
+              - $ref: '#/components/schemas/clientBody'
+              - $ref: '#/components/schemas/tombstone'
+      examples:
+      - name: presentExample
+        summary: A record that already existed when the stream was opened.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: present
+          body:
+            id: 192.0.2.1
+            freeradiusClientShortname: edge-bng-01
+            freeradiusClientGroup: bngs
+            _url: /client/192.0.2.1
+      - name: deleteExample
+        summary: A record that has just been removed. Body is a tombstone.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: delete
+          body:
+            id: 192.0.2.1
+            _url: /client/192.0.2.1
     portPhysicalEntry:
       name: entry
       title: Physical port event
       contentType: application/json
       payload:
         allOf:
-          - $ref: '#/components/schemas/entryEnvelope'
-          - type: object
-            properties:
-              body:
-                oneOf:
-                  - $ref: '#/components/schemas/portPhysicalBody'
-                  - $ref: '#/components/schemas/tombstone'
-
+        - $ref: '#/components/schemas/entryEnvelope'
+        - type: object
+          properties:
+            body:
+              oneOf:
+              - $ref: '#/components/schemas/portPhysicalBody'
+              - $ref: '#/components/schemas/tombstone'
+      examples:
+      - name: presentExample
+        summary: A record that already existed when the stream was opened.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: present
+          body:
+            type: physical
+            port: 1/2/3
+            remoteAssociation: DSLAM03-D6
+            _url: /client/192.0.2.1/port/1%2F2%2F3
+      - name: deleteExample
+        summary: A record that has just been removed. Body is a tombstone.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: delete
+          body:
+            id: 1%2F2%2F3
+            _url: /client/192.0.2.1/port/1%2F2%2F3
     portQinqEntry:
       name: entry
       title: QinQ tagging event
       contentType: application/json
       payload:
         allOf:
-          - $ref: '#/components/schemas/entryEnvelope'
-          - type: object
-            properties:
-              body:
-                oneOf:
-                  - $ref: '#/components/schemas/portQinqBody'
-                  - $ref: '#/components/schemas/tombstone'
-
+        - $ref: '#/components/schemas/entryEnvelope'
+        - type: object
+          properties:
+            body:
+              oneOf:
+              - $ref: '#/components/schemas/portQinqBody'
+              - $ref: '#/components/schemas/tombstone'
+      examples:
+      - name: presentExample
+        summary: A record that already existed when the stream was opened.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: present
+          body:
+            type: qinq
+            svlan: 100
+            cvlan: 25
+            remoteAssociation: DSLAM03-D6
+            _url: /client/192.0.2.1/port/1%2F2%2F3/qinq/100+25
+      - name: deleteExample
+        summary: A record that has just been removed. Body is a tombstone.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: delete
+          body:
+            id: 100+25
+            _url: /client/192.0.2.1/port/1%2F2%2F3/qinq/100+25
     portStagEntry:
       name: entry
       title: S-tag tagging event
       contentType: application/json
       payload:
         allOf:
-          - $ref: '#/components/schemas/entryEnvelope'
-          - type: object
-            properties:
-              body:
-                oneOf:
-                  - $ref: '#/components/schemas/portStagBody'
-                  - $ref: '#/components/schemas/tombstone'
-
+        - $ref: '#/components/schemas/entryEnvelope'
+        - type: object
+          properties:
+            body:
+              oneOf:
+              - $ref: '#/components/schemas/portStagBody'
+              - $ref: '#/components/schemas/tombstone'
+      examples:
+      - name: presentExample
+        summary: A record that already existed when the stream was opened.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: present
+          body:
+            type: physStag
+            port: 1/2/3
+            svlan: 100
+            remoteAssociation: DSLAM03-D6
+            _url: /client/192.0.2.1/port/1%2F2%2F3/stag/100
+      - name: deleteExample
+        summary: A record that has just been removed. Body is a tombstone.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: delete
+          body:
+            id: '100'
+            _url: /client/192.0.2.1/port/1%2F2%2F3/stag/100
     clientGroupEntry:
       name: entry
       title: Client group event
       contentType: application/json
       payload:
         allOf:
-          - $ref: '#/components/schemas/entryEnvelope'
-          - type: object
-            properties:
-              body:
-                oneOf:
-                  - $ref: '#/components/schemas/clientGroupBody'
-                  - $ref: '#/components/schemas/tombstone'
-
+        - $ref: '#/components/schemas/entryEnvelope'
+        - type: object
+          properties:
+            body:
+              oneOf:
+              - $ref: '#/components/schemas/clientGroupBody'
+              - $ref: '#/components/schemas/tombstone'
+      examples:
+      - name: presentExample
+        summary: A record that already existed when the stream was opened.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: present
+          body:
+            id: bngs
+            _url: /clientGroup/bngs
+      - name: deleteExample
+        summary: A record that has just been removed. Body is a tombstone.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: delete
+          body:
+            id: bngs
+            _url: /clientGroup/bngs
     accessDeviceEntry:
       name: entry
       title: Access device event
       contentType: application/json
       payload:
         allOf:
-          - $ref: '#/components/schemas/entryEnvelope'
-          - type: object
-            properties:
-              body:
-                oneOf:
-                  - $ref: '#/components/schemas/accessDeviceBody'
-                  - $ref: '#/components/schemas/tombstone'
-
-
+        - $ref: '#/components/schemas/entryEnvelope'
+        - type: object
+          properties:
+            body:
+              oneOf:
+              - $ref: '#/components/schemas/accessDeviceBody'
+              - $ref: '#/components/schemas/tombstone'
+      examples:
+      - name: presentExample
+        summary: A record that already existed when the stream was opened.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: present
+          body:
+            id: dslam-03
+            freeradiusClientShortname: DSLAM03-D6
+            freeradiusClientType: dslam
+            _url: /accessDevice/dslam-03
+      - name: deleteExample
+        summary: A record that has just been removed. Body is a tombstone.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: delete
+          body:
+            id: dslam-03
+            _url: /accessDevice/dslam-03
   schemas:
     entryEnvelope:
       type: object
-      required: [entryUUID, syncOp, body]
+      required:
+      - entryUUID
+      - syncOp
+      - body
       properties:
         entryUUID:
           type: string
           description: Stable identifier for the record, persistent across updates.
         syncOp:
           type: string
-          enum: [present, add, modify, delete]
+          enum:
+          - present
+          - add
+          - modify
+          - delete
           description: |
             What kind of event this is.
 
@@ -508,10 +757,11 @@ components:
               contains the full new state, not a patch.
             * `delete` is sent when a record is removed. `body`
               contains only `id` and `_url`.
-
     tombstone:
       type: object
-      required: [id, _url]
+      required:
+      - id
+      - _url
       description: |
         Stand-in body for `delete` events. Only enough information to
         identify which record went away.
@@ -521,10 +771,10 @@ components:
         _url:
           type: string
           format: uri
-
     urlExtension:
       type: object
-      required: [_url]
+      required:
+      - _url
       properties:
         _url:
           type: string
@@ -533,52 +783,51 @@ components:
             URL of the corresponding REST resource. Not present in
             normal REST GET responses; added by the stream so clients
             can hand the event straight to a URL-keyed cache.
-
     realmBody:
       allOf:
-        - $ref: './ldap-subscriber-api.yaml#/components/schemas/realm'
-        - $ref: '#/components/schemas/urlExtension'
+      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/realm
+      - $ref: '#/components/schemas/urlExtension'
     subscriberBody:
       allOf:
-        - $ref: './ldap-subscriber-api.yaml#/components/schemas/subscriber'
-        - $ref: '#/components/schemas/urlExtension'
+      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/subscriber
+      - $ref: '#/components/schemas/urlExtension'
     subscriberGroupBody:
       allOf:
-        - $ref: './ldap-subscriber-api.yaml#/components/schemas/subscriberGroup'
-        - $ref: '#/components/schemas/urlExtension'
+      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/subscriberGroup
+      - $ref: '#/components/schemas/urlExtension'
     serviceBody:
       allOf:
-        - $ref: './ldap-subscriber-api.yaml#/components/schemas/service'
-        - $ref: '#/components/schemas/urlExtension'
+      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/service
+      - $ref: '#/components/schemas/urlExtension'
     serviceProfileBody:
       allOf:
-        - $ref: './ldap-subscriber-api.yaml#/components/schemas/serviceProfile'
-        - $ref: '#/components/schemas/urlExtension'
+      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/serviceProfile
+      - $ref: '#/components/schemas/urlExtension'
     policyBody:
       allOf:
-        - $ref: './ldap-subscriber-api.yaml#/components/schemas/freeradiusPolicy'
-        - $ref: '#/components/schemas/urlExtension'
+      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/freeradiusPolicy
+      - $ref: '#/components/schemas/urlExtension'
     clientBody:
       allOf:
-        - $ref: './ldap-subscriber-api.yaml#/components/schemas/client'
-        - $ref: '#/components/schemas/urlExtension'
+      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/client
+      - $ref: '#/components/schemas/urlExtension'
     clientGroupBody:
       allOf:
-        - $ref: './ldap-subscriber-api.yaml#/components/schemas/clientGroup'
-        - $ref: '#/components/schemas/urlExtension'
+      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/clientGroup
+      - $ref: '#/components/schemas/urlExtension'
     accessDeviceBody:
       allOf:
-        - $ref: './ldap-subscriber-api.yaml#/components/schemas/accessDevice'
-        - $ref: '#/components/schemas/urlExtension'
+      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/accessDevice
+      - $ref: '#/components/schemas/urlExtension'
     portPhysicalBody:
       allOf:
-        - $ref: './ldap-subscriber-api.yaml#/components/schemas/portPhysical'
-        - $ref: '#/components/schemas/urlExtension'
+      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/portPhysical
+      - $ref: '#/components/schemas/urlExtension'
     portQinqBody:
       allOf:
-        - $ref: './ldap-subscriber-api.yaml#/components/schemas/portQinQ'
-        - $ref: '#/components/schemas/urlExtension'
+      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/portQinQ
+      - $ref: '#/components/schemas/urlExtension'
     portStagBody:
       allOf:
-        - $ref: './ldap-subscriber-api.yaml#/components/schemas/portPhysStag'
-        - $ref: '#/components/schemas/urlExtension'
+      - $ref: ./ldap-subscriber-api.yaml#/components/schemas/portPhysStag
+      - $ref: '#/components/schemas/urlExtension'
