@@ -39,6 +39,26 @@ info:
       carries the record itself under `body`. Records always include
       a `_url` field pointing at the matching REST resource.
 
+    ## Renames
+
+    Resources are identified in the URL by their `id`. When an `id`
+    changes, that's a rename, and a single underlying rename surfaces
+    on the stream as **two** events rather than one `modify`:
+
+    * a `delete` carrying the **old** `id` and `_url`, followed by
+    * an `add` carrying the **new** `id`, `_url`, and the full object
+      body.
+
+    Both events share the same `entryUUID`, so consumers that want to
+    treat a rename as a single logical operation can correlate by
+    UUID. Consumers that only care about the current URL of a record
+    can treat the pair as an ordinary remove-then-create.
+
+    The same shape applies when a record moves between collections
+    (for example, a subscriber re-homed to a different realm): the
+    URL changes, so the stream emits `delete` against the old URL
+    and `add` against the new one.
+
     ## Resuming a dropped stream
 
     Each `entry` is emitted with an SSE `id:` line containing an
