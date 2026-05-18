@@ -75,6 +75,37 @@ jobs:
             --output ../_site \
             --force-write
 
+      - name: Auto-expand collapsibles
+        # The html-template ships with most disclosure widgets closed.
+        # Inject a small script that opens everything once the page
+        # finishes loading. Tries multiple selectors because the
+        # template mixes native <details> with custom accordions.
+        run: |
+          cat >> _site/index.html <<'HTML'
+          <script>
+          (function () {
+            function expandAll() {
+              document.querySelectorAll('details').forEach(function (d) { d.open = true; });
+              document.querySelectorAll('[aria-expanded="false"]').forEach(function (el) {
+                try { el.click(); } catch (e) { /* swallow */ }
+              });
+            }
+            // The template renders client-side, so the DOM keeps mutating
+            // for a moment after load. Run once on DOMContentLoaded, then
+            // a few more times to catch late additions.
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', expandAll);
+            } else {
+              expandAll();
+            }
+            [50, 200, 600, 1500].forEach(function (t) { setTimeout(expandAll, t); });
+            new MutationObserver(expandAll).observe(document.body, {
+              childList: true, subtree: true,
+            });
+          })();
+          </script>
+          HTML
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
