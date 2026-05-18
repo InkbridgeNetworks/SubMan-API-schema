@@ -39,6 +39,15 @@ info:
       carries the record itself under `body`. Records always include
       a `_url` field pointing at the matching REST resource.
 
+    ## Deletes
+
+    `delete` events carry only `id` and `_url` in `body`, not the
+    attributes the record had before it was removed. By the time the
+    server emits the event, the record is already gone from the
+    underlying directory and its attributes are unrecoverable;
+    consumers that need the old state must keep their own copy keyed
+    on `entryUUID`.
+
     ## Renames
 
     Resources are identified in the URL by their `id`. When an `id`
