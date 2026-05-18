@@ -360,7 +360,7 @@ components:
               - $ref: '#/components/schemas/tombstone'
       examples:
       - name: presentExample
-        summary: A record that already existed when the stream was opened.
+        summary: A record that already existed when the stream was opened. Sent during the initial replay.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: present
@@ -369,8 +369,28 @@ components:
             description: Subscribers homed in example.org
             serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
             _url: /realm/example.org
+      - name: addExample
+        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: add
+          body:
+            id: example.org
+            description: Subscribers homed in example.org
+            serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
+            _url: /realm/example.org
+      - name: modifyExample
+        summary: An existing record was changed. The body is the full new state, not a patch.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: modify
+          body:
+            id: example.org
+            description: Subscribers homed in example.org (renamed billing entity)
+            serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG10M
+            _url: /realm/example.org
       - name: deleteExample
-        summary: A record that has just been removed. Body is a tombstone.
+        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: delete
@@ -392,7 +412,7 @@ components:
               - $ref: '#/components/schemas/tombstone'
       examples:
       - name: presentExample
-        summary: A record that already existed when the stream was opened.
+        summary: A record that already existed when the stream was opened. Sent during the initial replay.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: present
@@ -403,8 +423,34 @@ components:
             serviceId: fixedLine
             serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
             _url: /realm/example.org/subscriber/foo+bar
+      - name: addExample
+        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: add
+          body:
+            id: foo+bar
+            subscriberId: 0123456789
+            serviceStatus: enabled
+            serviceId: fixedLine
+            serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
+            _url: /realm/example.org/subscriber/foo+bar
+      - name: modifyExample
+        summary: An existing record was changed. The body is the full new state, not a patch.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: modify
+          body:
+            id: foo+bar
+            subscriberId: 0123456789
+            serviceStatus: suspended
+            statusReason: non-payment
+            serviceId: fixedLine
+            serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
+            serviceProfileSuspended: http://localhost:3000/service/fixedLine/profile/suspendedNonPayment
+            _url: /realm/example.org/subscriber/foo+bar
       - name: deleteExample
-        summary: A record that has just been removed. Body is a tombstone.
+        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: delete
@@ -426,7 +472,7 @@ components:
               - $ref: '#/components/schemas/tombstone'
       examples:
       - name: presentExample
-        summary: A record that already existed when the stream was opened.
+        summary: A record that already existed when the stream was opened. Sent during the initial replay.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: present
@@ -434,8 +480,26 @@ components:
             id: business-subs
             policy: business
             _url: /group/business-subs
+      - name: addExample
+        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: add
+          body:
+            id: business-subs
+            policy: business
+            _url: /group/business-subs
+      - name: modifyExample
+        summary: An existing record was changed. The body is the full new state, not a patch.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: modify
+          body:
+            id: business-subs
+            policy: business-premium
+            _url: /group/business-subs
       - name: deleteExample
-        summary: A record that has just been removed. Body is a tombstone.
+        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: delete
@@ -457,7 +521,7 @@ components:
               - $ref: '#/components/schemas/tombstone'
       examples:
       - name: presentExample
-        summary: A record that already existed when the stream was opened.
+        summary: A record that already existed when the stream was opened. Sent during the initial replay.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: present
@@ -466,8 +530,28 @@ components:
             generateCDR: true
             allowSuspension: true
             _url: /service/fixedLine
+      - name: addExample
+        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: add
+          body:
+            id: fixedLine
+            generateCDR: true
+            allowSuspension: true
+            _url: /service/fixedLine
+      - name: modifyExample
+        summary: An existing record was changed. The body is the full new state, not a patch.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: modify
+          body:
+            id: fixedLine
+            generateCDR: true
+            allowSuspension: false
+            _url: /service/fixedLine
       - name: deleteExample
-        summary: A record that has just been removed. Body is a tombstone.
+        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: delete
@@ -489,7 +573,7 @@ components:
               - $ref: '#/components/schemas/tombstone'
       examples:
       - name: presentExample
-        summary: A record that already existed when the stream was opened.
+        summary: A record that already existed when the stream was opened. Sent during the initial replay.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: present
@@ -498,8 +582,28 @@ components:
             generateCDR: true
             allowSuspension: true
             _url: /service/fixedLine/profile/INETG1M
+      - name: addExample
+        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: add
+          body:
+            id: INETG1M
+            generateCDR: true
+            allowSuspension: true
+            _url: /service/fixedLine/profile/INETG1M
+      - name: modifyExample
+        summary: An existing record was changed. The body is the full new state, not a patch.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: modify
+          body:
+            id: INETG1M
+            generateCDR: false
+            allowSuspension: true
+            _url: /service/fixedLine/profile/INETG1M
       - name: deleteExample
-        summary: A record that has just been removed. Body is a tombstone.
+        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: delete
@@ -521,15 +625,31 @@ components:
               - $ref: '#/components/schemas/tombstone'
       examples:
       - name: presentExample
-        summary: A record that already existed when the stream was opened.
+        summary: A record that already existed when the stream was opened. Sent during the initial replay.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: present
           body:
             id: allow-high-bw
             _url: /service/fixedLine/profile/INETG1M/policy/allow-high-bw
+      - name: addExample
+        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: add
+          body:
+            id: allow-high-bw
+            _url: /service/fixedLine/profile/INETG1M/policy/allow-high-bw
+      - name: modifyExample
+        summary: An existing record was changed. The body is the full new state, not a patch.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: modify
+          body:
+            id: allow-high-bw
+            _url: /service/fixedLine/profile/INETG1M/policy/allow-high-bw
       - name: deleteExample
-        summary: A record that has just been removed. Body is a tombstone.
+        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: delete
@@ -551,7 +671,7 @@ components:
               - $ref: '#/components/schemas/tombstone'
       examples:
       - name: presentExample
-        summary: A record that already existed when the stream was opened.
+        summary: A record that already existed when the stream was opened. Sent during the initial replay.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: present
@@ -560,8 +680,29 @@ components:
             freeradiusClientShortname: edge-bng-01
             freeradiusClientGroup: bngs
             _url: /client/192.0.2.1
+      - name: addExample
+        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: add
+          body:
+            id: 192.0.2.1
+            freeradiusClientShortname: edge-bng-01
+            freeradiusClientGroup: bngs
+            _url: /client/192.0.2.1
+      - name: modifyExample
+        summary: An existing record was changed. The body is the full new state, not a patch.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: modify
+          body:
+            id: 192.0.2.1
+            freeradiusClientShortname: edge-bng-01
+            freeradiusClientGroup: bngs
+            freeradiusClientComment: reprovisioned 2026-05-18
+            _url: /client/192.0.2.1
       - name: deleteExample
-        summary: A record that has just been removed. Body is a tombstone.
+        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: delete
@@ -583,7 +724,7 @@ components:
               - $ref: '#/components/schemas/tombstone'
       examples:
       - name: presentExample
-        summary: A record that already existed when the stream was opened.
+        summary: A record that already existed when the stream was opened. Sent during the initial replay.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: present
@@ -592,8 +733,28 @@ components:
             port: 1/2/3
             remoteAssociation: DSLAM03-D6
             _url: /client/192.0.2.1/port/1%2F2%2F3
+      - name: addExample
+        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: add
+          body:
+            type: physical
+            port: 1/2/3
+            remoteAssociation: DSLAM03-D6
+            _url: /client/192.0.2.1/port/1%2F2%2F3
+      - name: modifyExample
+        summary: An existing record was changed. The body is the full new state, not a patch.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: modify
+          body:
+            type: physical
+            port: 1/2/3
+            remoteAssociation: DSLAM03-D7
+            _url: /client/192.0.2.1/port/1%2F2%2F3
       - name: deleteExample
-        summary: A record that has just been removed. Body is a tombstone.
+        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: delete
@@ -615,7 +776,7 @@ components:
               - $ref: '#/components/schemas/tombstone'
       examples:
       - name: presentExample
-        summary: A record that already existed when the stream was opened.
+        summary: A record that already existed when the stream was opened. Sent during the initial replay.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: present
@@ -625,8 +786,30 @@ components:
             cvlan: 25
             remoteAssociation: DSLAM03-D6
             _url: /client/192.0.2.1/port/1%2F2%2F3/qinq/100+25
+      - name: addExample
+        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: add
+          body:
+            type: qinq
+            svlan: 100
+            cvlan: 25
+            remoteAssociation: DSLAM03-D6
+            _url: /client/192.0.2.1/port/1%2F2%2F3/qinq/100+25
+      - name: modifyExample
+        summary: An existing record was changed. The body is the full new state, not a patch.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: modify
+          body:
+            type: qinq
+            svlan: 100
+            cvlan: 25
+            remoteAssociation: DSLAM03-D7
+            _url: /client/192.0.2.1/port/1%2F2%2F3/qinq/100+25
       - name: deleteExample
-        summary: A record that has just been removed. Body is a tombstone.
+        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: delete
@@ -648,7 +831,7 @@ components:
               - $ref: '#/components/schemas/tombstone'
       examples:
       - name: presentExample
-        summary: A record that already existed when the stream was opened.
+        summary: A record that already existed when the stream was opened. Sent during the initial replay.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: present
@@ -658,8 +841,30 @@ components:
             svlan: 100
             remoteAssociation: DSLAM03-D6
             _url: /client/192.0.2.1/port/1%2F2%2F3/stag/100
+      - name: addExample
+        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: add
+          body:
+            type: physStag
+            port: 1/2/3
+            svlan: 100
+            remoteAssociation: DSLAM03-D6
+            _url: /client/192.0.2.1/port/1%2F2%2F3/stag/100
+      - name: modifyExample
+        summary: An existing record was changed. The body is the full new state, not a patch.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: modify
+          body:
+            type: physStag
+            port: 1/2/3
+            svlan: 100
+            remoteAssociation: DSLAM03-D7
+            _url: /client/192.0.2.1/port/1%2F2%2F3/stag/100
       - name: deleteExample
-        summary: A record that has just been removed. Body is a tombstone.
+        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: delete
@@ -681,15 +886,31 @@ components:
               - $ref: '#/components/schemas/tombstone'
       examples:
       - name: presentExample
-        summary: A record that already existed when the stream was opened.
+        summary: A record that already existed when the stream was opened. Sent during the initial replay.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: present
           body:
             id: bngs
             _url: /clientGroup/bngs
+      - name: addExample
+        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: add
+          body:
+            id: bngs
+            _url: /clientGroup/bngs
+      - name: modifyExample
+        summary: An existing record was changed. The body is the full new state, not a patch.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: modify
+          body:
+            id: bngs
+            _url: /clientGroup/bngs
       - name: deleteExample
-        summary: A record that has just been removed. Body is a tombstone.
+        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: delete
@@ -711,7 +932,7 @@ components:
               - $ref: '#/components/schemas/tombstone'
       examples:
       - name: presentExample
-        summary: A record that already existed when the stream was opened.
+        summary: A record that already existed when the stream was opened. Sent during the initial replay.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: present
@@ -720,8 +941,29 @@ components:
             freeradiusClientShortname: DSLAM03-D6
             freeradiusClientType: dslam
             _url: /accessDevice/dslam-03
+      - name: addExample
+        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: add
+          body:
+            id: dslam-03
+            freeradiusClientShortname: DSLAM03-D6
+            freeradiusClientType: dslam
+            _url: /accessDevice/dslam-03
+      - name: modifyExample
+        summary: An existing record was changed. The body is the full new state, not a patch.
+        payload:
+          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          syncOp: modify
+          body:
+            id: dslam-03
+            freeradiusClientShortname: DSLAM03-D6
+            freeradiusClientType: dslam
+            freeradiusClientComment: rack-swap to row 4
+            _url: /accessDevice/dslam-03
       - name: deleteExample
-        summary: A record that has just been removed. Body is a tombstone.
+        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: delete
