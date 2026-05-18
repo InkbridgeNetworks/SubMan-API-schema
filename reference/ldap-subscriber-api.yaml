@@ -2843,6 +2843,10 @@ components:
       type: object
       description: A representation of a QinQ SVLAN/CVLAN virtual port
       properties:
+        id:
+          type: string
+          description: Identifier of this QinQ tagging, in the form `<svlan>+<cvlan>`.
+          example: 100+25
         type:
           type: string
           enum:
@@ -2868,6 +2872,8 @@ components:
             the remote end of the link.
           type: string
           example: http://localhost:3000/accessDevice/dslam-03
+      required:
+      - id
     portPhysical:
       title: portPhysical
       type: object
@@ -2875,6 +2881,10 @@ components:
       x-stoplight:
         id: c02278ad36343
       properties:
+        id:
+          type: string
+          description: Identifier of this physical port. URL-encoded port name as it appears in the path.
+          example: 1%2F2%2F3
         type:
           type: string
           pattern: ^physical$
@@ -2894,6 +2904,8 @@ components:
           description: URI of the accessDevice (or other upstream network element) that this port connects to. Used to discover
             the remote end of the link.
           example: http://localhost:3000/accessDevice/dslam-03
+      required:
+      - id
     portPhysStag:
       title: portPhysStag
       x-stoplight:
@@ -2901,6 +2913,10 @@ components:
       type: object
       description: A combination of a physical port identifier and QinQ Stag value
       properties:
+        id:
+          type: string
+          description: Identifier of this S-tag tagging. The S-VLAN as a decimal string.
+          example: '100'
         type:
           type: string
           x-stoplight:
@@ -2929,6 +2945,8 @@ components:
             the remote end of the link.
           example: http://localhost:3000/accessDevice/dslam-03
           format: uri
+      required:
+      - id
   parameters:
     serviceId:
       name: serviceId
