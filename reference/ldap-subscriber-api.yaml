@@ -3222,6 +3222,7 @@ components:
       required: false
       schema:
         type: boolean
+        default: false
       description: When combined with `copy_uri`, copy the source object and all of its descendants into the target subtree.
         Has no effect if `copy_uri` is not set.
   responses:
