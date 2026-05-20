@@ -2524,6 +2524,54 @@ paths:
       - OIDC:
         - write:accessDevice
       parameters:
+  /rename:
+    post:
+      operationId: post-rename
+      summary: Rename a resource
+      description: |
+        Rename a single resource in place.  The backend performs an LDAP `modrdn`, so the entry's `entryUUID` and any child objects are preserved across the operation; only the leaf RDN of its DN changes.
+
+        Supported resource families: `realm`, `client`, `service`, `group`, `clientGroup`, `accessDevice`, and any nested resources reachable through their route trees (e.g. ports under `client` or `accessDevice`, profiles under `service`).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - url
+              - id
+              properties:
+                url:
+                  type: string
+                  format: uri-reference
+                  description: Resource path of the object to rename.
+                  example: /realm/example.org
+                id:
+                  type: string
+                  description: The new leaf identifier for the resource.  May be URL-encoded; multi-valued RDNs use `value1+value2`.
+                  example: example.com
+      responses:
+        '200':
+          description: |
+            Renamed.  The response carries a `Location` header pointing at the new resource URL.
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri-reference
+              description: The new resource URL after rename.
+        '400':
+          $ref: '#/components/responses/onBadRequest'
+        '404':
+          $ref: '#/components/responses/onNotFound'
+        '405':
+          description: Method not allowed.  Returned when the request verb is not `POST`, when the `url` or `id` field is missing from the body, or when the resolved path is a collection rather than a single object.
+        '500':
+          $ref: '#/components/responses/onInternalServerError'
+      tags:
+      - Global
+    parameters: []
   /:
     get:
       summary: Global parameters and headers
