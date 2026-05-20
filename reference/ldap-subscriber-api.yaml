@@ -143,8 +143,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
-      - *id001
-      - *id002
     put:
       operationId: put-realm-realmId
       responses:
@@ -225,8 +223,6 @@ paths:
           $ref: '#/components/responses/onInternalServerError'
       parameters:
       - $ref: '#/components/parameters/prune'
-      - *id001
-      - *id002
       description: Delete a realm.  The prune param must be true if the realm contains subscribers
       tags:
       - Realm
@@ -328,8 +324,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
-      - *id001
-      - *id002
     put:
       operationId: put-realm-realmId-subscriber-compoundSubscriberId
       responses:
@@ -403,8 +397,6 @@ paths:
       - Subscriber
       parameters:
       - $ref: '#/components/parameters/prune'
-      - *id001
-      - *id002
       summary: Delete a subscriber
       security:
       - OIDC:
@@ -493,8 +485,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
-      - *id001
-      - *id002
     put:
       operationId: put-group-subscriberGroupId
       responses:
@@ -559,8 +549,6 @@ paths:
       summary: Delete a subscriberGroup
       parameters:
       - $ref: '#/components/parameters/prune'
-      - *id001
-      - *id002
       security:
       - OIDC:
         - write:subscriber
@@ -649,8 +637,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
-      - *id001
-      - *id002
     put:
       operationId: put-service-serviceId
       responses:
@@ -722,8 +708,6 @@ paths:
       description: Delete a service
       parameters:
       - $ref: '#/components/parameters/prune'
-      - *id001
-      - *id002
       tags:
       - Service
       security:
@@ -817,8 +801,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
-      - *id001
-      - *id002
     put:
       operationId: put-service-serviceId-profile-profileId
       responses:
@@ -890,8 +872,6 @@ paths:
       description: Delete a serviceProfile
       parameters:
       - $ref: '#/components/parameters/prune'
-      - *id001
-      - *id002
       summary: Delete a serviceProfile
       tags:
       - Abstract profile (serviceProfile)
@@ -991,8 +971,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
-      - *id001
-      - *id002
     put:
       operationId: put-service-serviceId-profile-profileId-policy-policyId
       responses:
@@ -1071,8 +1049,6 @@ paths:
       - Concrete profile (freeradiusProfile)
       parameters:
       - $ref: '#/components/parameters/prune'
-      - *id001
-      - *id002
       x-stoplight:
         id: onq9wcmzdz2df
       security:
@@ -1165,8 +1141,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
-      - *id001
-      - *id002
     put:
       operationId: put-client-clientId
       responses:
@@ -1241,8 +1215,6 @@ paths:
       summary: Delete an client
       parameters:
       - $ref: '#/components/parameters/prune'
-      - *id001
-      - *id002
       security:
       - OIDC:
         - write:client
@@ -1336,8 +1308,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
-      - *id001
-      - *id002
     put:
       operationId: put-client-clientId-port-portId
       responses:
@@ -1407,8 +1377,6 @@ paths:
       summary: Delete an client
       parameters:
       - $ref: '#/components/parameters/prune'
-      - *id001
-      - *id002
       security:
       - OIDC:
         - write:client
@@ -1505,8 +1473,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
-      - *id001
-      - *id002
     put:
       tags:
       - Client
@@ -1578,8 +1544,6 @@ paths:
       - OIDC:
         - write:client
       parameters:
-      - *id001
-      - *id002
   /client/{clientId}/port/{portId}/stag:
     parameters:
     - $ref: '#/components/parameters/clientId'
@@ -1673,8 +1637,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
-      - *id001
-      - *id002
     put:
       tags:
       - Client
@@ -1746,8 +1708,6 @@ paths:
       - OIDC:
         - write:client
       parameters:
-      - *id001
-      - *id002
   /clientGroup:
     get:
       responses:
@@ -1833,8 +1793,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
-      - *id001
-      - *id002
     put:
       operationId: put-clientGroup-clientGroupId
       responses:
@@ -1909,8 +1867,6 @@ paths:
       summary: Delete an clientGroup
       parameters:
       - $ref: '#/components/parameters/prune'
-      - *id001
-      - *id002
       security:
       - OIDC:
         - write:client
@@ -2001,8 +1957,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
-      - *id001
-      - *id002
     put:
       operationId: put-accessDevice-accessDeviceId
       responses:
@@ -2077,8 +2031,6 @@ paths:
       summary: Delete an accessDevice
       parameters:
       - $ref: '#/components/parameters/prune'
-      - *id001
-      - *id002
       security:
       - OIDC:
         - write:accessDevice
@@ -2172,8 +2124,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
-      - *id001
-      - *id002
     put:
       operationId: put-accessDevice-accessDeviceId-port-portId
       responses:
@@ -2243,8 +2193,6 @@ paths:
       summary: Delete a port associated with a client
       parameters:
       - $ref: '#/components/parameters/prune'
-      - *id001
-      - *id002
       security:
       - OIDC:
         - write:accessDevice
@@ -2341,8 +2289,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
-      - *id001
-      - *id002
     put:
       tags:
       - accessDevice
@@ -2414,8 +2360,6 @@ paths:
       - OIDC:
         - write:accessDevice
       parameters:
-      - *id001
-      - *id002
   /accessDevice/{accessDeviceId}/port/{portId}/stag:
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
@@ -2509,8 +2453,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
-      - *id001
-      - *id002
     put:
       tags:
       - accessDevice
@@ -2582,8 +2524,6 @@ paths:
       - OIDC:
         - write:accessDevice
       parameters:
-      - *id001
-      - *id002
   /:
     get:
       summary: Global parameters and headers
