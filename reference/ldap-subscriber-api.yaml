@@ -75,6 +75,7 @@ paths:
       - OIDC:
         - read:realm
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_serviceProfile'
       - $ref: '#/components/parameters/subscribe'
     post:
@@ -140,6 +141,7 @@ paths:
       - OIDC:
         - read:realm
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
       - *id001
       - *id002
@@ -259,6 +261,7 @@ paths:
       - OIDC:
         - read:subscriber
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_subscriberId'
       - $ref: '#/components/parameters/filter_serviceStatus'
       - $ref: '#/components/parameters/filter_serviceId'
@@ -323,6 +326,7 @@ paths:
       - OIDC:
         - read:subscriber
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
       - *id001
       - *id002
@@ -430,6 +434,7 @@ paths:
       - OIDC:
         - read:subscriber
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
     parameters: []
     post:
@@ -486,6 +491,7 @@ paths:
       - OIDC:
         - read:subscriber
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
       - *id001
       - *id002
@@ -585,6 +591,7 @@ paths:
       - OIDC:
         - read:service
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
     post:
       operationId: post-service
@@ -640,6 +647,7 @@ paths:
       - OIDC:
         - read:service
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
       - *id001
       - *id002
@@ -750,6 +758,7 @@ paths:
       - OIDC:
         - read:profile
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
     post:
       operationId: post-service-serviceId-profile
@@ -806,6 +815,7 @@ paths:
       - OIDC:
         - read:profile
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
       - *id001
       - *id002
@@ -919,6 +929,7 @@ paths:
       - OIDC:
         - write:profile
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
     post:
       operationId: post-service-serviceId-profile-profileId-policy
@@ -978,6 +989,7 @@ paths:
       - OIDC:
         - read:profile
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
       - *id001
       - *id002
@@ -1093,6 +1105,7 @@ paths:
       - OIDC:
         - read:client
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_freeradiusClientShortname'
       - $ref: '#/components/parameters/filter_freeradiusClientGroup'
       - $ref: '#/components/parameters/subscribe'
@@ -1150,6 +1163,7 @@ paths:
       - OIDC:
         - read:client
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
       - *id001
       - *id002
@@ -1259,6 +1273,7 @@ paths:
       - OIDC:
         - read:client
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_port'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
@@ -1319,6 +1334,7 @@ paths:
       - OIDC:
         - read:client
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
       - *id001
       - *id002
@@ -1426,6 +1442,7 @@ paths:
       - OIDC:
         - read:client
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
     post:
@@ -1486,6 +1503,7 @@ paths:
       - OIDC:
         - read:client
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
       - *id001
       - *id002
@@ -1592,6 +1610,7 @@ paths:
       - OIDC:
         - read:client
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
     post:
@@ -1652,6 +1671,7 @@ paths:
       - OIDC:
         - read:client
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
       - *id001
       - *id002
@@ -1755,6 +1775,7 @@ paths:
       - OIDC:
         - read:client
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
     post:
       operationId: post-clientGroup
@@ -1810,6 +1831,7 @@ paths:
       - OIDC:
         - read:client
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
       - *id001
       - *id002
@@ -1818,10 +1840,6 @@ paths:
       responses:
         '200':
           description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/client'
         '400':
           $ref: '#/components/responses/onBadRequest'
         '404':
@@ -1829,6 +1847,12 @@ paths:
         '500':
           $ref: '#/components/responses/onInternalServerError'
       description: Replace an clientGroup metadata and profiles.  Does not affect group membership
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/clientGroup'
+        description: New definition of the clientGroup
       tags:
       - Client group
       summary: Replace an clientGroup
@@ -1917,6 +1941,7 @@ paths:
       - OIDC:
         - read:accessDevice
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_freeradiusClientShortname'
       - $ref: '#/components/parameters/filter_freeradiusClientType'
       - $ref: '#/components/parameters/subscribe'
@@ -1974,6 +1999,7 @@ paths:
       - OIDC:
         - read:accessDevice
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
       - *id001
       - *id002
@@ -2083,6 +2109,7 @@ paths:
       - OIDC:
         - read:accessDevice
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_port'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
@@ -2143,6 +2170,7 @@ paths:
       - OIDC:
         - read:client
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
       - *id001
       - *id002
@@ -2250,6 +2278,7 @@ paths:
       - OIDC:
         - read:accessDevice
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
     post:
@@ -2310,6 +2339,7 @@ paths:
       - OIDC:
         - read:accessDevice
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
       - *id001
       - *id002
@@ -2416,6 +2446,7 @@ paths:
       - OIDC:
         - read:accessDevice
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
     post:
@@ -2476,6 +2507,7 @@ paths:
       - OIDC:
         - read:accessDevice
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
       - *id001
       - *id002
@@ -2562,6 +2594,7 @@ paths:
       x-stoplight:
         id: awyakbe5d2ujc
       parameters:
+      - $ref: '#/components/parameters/timestamps'
       - schema:
           type: boolean
           example: true
@@ -2795,9 +2828,6 @@ components:
         id:
           type: string
           description: Globally unique identifier for a service
-        portBinding:
-          type: boolean
-          description: The default port binding state for any subscriber which uses this serviceProfile
       required:
       - id
     serviceProfile:
@@ -3009,7 +3039,17 @@ components:
       schema:
         type: boolean
         default: false
-      description: If true, delete any child objects, e.g. all the subscriber in a realm
+      description: |
+        If true, delete any child objects (e.g. all the subscribers in a realm).  Accepts `true`, `1`, `false`, or `0` (case-insensitive).
+    timestamps:
+      name: timestamps
+      in: query
+      required: false
+      schema:
+        type: boolean
+        default: false
+      description: |
+        If true, include the LDAP `createTimestamp` and `modifyTimestamp` operational attributes on each returned object.  Values are RFC 4517 GeneralizedTime in zulu form (`YYYYMMDDHHMMSSZ`, e.g. `20240519143012Z`) and are passed through unchanged from the directory.  Accepts `true`, `1`, `false`, or `0` (case-insensitive).
     accessDeviceId:
       name: accessDeviceId
       in: path
