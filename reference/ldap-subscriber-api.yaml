@@ -3202,12 +3202,10 @@ components:
       in: query
       required: false
       schema:
-        type: integer
-        enum:
-        - 1
-      description: When `subscribe=1`, the server upgrades the response to Server-Sent Events (`text/event-stream`). The initial
-        state is delivered as one or more events, followed by change events as the underlying data mutates. The connection
-        stays open until the client closes it.
+        type: boolean
+        default: false
+      description: |
+        If true, the server upgrades the response to Server-Sent Events (`text/event-stream`).  The initial state is delivered as one or more events, followed by change events as the underlying data mutates.  The connection stays open until the client closes it.  Accepts `true`, `1`, `false`, or `0` (case-insensitive).
     copy_uri:
       name: copy_uri
       in: query
