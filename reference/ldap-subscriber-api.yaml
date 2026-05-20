@@ -3039,8 +3039,7 @@ components:
       schema:
         type: boolean
         default: false
-      description: |
-        If true, delete any child objects (e.g. all the subscribers in a realm).  Accepts `true`, `1`, `false`, or `0` (case-insensitive).
+      description: If true, delete any child objects (e.g. all the subscribers in a realm).
     timestamps:
       name: timestamps
       in: query
@@ -3049,7 +3048,7 @@ components:
         type: boolean
         default: false
       description: |
-        If true, include the LDAP `createTimestamp` and `modifyTimestamp` operational attributes on each returned object.  Values are RFC 4517 GeneralizedTime in zulu form (`YYYYMMDDHHMMSSZ`, e.g. `20240519143012Z`) and are passed through unchanged from the directory.  Accepts `true`, `1`, `false`, or `0` (case-insensitive).
+        If true, include the LDAP `createTimestamp` and `modifyTimestamp` operational attributes on each returned object.  Values are RFC 4517 GeneralizedTime in zulu form (`YYYYMMDDHHMMSSZ`, e.g. `20240519143012Z`) and are passed through unchanged from the directory.
     accessDeviceId:
       name: accessDeviceId
       in: path
@@ -3205,7 +3204,7 @@ components:
         type: boolean
         default: false
       description: |
-        If true, the server upgrades the response to Server-Sent Events (`text/event-stream`).  The initial state is delivered as one or more events, followed by change events as the underlying data mutates.  The connection stays open until the client closes it.  Accepts `true`, `1`, `false`, or `0` (case-insensitive).
+        If true, the server upgrades the response to Server-Sent Events (`text/event-stream`).  The initial state is delivered as one or more events, followed by change events as the underlying data mutates.  The connection stays open until the client closes it.
     copy_uri:
       name: copy_uri
       in: query
