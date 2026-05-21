@@ -1543,7 +1543,6 @@ paths:
       security:
       - OIDC:
         - write:client
-      parameters:
   /client/{clientId}/port/{portId}/stag:
     parameters:
     - $ref: '#/components/parameters/clientId'
@@ -1707,7 +1706,6 @@ paths:
       security:
       - OIDC:
         - write:client
-      parameters:
   /clientGroup:
     get:
       responses:
@@ -2359,7 +2357,6 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
-      parameters:
   /accessDevice/{accessDeviceId}/port/{portId}/stag:
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
@@ -2523,7 +2520,6 @@ paths:
       security:
       - OIDC:
         - write:accessDevice
-      parameters:
   /rename:
     post:
       operationId: post-rename
