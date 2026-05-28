@@ -2702,6 +2702,22 @@ components:
           type: boolean
           description: If true, the subscriber will be unabled to authenticate via any other circuit than the one we learned
             the first time the subscriber authenticated
+        subscriberLastDisconnected:
+          type: string
+          format: date-time
+          description: When the subscriber was last disconnected.
+        subscriberDisconnect:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          - oneshot
+          description: |-
+            Per-modification RADIUS behaviour for this subscriber:
+              - 'true':    any modification to the entry triggers a Disconnect-Request.
+              - 'false':   any modification triggers a CoA-Request.
+              - 'oneshot': the next modification triggers a Disconnect-Request, after which this attribute is
+                           automatically cleared and subsequent modifications revert to CoA behaviour.
       required:
       - id
       - subscriberId
