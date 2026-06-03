@@ -98,7 +98,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/realm'
+              $ref: '#/components/schemas/realmCreate'
         description: The definition of the new realm
       tags:
       - Realm
@@ -164,7 +164,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/realm'
+              $ref: '#/components/schemas/realmReplace'
         description: New definition of the realm
       tags:
       - Realm
@@ -200,7 +200,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/realm'
+              $ref: '#/components/schemas/realmPatch'
         description: Partial definition of a realm
       tags:
       - Realm
@@ -283,7 +283,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/subscriber'
+              $ref: '#/components/schemas/subscriberCreate'
         description: Definition of the subscriber to add
       tags:
       - Subscriber
@@ -340,7 +340,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/subscriber'
+              $ref: '#/components/schemas/subscriberReplace'
         description: New definition of the subscriber
       description: Replace an existing subscriber in a given realm
       tags:
@@ -367,7 +367,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/subscriber'
+              $ref: '#/components/schemas/subscriberPatch'
         description: Partial definition of a subscriber
       tags:
       - Subscriber
@@ -445,7 +445,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/subscriberGroup'
+              $ref: '#/components/schemas/subscriberGroupCreate'
         description: Definition of the subscriber group to add
       description: Add a new subscriber group
       tags:
@@ -501,7 +501,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/subscriberGroup'
+              $ref: '#/components/schemas/subscriberGroupReplace'
         description: New definition of the subscriber
       description: Replace subscriber group metadata.  Will not affect group membership
       tags:
@@ -522,7 +522,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/subscriberGroup'
+              $ref: '#/components/schemas/subscriberGroupPatch'
         description: Partial definition of a subscriber group
       description: |-
         Update a subscriber group's metadata by replacing only the provided attributes.
@@ -598,7 +598,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/service'
+              $ref: '#/components/schemas/serviceCreate'
         description: Definition of the service to add
       summary: Add a new service
       tags:
@@ -654,7 +654,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/service'
+              $ref: '#/components/schemas/serviceReplace'
         description: New definition of the service
       summary: Replace a service
       tags:
@@ -680,7 +680,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/service'
+              $ref: '#/components/schemas/servicePatch'
         description: Partial definition of a service
       description: |-
         Update service metadata by replacing only the provided attributes.
@@ -761,7 +761,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/serviceProfile'
+              $ref: '#/components/schemas/serviceProfileCreate'
         description: Definition of the serviceProfile (abstract profile) to add
       summary: Add a serviceProfile to a service
       tags:
@@ -818,7 +818,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/serviceProfile'
+              $ref: '#/components/schemas/serviceProfileReplace'
         description: New definition of the serviceProfile
       summary: Replace a serviceProfile
       tags:
@@ -850,7 +850,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/serviceProfile'
+              $ref: '#/components/schemas/serviceProfilePatch'
         description: Partial definition of a serviceProfile
       summary: Update a serviceProfile
       tags:
@@ -928,7 +928,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/freeradiusPolicy'
+              $ref: '#/components/schemas/freeradiusPolicyCreate'
         description: Definition of a policy to add
       summary: Add a freeradiusProfile to a serviceProfile
       tags:
@@ -988,7 +988,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/freeradiusPolicy'
+              $ref: '#/components/schemas/freeradiusPolicyReplace'
         description: New definition of the policy
       summary: Replace a freeradiusProfile
       tags:
@@ -1022,7 +1022,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/freeradiusPolicy'
+              $ref: '#/components/schemas/freeradiusPolicyPatch'
         description: Partial definition of a freeradiusPolicy
       summary: Update a freeradiusProfile
       tags:
@@ -1102,7 +1102,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/client'
+              $ref: '#/components/schemas/clientCreate'
         description: Definition of an client to add
       tags:
       - Client
@@ -1158,7 +1158,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/client'
+              $ref: '#/components/schemas/clientReplace'
         description: New definition of the client
       tags:
       - Client
@@ -1190,7 +1190,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/client'
+              $ref: '#/components/schemas/clientPatch'
         description: Partial definition of an client
       tags:
       - Client
@@ -1266,7 +1266,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portPhysical'
+              $ref: '#/components/schemas/portPhysicalCreate'
         description: Definition of an client to add
       tags:
       - Client
@@ -1325,7 +1325,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portPhysical'
+              $ref: '#/components/schemas/portPhysicalReplace'
         description: New definition of the client
       tags:
       - Client
@@ -1352,7 +1352,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portPhysical'
+              $ref: '#/components/schemas/portPhysicalPatch'
         description: Partial definition of an client
       tags:
       - Client
@@ -1425,7 +1425,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portQinQ'
+              $ref: '#/components/schemas/portQinQCreate'
       responses:
         '201':
           $ref: '#/components/responses/onCreate'
@@ -1485,7 +1485,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portQinQ'
+              $ref: '#/components/schemas/portQinQReplace'
       responses:
         '200':
           description: OK
@@ -1512,7 +1512,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portQinQ'
+              $ref: '#/components/schemas/portQinQPatch'
       responses:
         '200':
           description: OK
@@ -1588,7 +1588,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portPhysStag'
+              $ref: '#/components/schemas/portPhysStagCreate'
       responses:
         '201':
           $ref: '#/components/responses/onCreate'
@@ -1648,7 +1648,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portPhysStag'
+              $ref: '#/components/schemas/portPhysStagReplace'
       responses:
         '200':
           description: OK
@@ -1675,7 +1675,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portPhysStag'
+              $ref: '#/components/schemas/portPhysStagPatch'
       responses:
         '200':
           description: OK
@@ -1752,7 +1752,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/clientGroup'
+              $ref: '#/components/schemas/clientGroupCreate'
         description: Definition of the clientGroup to add
       tags:
       - Client group
@@ -1808,7 +1808,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/clientGroup'
+              $ref: '#/components/schemas/clientGroupReplace'
         description: New definition of the clientGroup
       tags:
       - Client group
@@ -1840,7 +1840,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/clientGroup'
+              $ref: '#/components/schemas/clientGroupPatch'
         description: Partial definition of an clientGroup
       tags:
       - Client group
@@ -1916,7 +1916,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/accessDevice'
+              $ref: '#/components/schemas/accessDeviceCreate'
         description: Definition of an accessDevice to add
       tags:
       - accessDevice
@@ -1972,7 +1972,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/accessDevice'
+              $ref: '#/components/schemas/accessDeviceReplace'
         description: New definition of the accessDevice
       tags:
       - accessDevice
@@ -2004,7 +2004,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/accessDevice'
+              $ref: '#/components/schemas/accessDevicePatch'
         description: Partial definition of an accessDevice
       tags:
       - accessDevice
@@ -2080,7 +2080,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portPhysical'
+              $ref: '#/components/schemas/portPhysicalCreate'
         description: Definition of an accessDevice to add
       tags:
       - accessDevice
@@ -2139,7 +2139,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portPhysical'
+              $ref: '#/components/schemas/portPhysicalReplace'
         description: New definition of the accessDevice
       tags:
       - accessDevice
@@ -2166,7 +2166,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portPhysical'
+              $ref: '#/components/schemas/portPhysicalPatch'
         description: Partial definition of an accessDevice
       tags:
       - accessDevice
@@ -2239,7 +2239,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portQinQ'
+              $ref: '#/components/schemas/portQinQCreate'
       responses:
         '201':
           $ref: '#/components/responses/onCreate'
@@ -2299,7 +2299,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portQinQ'
+              $ref: '#/components/schemas/portQinQReplace'
       responses:
         '200':
           description: OK
@@ -2326,7 +2326,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portQinQ'
+              $ref: '#/components/schemas/portQinQPatch'
       responses:
         '200':
           description: OK
@@ -2402,7 +2402,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portPhysStag'
+              $ref: '#/components/schemas/portPhysStagCreate'
       responses:
         '201':
           $ref: '#/components/responses/onCreate'
@@ -2462,7 +2462,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portPhysStag'
+              $ref: '#/components/schemas/portPhysStagReplace'
       responses:
         '200':
           description: OK
@@ -2489,7 +2489,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/portPhysStag'
+              $ref: '#/components/schemas/portPhysStagPatch'
       responses:
         '200':
           description: OK
@@ -2600,8 +2600,37 @@ components:
       title: realm
       x-stoplight:
         id: or81e5rovv950
-      type: object
       description: Holds a set of subscriber, and LDAP/RADIUS attributes associated with a given realm
+      allOf:
+      - $ref: '#/components/schemas/_realmFields'
+      - type: object
+        required:
+        - id
+    realmCreate:
+      title: realmCreate
+      description: realm definition for POST requests.
+      allOf:
+      - $ref: '#/components/schemas/_realmFields'
+      - type: object
+        required:
+        - id
+    realmReplace:
+      title: realmReplace
+      description: realm definition for PUT requests. The identity field (id) is taken from the URL, and is ignored when present
+        in the body.
+      allOf:
+      - $ref: '#/components/schemas/_realmFields'
+    realmPatch:
+      title: realmPatch
+      description: Partial realm definition for PATCH requests. No fields are required. Setting a field to null removes the
+        attribute.
+      allOf:
+      - $ref: '#/components/schemas/_realmFields'
+    _realmFields:
+      title: _realmFields
+      type: object
+      description: All realm fields, with no required constraints. The realm, realmCreate, realmReplace and realmPatch schemas
+        add the per-method required lists.
       properties:
         id:
           type: string
@@ -2622,13 +2651,50 @@ components:
       title: subscriber
       x-stoplight:
         id: 39i82q1wb1101
-      type: object
       description: |-
         A subscriber - A user authenticating via the RADIUS service.
 
         Note: The attributes listed in the definition of the object are a subset of the attributes available.
 
         Any attribute that's available in the relevant LDAP schema (freeradius-radius.schema, freeradius-dhcpv4.schema, freeradius-dhcpv6.schema, etc...) for the protocol, can be included in POST, PATCH, PUT actions, including generic attributes such as `radiusAttribute`.  Generic attributes take the format `<attribute> <op> <quote><value><quote>` e.g. `Reply-Message := "Welcome user %{User-Name}"`, and can be used to add any attribute allowed in the protocol dictionary.
+      allOf:
+      - $ref: '#/components/schemas/_subscriberFields'
+      - type: object
+        required:
+        - id
+        - subscriberId
+        - serviceStatus
+        - serviceId
+    subscriberCreate:
+      title: subscriberCreate
+      description: Subscriber definition for POST requests. subscriberId and serviceId may be omitted, the server derives
+        subscriberId and serviceId from id. When present, subscriberId and serviceId must match the values encoded in id.
+      allOf:
+      - $ref: '#/components/schemas/_subscriberFields'
+      - type: object
+        required:
+        - id
+        - serviceStatus
+    subscriberReplace:
+      title: subscriberReplace
+      description: Subscriber definition for PUT requests. The identity fields (id, subscriberId, serviceId) are taken from
+        the URL, and are ignored when present in the body.
+      allOf:
+      - $ref: '#/components/schemas/_subscriberFields'
+      - type: object
+        required:
+        - serviceStatus
+    subscriberPatch:
+      title: subscriberPatch
+      description: Partial subscriber definition for PATCH requests. No fields are required. Setting a field to null removes
+        the attribute.
+      allOf:
+      - $ref: '#/components/schemas/_subscriberFields'
+    _subscriberFields:
+      title: _subscriberFields
+      type: object
+      description: All subscriber fields, with no required constraints. The subscriber, subscriberCreate, subscriberReplace
+        and subscriberPatch schemas add the per-method required lists.
       properties:
         id:
           type: string
@@ -2718,18 +2784,41 @@ components:
               - 'true':    any modification to the entry triggers a Disconnect-Request.
               - 'false':   any modification triggers a CoA-Request.
               - 'oneshot': sends an immediate Disconnect-Request, then reverts to 'false'.
-      required:
-      - id
-      - subscriberId
-      - serviceStatus
-      - serviceId
-      - serviceProfile
     subscriberGroup:
       title: subscriberGroup
       x-stoplight:
         id: 8y76ggnb1sgil
-      type: object
       description: A group of subscriber, used to apply RADIUS attribute overrides to subsets of subscriber
+      allOf:
+      - $ref: '#/components/schemas/_subscriberGroupFields'
+      - type: object
+        required:
+        - id
+    subscriberGroupCreate:
+      title: subscriberGroupCreate
+      description: subscriberGroup definition for POST requests.
+      allOf:
+      - $ref: '#/components/schemas/_subscriberGroupFields'
+      - type: object
+        required:
+        - id
+    subscriberGroupReplace:
+      title: subscriberGroupReplace
+      description: subscriberGroup definition for PUT requests. The identity field (id) is taken from the URL, and is ignored
+        when present in the body.
+      allOf:
+      - $ref: '#/components/schemas/_subscriberGroupFields'
+    subscriberGroupPatch:
+      title: subscriberGroupPatch
+      description: Partial subscriberGroup definition for PATCH requests. No fields are required. Setting a field to null
+        removes the attribute.
+      allOf:
+      - $ref: '#/components/schemas/_subscriberGroupFields'
+    _subscriberGroupFields:
+      title: _subscriberGroupFields
+      type: object
+      description: All subscriberGroup fields, with no required constraints. The subscriberGroup, subscriberGroupCreate, subscriberGroupReplace
+        and subscriberGroupPatch schemas add the per-method required lists.
       properties:
         id:
           type: string
@@ -2740,8 +2829,37 @@ components:
       title: client
       x-stoplight:
         id: zhddk66aypm1a
-      type: object
       description: An client that is authorized to communicate with the RADIUS service
+      allOf:
+      - $ref: '#/components/schemas/_clientFields'
+      - type: object
+        required:
+        - id
+    clientCreate:
+      title: clientCreate
+      description: client definition for POST requests.
+      allOf:
+      - $ref: '#/components/schemas/_clientFields'
+      - type: object
+        required:
+        - id
+    clientReplace:
+      title: clientReplace
+      description: client definition for PUT requests. The identity field (id) is taken from the URL, and is ignored when
+        present in the body.
+      allOf:
+      - $ref: '#/components/schemas/_clientFields'
+    clientPatch:
+      title: clientPatch
+      description: Partial client definition for PATCH requests. No fields are required. Setting a field to null removes the
+        attribute.
+      allOf:
+      - $ref: '#/components/schemas/_clientFields'
+    _clientFields:
+      title: _clientFields
+      type: object
+      description: All client fields, with no required constraints. The client, clientCreate, clientReplace and clientPatch
+        schemas add the per-method required lists.
       properties:
         id:
           type: string
@@ -2773,15 +2891,42 @@ components:
           example: testing123
           description: The shared key the TACACS client will use to communicate with the TACACS service
           format: password
-      required:
-      - id
     accessDevice:
       title: accessDevice
-      type: object
       description: An accessDevice known to the RADIUS service.  Identical to clients but cannot communicate directly with
         the RADIUS service.
       x-stoplight:
         id: ba9992bc8d39a
+      allOf:
+      - $ref: '#/components/schemas/_accessDeviceFields'
+      - type: object
+        required:
+        - id
+    accessDeviceCreate:
+      title: accessDeviceCreate
+      description: accessDevice definition for POST requests.
+      allOf:
+      - $ref: '#/components/schemas/_accessDeviceFields'
+      - type: object
+        required:
+        - id
+    accessDeviceReplace:
+      title: accessDeviceReplace
+      description: accessDevice definition for PUT requests. The identity field (id) is taken from the URL, and is ignored
+        when present in the body.
+      allOf:
+      - $ref: '#/components/schemas/_accessDeviceFields'
+    accessDevicePatch:
+      title: accessDevicePatch
+      description: Partial accessDevice definition for PATCH requests. No fields are required. Setting a field to null removes
+        the attribute.
+      allOf:
+      - $ref: '#/components/schemas/_accessDeviceFields'
+    _accessDeviceFields:
+      title: _accessDeviceFields
+      type: object
+      description: All accessDevice fields, with no required constraints. The accessDevice, accessDeviceCreate, accessDeviceReplace
+        and accessDevicePatch schemas add the per-method required lists.
       properties:
         id:
           type: string
@@ -2799,46 +2944,130 @@ components:
           type: string
           description: A humanly readable comment associated with the client
           example: This RADIUS client authenticates all subscriber in the foo region of bar
-      required:
-      - id
     clientGroup:
-      type: object
       title: clientGroup
       x-stoplight:
         id: 5b9nnqawh4d41
       description: A method of binding subscriber to a particular group of RADIUS clients
       deprecated: true
+      allOf:
+      - $ref: '#/components/schemas/_clientGroupFields'
+      - type: object
+        required:
+        - id
+    clientGroupCreate:
+      title: clientGroupCreate
+      description: clientGroup definition for POST requests.
+      deprecated: true
+      allOf:
+      - $ref: '#/components/schemas/_clientGroupFields'
+      - type: object
+        required:
+        - id
+    clientGroupReplace:
+      title: clientGroupReplace
+      description: clientGroup definition for PUT requests. The identity field (id) is taken from the URL, and is ignored
+        when present in the body.
+      deprecated: true
+      allOf:
+      - $ref: '#/components/schemas/_clientGroupFields'
+    clientGroupPatch:
+      title: clientGroupPatch
+      description: Partial clientGroup definition for PATCH requests. No fields are required. Setting a field to null removes
+        the attribute.
+      deprecated: true
+      allOf:
+      - $ref: '#/components/schemas/_clientGroupFields'
+    _clientGroupFields:
+      title: _clientGroupFields
+      type: object
+      description: All clientGroup fields, with no required constraints. The clientGroup, clientGroupCreate, clientGroupReplace
+        and clientGroupPatch schemas add the per-method required lists.
       properties:
         id:
           type: string
           description: The identifier for the clientGroup
           example: group1
-      required:
-      - id
     service:
       title: service
       x-stoplight:
         id: ly2966j1k5o5v
-      type: object
       description: |
         ISPs and carriers often provide multiple services for their subscribers.  In addition to fixed line boardband, ISPs or carriers may provide VoIP, metro wireless or cellular data.
 
         A service object contains one or more serviceProfiles for a given service.  Each serviceProfile describes a different class-of-service a subscriber cam receive.  Common differentiations between serviceProfiles are upload/download speed restrictions, permitted hours of service, and permitted data transfer quotas.
+      allOf:
+      - $ref: '#/components/schemas/_serviceFields'
+      - type: object
+        required:
+        - id
+    serviceCreate:
+      title: serviceCreate
+      description: service definition for POST requests.
+      allOf:
+      - $ref: '#/components/schemas/_serviceFields'
+      - type: object
+        required:
+        - id
+    serviceReplace:
+      title: serviceReplace
+      description: service definition for PUT requests. The identity field (id) is taken from the URL, and is ignored when
+        present in the body.
+      allOf:
+      - $ref: '#/components/schemas/_serviceFields'
+    servicePatch:
+      title: servicePatch
+      description: Partial service definition for PATCH requests. No fields are required. Setting a field to null removes
+        the attribute.
+      allOf:
+      - $ref: '#/components/schemas/_serviceFields'
+    _serviceFields:
+      title: _serviceFields
+      type: object
+      description: All service fields, with no required constraints. The service, serviceCreate, serviceReplace and servicePatch
+        schemas add the per-method required lists.
       properties:
         id:
           type: string
           description: Globally unique identifier for a service
-      required:
-      - id
     serviceProfile:
       title: serviceProfile
       x-stoplight:
         id: kprv79ox656ep
-      type: object
       description: |-
         An abstract definition of a class-of-service a subscriber would receive.  This object holds non-FreeRADIUS attributes which control how a subscriber is authorized/authenticated, and enables/disables additional logic that runs as the subscriber's request is processed.
 
         This object contains multiple freeradiusPolicy objects (as children) which are the concrete implementation of the serviceProfile.  These freeradiusPolicy objects are indexed by clientGroup and describe how to implement a given serviceProfile for a type of client.
+      allOf:
+      - $ref: '#/components/schemas/_serviceProfileFields'
+      - type: object
+        required:
+        - id
+    serviceProfileCreate:
+      title: serviceProfileCreate
+      description: serviceProfile definition for POST requests.
+      allOf:
+      - $ref: '#/components/schemas/_serviceProfileFields'
+      - type: object
+        required:
+        - id
+    serviceProfileReplace:
+      title: serviceProfileReplace
+      description: serviceProfile definition for PUT requests. The identity field (id) is taken from the URL, and is ignored
+        when present in the body.
+      allOf:
+      - $ref: '#/components/schemas/_serviceProfileFields'
+    serviceProfilePatch:
+      title: serviceProfilePatch
+      description: Partial serviceProfile definition for PATCH requests. No fields are required. Setting a field to null removes
+        the attribute.
+      allOf:
+      - $ref: '#/components/schemas/_serviceProfileFields'
+    _serviceProfileFields:
+      title: _serviceProfileFields
+      type: object
+      description: All serviceProfile fields, with no required constraints. The serviceProfile, serviceProfileCreate, serviceProfileReplace
+        and serviceProfilePatch schemas add the per-method required lists.
       properties:
         id:
           type: string
@@ -2847,16 +3076,10 @@ components:
         portBinding:
           type: boolean
           description: The default port binding state for any subscriber which uses this serviceProfile
-      required:
-      - id
     freeradiusPolicy:
       title: freeradiusPolicy
       x-stoplight:
         id: ebjv3rkkgvqou
-      type: object
-      properties:
-        id:
-          type: string
       description: |-
         A set of FreeRADIUS attributes and assigment rules which modify attributes in the current request.  A freeradiusPolicy is can be a "concrete" implementation of a serviceProfile.  freeradiusPolicies may also be assigned to individual subscribers or subscriberGroups.
 
@@ -2866,12 +3089,75 @@ components:
       examples:
       - id: alcatel7750
         radiusAttribute: reply.Vendor-Specific.Nokia-SR.Subsc-ID-Str = "%{User-Name}@example.org"
+      allOf:
+      - $ref: '#/components/schemas/_freeradiusPolicyFields'
+      - type: object
+        required:
+        - id
+    freeradiusPolicyCreate:
+      title: freeradiusPolicyCreate
+      description: freeradiusPolicy definition for POST requests.
+      allOf:
+      - $ref: '#/components/schemas/_freeradiusPolicyFields'
+      - type: object
+        required:
+        - id
+    freeradiusPolicyReplace:
+      title: freeradiusPolicyReplace
+      description: freeradiusPolicy definition for PUT requests. The identity field (id) is taken from the URL, and is ignored
+        when present in the body.
+      allOf:
+      - $ref: '#/components/schemas/_freeradiusPolicyFields'
+    freeradiusPolicyPatch:
+      title: freeradiusPolicyPatch
+      description: Partial freeradiusPolicy definition for PATCH requests. No fields are required. Setting a field to null
+        removes the attribute.
+      allOf:
+      - $ref: '#/components/schemas/_freeradiusPolicyFields'
+    _freeradiusPolicyFields:
+      title: _freeradiusPolicyFields
+      type: object
+      description: All freeradiusPolicy fields, with no required constraints. The freeradiusPolicy, freeradiusPolicyCreate,
+        freeradiusPolicyReplace and freeradiusPolicyPatch schemas add the per-method required lists.
+      properties:
+        id:
+          type: string
     portQinQ:
       title: portQinQ
       x-stoplight:
         id: fca8d7c555fbe
-      type: object
       description: A representation of a QinQ SVLAN/CVLAN virtual port
+      allOf:
+      - $ref: '#/components/schemas/_portQinQFields'
+      - type: object
+        required:
+        - id
+    portQinQCreate:
+      title: portQinQCreate
+      description: portQinQ definition for POST requests. svlan and cvlan may be omitted, the server derives svlan and cvlan
+        from id. When present, svlan and cvlan must match the values encoded in id.
+      allOf:
+      - $ref: '#/components/schemas/_portQinQFields'
+      - type: object
+        required:
+        - id
+    portQinQReplace:
+      title: portQinQReplace
+      description: portQinQ definition for PUT requests. The identity fields (id, svlan, cvlan) are taken from the URL, and
+        are ignored when present in the body.
+      allOf:
+      - $ref: '#/components/schemas/_portQinQFields'
+    portQinQPatch:
+      title: portQinQPatch
+      description: Partial portQinQ definition for PATCH requests. No fields are required. Setting a field to null removes
+        the attribute.
+      allOf:
+      - $ref: '#/components/schemas/_portQinQFields'
+    _portQinQFields:
+      title: _portQinQFields
+      type: object
+      description: All portQinQ fields, with no required constraints. The portQinQ, portQinQCreate, portQinQReplace and portQinQPatch
+        schemas add the per-method required lists.
       properties:
         id:
           type: string
@@ -2902,14 +3188,41 @@ components:
             the remote end of the link.
           type: string
           example: http://localhost:3000/accessDevice/dslam-03
-      required:
-      - id
     portPhysical:
       title: portPhysical
-      type: object
       description: A representation of a QinQ SVLAN/CVLAN virtual port
       x-stoplight:
         id: c02278ad36343
+      allOf:
+      - $ref: '#/components/schemas/_portPhysicalFields'
+      - type: object
+        required:
+        - id
+    portPhysicalCreate:
+      title: portPhysicalCreate
+      description: portPhysical definition for POST requests.
+      allOf:
+      - $ref: '#/components/schemas/_portPhysicalFields'
+      - type: object
+        required:
+        - id
+    portPhysicalReplace:
+      title: portPhysicalReplace
+      description: portPhysical definition for PUT requests. The identity field (id) is taken from the URL, and is ignored
+        when present in the body.
+      allOf:
+      - $ref: '#/components/schemas/_portPhysicalFields'
+    portPhysicalPatch:
+      title: portPhysicalPatch
+      description: Partial portPhysical definition for PATCH requests. No fields are required. Setting a field to null removes
+        the attribute.
+      allOf:
+      - $ref: '#/components/schemas/_portPhysicalFields'
+    _portPhysicalFields:
+      title: _portPhysicalFields
+      type: object
+      description: All portPhysical fields, with no required constraints. The portPhysical, portPhysicalCreate, portPhysicalReplace
+        and portPhysicalPatch schemas add the per-method required lists.
       properties:
         id:
           type: string
@@ -2934,14 +3247,42 @@ components:
           description: URI of the accessDevice (or other upstream network element) that this port connects to. Used to discover
             the remote end of the link.
           example: http://localhost:3000/accessDevice/dslam-03
-      required:
-      - id
     portPhysStag:
       title: portPhysStag
       x-stoplight:
         id: bcd1szjaaavwb
-      type: object
       description: A combination of a physical port identifier and QinQ Stag value
+      allOf:
+      - $ref: '#/components/schemas/_portPhysStagFields'
+      - type: object
+        required:
+        - id
+    portPhysStagCreate:
+      title: portPhysStagCreate
+      description: portPhysStag definition for POST requests. svlan may be omitted, the server derives svlan from id. When
+        present, svlan must match id.
+      allOf:
+      - $ref: '#/components/schemas/_portPhysStagFields'
+      - type: object
+        required:
+        - id
+    portPhysStagReplace:
+      title: portPhysStagReplace
+      description: portPhysStag definition for PUT requests. The identity fields (id, svlan) are taken from the URL, and are
+        ignored when present in the body.
+      allOf:
+      - $ref: '#/components/schemas/_portPhysStagFields'
+    portPhysStagPatch:
+      title: portPhysStagPatch
+      description: Partial portPhysStag definition for PATCH requests. No fields are required. Setting a field to null removes
+        the attribute.
+      allOf:
+      - $ref: '#/components/schemas/_portPhysStagFields'
+    _portPhysStagFields:
+      title: _portPhysStagFields
+      type: object
+      description: All portPhysStag fields, with no required constraints. The portPhysStag, portPhysStagCreate, portPhysStagReplace
+        and portPhysStagPatch schemas add the per-method required lists.
       properties:
         id:
           type: string
@@ -2975,8 +3316,6 @@ components:
             the remote end of the link.
           example: http://localhost:3000/accessDevice/dslam-03
           format: uri
-      required:
-      - id
   parameters:
     serviceId:
       name: serviceId
