@@ -2716,8 +2716,7 @@ components:
             Per-modification RADIUS behaviour for this subscriber:
               - 'true':    any modification to the entry triggers a Disconnect-Request.
               - 'false':   any modification triggers a CoA-Request.
-              - 'oneshot': the next modification triggers a Disconnect-Request, after which this attribute is
-                           automatically cleared and subsequent modifications revert to CoA behaviour.
+              - 'oneshot': sends an immediate Disconnect-Request, then reverts to 'false'.
       required:
       - id
       - subscriberId
