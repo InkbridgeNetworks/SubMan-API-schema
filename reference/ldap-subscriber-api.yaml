@@ -3327,7 +3327,7 @@ components:
       x-stoplight:
         id: ebjv3rkkgvqou
       description: |-
-        A set of FreeRADIUS attributes and assigment rules which modify attributes in the current request.  A freeradiusPolicy is can be a "concrete" implementation of a serviceProfile.  freeradiusPolicies may also be assigned to individual subscribers or subscriberGroups.  When a freeradiusPolicy is the concrete implementation of a serviceProfile, its id corresponds to the clientGroup it implements the serviceProfile for.
+        A set of FreeRADIUS attributes and assignment rules which modify attributes in the current request.  A freeradiusPolicy is the "concrete" implementation of a serviceProfile for one clientGroup, and its id is the id of that clientGroup.  A freeradiusPolicy exists only as a child of a serviceProfile.  A subscriber, a subscriberGroup, or a realm references a serviceProfile through its serviceProfile field, and the freeradiusPolicy that matches the client the subscriber connects through applies.
 
         Note: The attributes listed in the definition of the object are a subset of the attributes available.
 
