@@ -78,6 +78,8 @@ paths:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_serviceProfile'
       - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/scope'
+      - $ref: '#/components/parameters/access_token'
     post:
       operationId: post-realm
       responses:
@@ -143,7 +145,6 @@ paths:
         - read:realm
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - $ref: '#/components/parameters/subscribe'
     put:
       operationId: put-realm-realmId
       responses:
@@ -267,6 +268,8 @@ paths:
       - $ref: '#/components/parameters/filter_portBindingClient'
       - $ref: '#/components/parameters/filter_portBindingIdentifier'
       - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/scope'
+      - $ref: '#/components/parameters/access_token'
     post:
       operationId: post-realm-realmId-subscriber
       responses:
@@ -323,7 +326,6 @@ paths:
         - read:subscriber
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - $ref: '#/components/parameters/subscribe'
     put:
       operationId: put-realm-realmId-subscriber-compoundSubscriberId
       responses:
@@ -428,6 +430,8 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/scope'
+      - $ref: '#/components/parameters/access_token'
     parameters: []
     post:
       operationId: post-group
@@ -484,7 +488,6 @@ paths:
         - read:subscriber
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - $ref: '#/components/parameters/subscribe'
     put:
       operationId: put-group-subscriberGroupId
       responses:
@@ -581,6 +584,8 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/scope'
+      - $ref: '#/components/parameters/access_token'
     post:
       operationId: post-service
       responses:
@@ -636,7 +641,6 @@ paths:
         - read:service
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - $ref: '#/components/parameters/subscribe'
     put:
       operationId: put-service-serviceId
       responses:
@@ -744,6 +748,8 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/scope'
+      - $ref: '#/components/parameters/access_token'
     post:
       operationId: post-service-serviceId-profile
       responses:
@@ -800,7 +806,6 @@ paths:
         - read:profile
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - $ref: '#/components/parameters/subscribe'
     put:
       operationId: put-service-serviceId-profile-profileId
       responses:
@@ -911,6 +916,8 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/scope'
+      - $ref: '#/components/parameters/access_token'
     post:
       operationId: post-service-serviceId-profile-profileId-policy
       responses:
@@ -970,7 +977,6 @@ paths:
         - read:profile
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - $ref: '#/components/parameters/subscribe'
     put:
       operationId: put-service-serviceId-profile-profileId-policy-policyId
       responses:
@@ -1085,6 +1091,8 @@ paths:
       - $ref: '#/components/parameters/filter_freeradiusClientShortname'
       - $ref: '#/components/parameters/filter_freeradiusClientGroup'
       - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/scope'
+      - $ref: '#/components/parameters/access_token'
     post:
       operationId: post-client
       responses:
@@ -1140,7 +1148,6 @@ paths:
         - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - $ref: '#/components/parameters/subscribe'
     put:
       operationId: put-client-clientId
       responses:
@@ -1249,6 +1256,8 @@ paths:
       - $ref: '#/components/parameters/filter_port'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/scope'
+      - $ref: '#/components/parameters/access_token'
     post:
       operationId: post-client-clientId-port
       responses:
@@ -1307,7 +1316,6 @@ paths:
         - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - $ref: '#/components/parameters/subscribe'
     put:
       operationId: put-client-clientId-port-portId
       responses:
@@ -1413,6 +1421,8 @@ paths:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/scope'
+      - $ref: '#/components/parameters/access_token'
     post:
       tags:
       - Client
@@ -1472,7 +1482,6 @@ paths:
         - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - $ref: '#/components/parameters/subscribe'
     put:
       tags:
       - Client
@@ -1576,6 +1585,8 @@ paths:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/scope'
+      - $ref: '#/components/parameters/access_token'
     post:
       tags:
       - Client
@@ -1635,7 +1646,6 @@ paths:
         - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - $ref: '#/components/parameters/subscribe'
     put:
       tags:
       - Client
@@ -1735,6 +1745,8 @@ paths:
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/scope'
+      - $ref: '#/components/parameters/access_token'
     post:
       operationId: post-clientGroup
       responses:
@@ -1790,7 +1802,6 @@ paths:
         - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - $ref: '#/components/parameters/subscribe'
     put:
       operationId: put-clientGroup-clientGroupId
       responses:
@@ -1899,6 +1910,8 @@ paths:
       - $ref: '#/components/parameters/filter_freeradiusClientShortname'
       - $ref: '#/components/parameters/filter_freeradiusClientType'
       - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/scope'
+      - $ref: '#/components/parameters/access_token'
     post:
       operationId: post-accessDevice
       responses:
@@ -1954,7 +1967,6 @@ paths:
         - read:accessDevice
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - $ref: '#/components/parameters/subscribe'
     put:
       operationId: put-accessDevice-accessDeviceId
       responses:
@@ -2063,6 +2075,8 @@ paths:
       - $ref: '#/components/parameters/filter_port'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/scope'
+      - $ref: '#/components/parameters/access_token'
     post:
       operationId: post-accessDevice-accessDeviceId-port
       responses:
@@ -2121,7 +2135,6 @@ paths:
         - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - $ref: '#/components/parameters/subscribe'
     put:
       operationId: put-accessDevice-accessDeviceId-port-portId
       responses:
@@ -2227,6 +2240,8 @@ paths:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/scope'
+      - $ref: '#/components/parameters/access_token'
     post:
       tags:
       - accessDevice
@@ -2286,7 +2301,6 @@ paths:
         - read:accessDevice
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - $ref: '#/components/parameters/subscribe'
     put:
       tags:
       - accessDevice
@@ -2390,6 +2404,8 @@ paths:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/scope'
+      - $ref: '#/components/parameters/access_token'
     post:
       tags:
       - accessDevice
@@ -2449,7 +2465,6 @@ paths:
         - read:accessDevice
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - $ref: '#/components/parameters/subscribe'
     put:
       tags:
       - accessDevice
@@ -2752,7 +2767,6 @@ paths:
         name: x-permissions
         description: If true, returns endpoints directly under the current path that the user can access, and their permissions.  Returns
           "permissionsResponse"
-      - $ref: '#/components/parameters/subscribe'
       description: "This endpoint demonstrates certain operations which apply globally to all endpoints.  \nThe OpenAPI specification\
         \ is not flexible enough to represent this.\n\nGlobal endpoints are triggered by using a specific header or query\
         \ parameter.\n\nThe documentation for those parameters states the response type that'll be received."
@@ -3753,7 +3767,27 @@ components:
         type: boolean
         default: false
       description: |
-        If true, the server upgrades the response to Server-Sent Events (`text/event-stream`).  The initial state is delivered as one or more events, followed by change events as the underlying data mutates.  The connection stays open until the client closes it.
+        When `subscribe` is true, the server sends the response as a Server-Sent Events stream (media type `text/event-stream`).  The stream delivers the initial state of the collection as events, then one event per change, and stays open until the client closes the stream.  `ldap-subscriber-api-stream.yaml` documents the events.  Only a listing endpoint provides the stream.  A single-object endpoint ignores `subscribe`.
+    scope:
+      name: scope
+      in: query
+      required: false
+      schema:
+        type: string
+        enum:
+        - onelevel
+        - subtree
+        default: onelevel
+      description: |
+        `scope` sets the depth of the stream that `subscribe` opens.  With `onelevel`, the server streams the records of the collection.  With `subtree`, the server streams every record below the collection, at any depth, each described as a separate resource.  The server ignores `scope` when `subscribe` is false.
+    access_token:
+      name: access_token
+      in: query
+      required: false
+      schema:
+        type: string
+      description: |
+        `access_token` carries a bearer access token for a client that cannot send the `Authorization` header, such as a browser that uses the `EventSource` API.  RFC 6750 section 2.3 defines the query parameter form.  The server accepts `access_token` on GET only, and only when the request carries no `Authorization` header.  The token appears in the URL, so a success response carries `Cache-Control: private`.
     copy_uri:
       name: copy_uri
       in: query
@@ -3934,7 +3968,8 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: Bearer access token used to call API.
+      description: |
+        The client sends a bearer access token as `Authorization: Bearer <token>`.  A GET may carry the token in the `access_token` query parameter instead of the `Authorization` header.  See the `access_token` parameter for the conditions.
     OIDC:
       type: oauth2
       flows:
