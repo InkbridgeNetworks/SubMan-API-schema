@@ -1,100 +1,158 @@
 asyncapi: 3.0.0
 info:
   title: SubMan async event streams (SSE)
-  version: '1.0'
+  version: '1.1'
   description: |
     Every listing endpoint in `ldap-subscriber-api.yaml` accepts
-    `?subscribe=1`, which upgrades the response to `text/event-stream`
-    and keeps the connection open. This document describes the events
-    delivered on those streams.
+    `?subscribe=1`, which turns the response into a `text/event-stream`
+    that stays open and reports every change to the listed records. A
+    single-object endpoint (`/realm/{realmId}` for example) returns the
+    object and ignores `subscribe`. This document describes the one
+    stream that every listing endpoint provides, and the events that the
+    stream delivers.
 
     ## Quickstart for an SSE consumer
 
     ```js
-    const es = new EventSource('/realm/example.org/subscriber?subscribe=1');
+    const es = new EventSource('/realm/example.org/subscriber?subscribe=1&access_token=' + token);
 
     es.addEventListener('ready', () => {
-      // initial state has finished replaying; subsequent `entry`
-      // events are live changes
+      // The server has finished replaying the initial state. Every later
+      // `entry` is a live change.
     });
 
     es.addEventListener('entry', (e) => {
       const { entryUUID, syncOp, body } = JSON.parse(e.data);
       switch (syncOp) {
-        case 'present':                 // existing record (during initial replay)
-        case 'add':                     // newly created
-        case 'modify':  applyUpsert(body); break;   // full new state in `body`
-        case 'delete':  applyDelete(body); break;   // tombstone: only id + _url
+        case 'add':                                 // new record, full body
+        case 'modify':  applyUpsert(body); break;   // changed record, full body
+        case 'delete':  applyDelete(body); break;   // removed record, only id and _url
+        case 'present':                             // unchanged record, only id and _url
+          if (!haveRecord(body._url)) fetchRecord(body._url);
+          break;
       }
     });
     ```
 
-    Two SSE event names are used:
+    The stream uses two SSE event names:
 
-    * `ready` (fires once) marks the boundary between the initial
-      replay of existing records and the live change stream. Its
-      payload is an empty object.
-    * `entry` (fires repeatedly) carries one record. The JSON payload
-      tells you what kind of change it represents via `syncOp`, and
-      carries the record itself under `body`. Records always include
-      a `_url` field pointing at the matching REST resource.
+    * The server sends `ready` once, when the initial replay of existing
+      records is complete. Every later `entry` is a live change. The
+      payload is an empty object, and the `id:` line carries the resume
+      cookie for the end of the replay.
+    * The server sends `entry` once per record. `syncOp` names the kind
+      of change, and `body` carries the record. Every record includes
+      `_url`, the path of the REST resource of the record.
+
+    ## Choosing what to follow
+
+    A stream is a listing GET that stays open, so the stream accepts
+    the same query parameters as the listing GET:
+
+    * The `id` parameter and the `filter_*` parameters of the listing
+      endpoint narrow the stream to the records that match the
+      parameters. `ldap-subscriber-api.yaml` documents the parameters
+      per endpoint. `/realm/example.org/subscriber?subscribe=1&id=alice`
+      follows one subscriber.
+    * `scope=subtree` widens the stream to every record below the
+      collection, at any depth. Each event describes the record's own
+      resource, so a subtree stream on `/realm` carries realm events
+      and subscriber events. The consumer tells realm events and
+      subscriber events apart by `_url`.
+
+    The server runs one directory search per open stream, and the
+    directory server checks every write against every open search. The
+    number of open searches is the cost of streaming. The number of
+    connections is not a cost. The API serves HTTP/2, so a browser holds
+    every stream on one connection. Open the fewest streams that cover
+    the records you need. The widest streams are the subtree streams of
+    the six top-level collections:
+
+    | Stream | Records carried |
+    |--------|-----------------|
+    | `/realm?subscribe=1&scope=subtree` | realms and subscribers |
+    | `/group?subscribe=1&scope=subtree` | subscriber groups |
+    | `/service?subscribe=1&scope=subtree` | services, service profiles, and policies |
+    | `/client?subscribe=1&scope=subtree` | clients and the ports and taggings of the clients |
+    | `/clientGroup?subscribe=1&scope=subtree` | client groups |
+    | `/accessDevice?subscribe=1&scope=subtree` | access devices and the ports and taggings of the access devices |
+
+    ## The event body
+
+    `body` has the shape of the GET response for the resource that
+    `_url` names, plus `_url`. `_url` therefore selects which schema in
+    `ldap-subscriber-api.yaml` describes `body`. Decoding an event does
+    not depend on which stream delivered the event.
 
     ## Deletes
 
     `delete` events carry only `id` and `_url` in `body`, not the
-    attributes the record had before it was removed. By the time the
-    server emits the event, the record is already gone from the
-    underlying directory and its attributes are unrecoverable;
-    consumers that need the old state must keep their own copy keyed
-    on `entryUUID`.
+    attributes that the record had before the record was removed. By
+    the time the server sends the event, the record is gone from the
+    directory and the attributes are unrecoverable. A consumer that
+    needs the old state keeps a copy keyed on `entryUUID`.
 
     ## Renames
 
-    Resources are identified in the URL by their `id`. When an `id`
-    changes, that's a rename, and a single underlying rename surfaces
-    on the stream as **two** events rather than one `modify`:
+    The URL of a resource contains the `id` of the resource. When an
+    `id` changes, the change is a rename, and the server sends **two**
+    events for one rename rather than one `modify`:
 
-    * a `delete` carrying the **old** `id` and `_url`, followed by
-    * an `add` carrying the **new** `id`, `_url`, and the full object
-      body.
+    1. a `delete` carrying the **old** `id` and `_url`.
+    2. an `add` carrying the **new** `id`, `_url`, and the full body.
 
-    Both events share the same `entryUUID`, so consumers that want to
-    treat a rename as a single logical operation can correlate by
-    UUID. Consumers that only care about the current URL of a record
-    can treat the pair as an ordinary remove-then-create.
+    Both events share the same `entryUUID`, so a consumer that treats a
+    rename as one operation correlates the two events by `entryUUID`. A
+    consumer that only tracks the current URL of a record treats the
+    two events as a removed record followed by a new record.
 
-    The same shape applies when a record moves between collections
-    (for example, a subscriber re-homed to a different realm): the
-    URL changes, so the stream emits `delete` against the old URL
-    and `add` against the new one.
+    A move between collections, for example a subscriber re-homed to
+    another realm, produces the same two events. The URL changes, so
+    the server sends `delete` for the old URL and `add` for the new
+    URL.
 
     ## Resuming a dropped stream
 
-    Each `entry` is emitted with an SSE `id:` line containing an
-    opaque resume cookie. EventSource captures these automatically and
-    sends the most recent one back as `Last-Event-ID` when it
-    reconnects, so for browser clients no extra code is needed:
-    reconnects pick up where the previous stream left off, without
-    replaying the initial state.
+    The `ready` event and every `entry` event carry an SSE `id:` line
+    holding an opaque resume cookie. `EventSource` records the most
+    recent cookie and sends the cookie back as `Last-Event-ID` when
+    `EventSource` reconnects, so a browser client needs no extra code.
+    A client that does not use `EventSource` resumes in two steps:
 
-    Non-EventSource clients should:
+    1. Remember the last `id:` value received.
+    2. On reconnect, send the remembered value in `Last-Event-ID` on
+       the new request.
 
-    1. remember the last `id:` value they received,
-    2. on reconnect, set `Last-Event-ID: <that value>` on the new
-       request.
+    The server accepts a cookie of 1024 bytes or fewer with no control
+    characters, and answers any other cookie with 400 Bad Request.
 
-    Cookies are accepted only if they are 1024 bytes or fewer and
-    contain no control characters; otherwise the server returns 400
-    Bad Request.
+    On a reconnect, the server replays only the changes since the
+    cookie, as long as the directory server still holds history back to
+    the cookie. When the cookie is older than the history that the
+    directory server keeps, the server instead sends one `present` event
+    for every record that still exists and has not changed. Each
+    `present` event carries `id` and `_url` only. The server then sends
+    the changes. A `present` event means that the record still exists
+    and has not changed since the cookie. Keep the copy you have, and
+    fetch `_url` if you have none.
+
+    ## Authentication
+
+    The stream needs the same bearer token as every other request. Send
+    the token in `Authorization: Bearer <token>`. A client that cannot
+    set request headers, such as the browser `EventSource` API, sends
+    the token in the `access_token` query parameter of a GET. The token
+    then appears in the URL, so the response to a GET with
+    `access_token` carries `Cache-Control: private`.
 
     ## Where the events come from
 
-    Internally the stream is driven by an LDAP syncrepl persistent
-    search (RFC 4533). The `syncOp` values (`present`, `add`,
-    `modify`, `delete`) and the `entryUUID` field come from that
-    protocol. Consumers do not need to know about LDAP to use the
-    stream: the events describe REST resources, and `body` contains
-    the same JSON shape returned by the corresponding GET endpoint.
+    A syncrepl persistent search (RFC 4533) on the LDAP directory drives
+    the stream. The `syncOp` values (`present`, `add`, `modify`,
+    `delete`) and the `entryUUID` field come from syncrepl. Using the
+    stream requires no knowledge of LDAP. The events describe REST
+    resources, and `body` contains the JSON shape that the GET endpoint
+    of the resource returns.
   contact:
     name: Network RADIUS support
     url: http://www.networkradius.com
@@ -107,276 +165,128 @@ servers:
     host: localhost:3000
     protocol: sse
     description: |
-      The same host that serves the REST API. Streams are reached by
-      appending `?subscribe=1` to the corresponding listing endpoint
-      (and any of the supported `filter_*` query parameters).
+      The host that serves the REST API. A stream is a GET of any
+      listing endpoint of `ldap-subscriber-api.yaml` with `?subscribe=1`
+      appended, plus the `scope`, `id`, and `filter_*` query parameters
+      that the endpoint accepts.
+    security:
+    - $ref: '#/components/securitySchemes/bearer'
 defaultContentType: application/json
 channels:
-  realmStream:
-    address: /realm?subscribe=1
-    title: Realm stream
-    description: Changes to the set of realms.
-    messages:
-      ready:
-        $ref: '#/components/messages/ready'
-      entry:
-        $ref: '#/components/messages/realmEntry'
-  realmSubscriberStream:
-    address: /realm/{realmId}/subscriber?subscribe=1
-    title: Subscribers in a realm
-    description: Changes to the subscribers that belong to a single realm.
+  stream:
+    address: '{listPath}?subscribe=1'
+    title: Change stream of a listing endpoint
+    description: |
+      Changes to the records that the listing endpoint at `listPath`
+      returns. Every listing endpoint of `ldap-subscriber-api.yaml`
+      provides the stream. The `scope`, `id`, and `filter_*` query
+      parameters select the records. The `receive` operation documents
+      the parameters.
     parameters:
-      realmId:
-        description: Identifier of the parent realm.
+      listPath:
+        description: |
+          Path of a listing endpoint of `ldap-subscriber-api.yaml`, with
+          the path parameters of the endpoint filled in. The examples
+          list every listing endpoint.
+        examples:
+        - /realm
+        - /realm/example.org/subscriber
+        - /group
+        - /service
+        - /service/fixedLine/profile
+        - /service/fixedLine/profile/INETG1M/policy
+        - /client
+        - /client/192.0.2.1/port
+        - /client/192.0.2.1/port/1%2F2%2F3/qinq
+        - /client/192.0.2.1/port/1%2F2%2F3/stag
+        - /clientGroup
+        - /accessDevice
+        - /accessDevice/dslam-03/port
+        - /accessDevice/dslam-03/port/1%2F2%2F3/qinq
+        - /accessDevice/dslam-03/port/1%2F2%2F3/stag
     messages:
       ready:
         $ref: '#/components/messages/ready'
       entry:
-        $ref: '#/components/messages/subscriberEntry'
-  groupStream:
-    address: /group?subscribe=1
-    title: Subscriber group stream
-    description: Changes to subscriber groups.
-    messages:
-      ready:
-        $ref: '#/components/messages/ready'
-      entry:
-        $ref: '#/components/messages/subscriberGroupEntry'
-  serviceStream:
-    address: /service?subscribe=1
-    title: Service stream
-    description: Changes to top-level service definitions.
-    messages:
-      ready:
-        $ref: '#/components/messages/ready'
-      entry:
-        $ref: '#/components/messages/serviceEntry'
-  serviceProfileStream:
-    address: /service/{serviceId}/profile?subscribe=1
-    title: Service profiles for a service
-    description: Changes to service profiles within one service.
-    parameters:
-      serviceId:
-        description: Identifier of the parent service.
-    messages:
-      ready:
-        $ref: '#/components/messages/ready'
-      entry:
-        $ref: '#/components/messages/serviceProfileEntry'
-  policyStream:
-    address: /service/{serviceId}/profile/{profileId}/policy?subscribe=1
-    title: Policies for a service profile
-    description: Changes to policies attached to a single service profile.
-    parameters:
-      serviceId:
-        description: Identifier of the parent service.
-      profileId:
-        description: Identifier of the parent service profile.
-    messages:
-      ready:
-        $ref: '#/components/messages/ready'
-      entry:
-        $ref: '#/components/messages/policyEntry'
-  clientStream:
-    address: /client?subscribe=1
-    title: Client stream
-    description: Changes to RADIUS clients.
-    messages:
-      ready:
-        $ref: '#/components/messages/ready'
-      entry:
-        $ref: '#/components/messages/clientEntry'
-  clientPortStream:
-    address: /client/{clientId}/port?subscribe=1
-    title: Physical ports on a client
-    description: Changes to the physical ports configured on one client.
-    parameters:
-      clientId:
-        description: Identifier of the parent client.
-    messages:
-      ready:
-        $ref: '#/components/messages/ready'
-      entry:
-        $ref: '#/components/messages/portPhysicalEntry'
-  clientPortQinqStream:
-    address: /client/{clientId}/port/{portId}/qinq?subscribe=1
-    title: QinQ taggings on a client port
-    description: Changes to the QinQ taggings configured on one physical port of a client.
-    parameters:
-      clientId:
-        description: Identifier of the parent client.
-      portId:
-        description: Identifier of the parent physical port.
-    messages:
-      ready:
-        $ref: '#/components/messages/ready'
-      entry:
-        $ref: '#/components/messages/portQinqEntry'
-  clientPortStagStream:
-    address: /client/{clientId}/port/{portId}/stag?subscribe=1
-    title: S-tag taggings on a client port
-    description: Changes to the single-tag (S-tag) taggings configured on one physical port of a client.
-    parameters:
-      clientId:
-        description: Identifier of the parent client.
-      portId:
-        description: Identifier of the parent physical port.
-    messages:
-      ready:
-        $ref: '#/components/messages/ready'
-      entry:
-        $ref: '#/components/messages/portStagEntry'
-  clientGroupStream:
-    address: /clientGroup?subscribe=1
-    title: Client group stream
-    description: Changes to client groups.
-    messages:
-      ready:
-        $ref: '#/components/messages/ready'
-      entry:
-        $ref: '#/components/messages/clientGroupEntry'
-  accessDeviceStream:
-    address: /accessDevice?subscribe=1
-    title: Access device stream
-    description: Changes to access devices.
-    messages:
-      ready:
-        $ref: '#/components/messages/ready'
-      entry:
-        $ref: '#/components/messages/accessDeviceEntry'
-  accessDevicePortStream:
-    address: /accessDevice/{accessDeviceId}/port?subscribe=1
-    title: Physical ports on an access device
-    description: Changes to the physical ports configured on one access device.
-    parameters:
-      accessDeviceId:
-        description: Identifier of the parent access device.
-    messages:
-      ready:
-        $ref: '#/components/messages/ready'
-      entry:
-        $ref: '#/components/messages/portPhysicalEntry'
-  accessDevicePortQinqStream:
-    address: /accessDevice/{accessDeviceId}/port/{portId}/qinq?subscribe=1
-    title: QinQ taggings on an access device port
-    description: Changes to the QinQ taggings configured on one physical port of an access device.
-    parameters:
-      accessDeviceId:
-        description: Identifier of the parent access device.
-      portId:
-        description: Identifier of the parent physical port.
-    messages:
-      ready:
-        $ref: '#/components/messages/ready'
-      entry:
-        $ref: '#/components/messages/portQinqEntry'
-  accessDevicePortStagStream:
-    address: /accessDevice/{accessDeviceId}/port/{portId}/stag?subscribe=1
-    title: S-tag taggings on an access device port
-    description: Changes to the single-tag (S-tag) taggings configured on one physical port of an access device.
-    parameters:
-      accessDeviceId:
-        description: Identifier of the parent access device.
-      portId:
-        description: Identifier of the parent physical port.
-    messages:
-      ready:
-        $ref: '#/components/messages/ready'
-      entry:
-        $ref: '#/components/messages/portStagEntry'
+        $ref: '#/components/messages/entry'
 operations:
-  receiveRealmStream:
+  receive:
     action: receive
     channel:
-      $ref: '#/channels/realmStream'
-    summary: Subscribe to realm changes
-  receiveRealmSubscriberStream:
-    action: receive
-    channel:
-      $ref: '#/channels/realmSubscriberStream'
-    summary: Subscribe to subscriber changes in a realm
-  receiveGroupStream:
-    action: receive
-    channel:
-      $ref: '#/channels/groupStream'
-    summary: Subscribe to subscriber-group changes
-  receiveServiceStream:
-    action: receive
-    channel:
-      $ref: '#/channels/serviceStream'
-    summary: Subscribe to service changes
-  receiveServiceProfileStream:
-    action: receive
-    channel:
-      $ref: '#/channels/serviceProfileStream'
-    summary: Subscribe to service-profile changes for one service
-  receivePolicyStream:
-    action: receive
-    channel:
-      $ref: '#/channels/policyStream'
-    summary: Subscribe to policy changes for one service profile
-  receiveClientStream:
-    action: receive
-    channel:
-      $ref: '#/channels/clientStream'
-    summary: Subscribe to client changes
-  receiveClientPortStream:
-    action: receive
-    channel:
-      $ref: '#/channels/clientPortStream'
-    summary: Subscribe to physical-port changes on one client
-  receiveClientPortQinqStream:
-    action: receive
-    channel:
-      $ref: '#/channels/clientPortQinqStream'
-    summary: Subscribe to QinQ tagging changes on one client port
-  receiveClientPortStagStream:
-    action: receive
-    channel:
-      $ref: '#/channels/clientPortStagStream'
-    summary: Subscribe to S-tag tagging changes on one client port
-  receiveClientGroupStream:
-    action: receive
-    channel:
-      $ref: '#/channels/clientGroupStream'
-    summary: Subscribe to client-group changes
-  receiveAccessDeviceStream:
-    action: receive
-    channel:
-      $ref: '#/channels/accessDeviceStream'
-    summary: Subscribe to access-device changes
-  receiveAccessDevicePortStream:
-    action: receive
-    channel:
-      $ref: '#/channels/accessDevicePortStream'
-    summary: Subscribe to physical-port changes on one access device
-  receiveAccessDevicePortQinqStream:
-    action: receive
-    channel:
-      $ref: '#/channels/accessDevicePortQinqStream'
-    summary: Subscribe to QinQ tagging changes on one access device port
-  receiveAccessDevicePortStagStream:
-    action: receive
-    channel:
-      $ref: '#/channels/accessDevicePortStagStream'
-    summary: Subscribe to S-tag tagging changes on one access device port
+      $ref: '#/channels/stream'
+    summary: Open the change stream of a listing endpoint
+    description: |
+      A GET of the listing endpoint with `subscribe=1`. The response
+      is a `text/event-stream` that delivers a `ready` event once and
+      then an `entry` event per change. `Last-Event-ID` resumes a
+      dropped stream. See 'Resuming a dropped stream' in the document
+      description.
+    messages:
+    - $ref: '#/channels/stream/messages/ready'
+    - $ref: '#/channels/stream/messages/entry'
+    bindings:
+      http:
+        bindingVersion: 0.3.0
+        method: GET
+        query:
+          type: object
+          properties:
+            subscribe:
+              type: boolean
+              const: true
+              description: Turns the listing GET into a stream.
+            scope:
+              type: string
+              enum:
+              - onelevel
+              - subtree
+              default: onelevel
+              description: |
+                `onelevel` streams the records of the collection.
+                `subtree` streams every record below the collection, at
+                any depth. Each event describes the record's own resource.
+            access_token:
+              type: string
+              description: |
+                Bearer token, for a client that cannot set the
+                `Authorization` header. The server accepts `access_token`
+                on a GET only.
+            id:
+              type: string
+              description: Narrows the stream to the record whose `id` equals the value.
+          additionalProperties:
+            type: string
+            description: |
+              Any `filter_*` parameter that the listing endpoint accepts.
+              `ldap-subscriber-api.yaml` documents the `filter_*`
+              parameters of each endpoint.
 components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Bearer token, sent as `Authorization: Bearer <token>` or, for a
+        client that cannot set request headers, as the `access_token`
+        query parameter of a GET.
   messages:
     ready:
       name: ready
       title: Initial replay complete
-      summary: Marks the boundary between initial state replay and live change events.
+      summary: Marks the boundary between the initial replay and the live changes.
       contentType: application/json
       payload:
         type: object
         additionalProperties: false
       examples:
       - name: readyExample
-        summary: Sent once between initial replay and live changes.
+        summary: The server sends `ready` once, after the initial replay. The SSE `id:` line carries the resume cookie.
         payload: {}
-    realmEntry:
+    entry:
       name: entry
-      title: Realm event
+      title: Record event
+      summary: One change to one record. `_url` names the resource, and `body` has the shape of the GET response of the resource.
       contentType: application/json
       payload:
         allOf:
@@ -386,20 +296,21 @@ components:
             body:
               oneOf:
               - $ref: '#/components/schemas/realmBody'
+              - $ref: '#/components/schemas/subscriberBody'
+              - $ref: '#/components/schemas/subscriberGroupBody'
+              - $ref: '#/components/schemas/serviceBody'
+              - $ref: '#/components/schemas/serviceProfileBody'
+              - $ref: '#/components/schemas/policyBody'
+              - $ref: '#/components/schemas/clientBody'
+              - $ref: '#/components/schemas/clientGroupBody'
+              - $ref: '#/components/schemas/accessDeviceBody'
+              - $ref: '#/components/schemas/portPhysicalBody'
+              - $ref: '#/components/schemas/portQinqBody'
+              - $ref: '#/components/schemas/portStagBody'
               - $ref: '#/components/schemas/tombstone'
       examples:
-      - name: presentExample
-        summary: A record that already existed when the stream was opened. Sent during the initial replay.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: present
-          body:
-            id: example.org
-            description: Subscribers homed in example.org
-            serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
-            _url: /realm/example.org
-      - name: addExample
-        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
+      - name: realmAdd
+        summary: A new realm. `body` has the shape of the response to `GET /realm/{realmId}`, plus `_url`.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: add
@@ -408,8 +319,8 @@ components:
             description: Subscribers homed in example.org
             serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
             _url: /realm/example.org
-      - name: modifyExample
-        summary: An existing record was changed. The body is the full new state, not a patch.
+      - name: realmModify
+        summary: A changed realm. `body` is the full new state, not a patch.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: modify
@@ -418,44 +329,26 @@ components:
             description: Subscribers homed in example.org
             serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG10M
             _url: /realm/example.org
-      - name: deleteExample
-        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
+      - name: realmDelete
+        summary: A removed realm. `body` is a tombstone with only `id` and `_url`.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: delete
           body:
             id: example.org
             _url: /realm/example.org
-    subscriberEntry:
-      name: entry
-      title: Subscriber event
-      contentType: application/json
-      payload:
-        allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/subscriberBody'
-              - $ref: '#/components/schemas/tombstone'
-      examples:
-      - name: presentExample
-        summary: A record that already existed when the stream was opened. Sent during the initial replay.
+      - name: realmPresent
+        summary: A realm that still exists and has not changed since the `Last-Event-ID` cookie. The server sends `present` only on a reconnect whose cookie is older than the history that the directory server keeps. `body` has only `id` and `_url`.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
           syncOp: present
           body:
-            id: foo+bar
-            subscriberId: 0123456789
-            serviceStatus: enabled
-            serviceId: fixedLine
-            serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
-            _url: /realm/example.org/subscriber/foo+bar
-      - name: addExample
-        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
+            id: example.org
+            _url: /realm/example.org
+      - name: subscriberAdd
+        summary: A new subscriber, from `/realm/{realmId}/subscriber`.
         payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          entryUUID: 4f0d2b91-3c5e-4a7b-8d21-6e9f0a1b2c3d
           syncOp: add
           body:
             id: foo+bar
@@ -464,300 +357,55 @@ components:
             serviceId: fixedLine
             serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
             _url: /realm/example.org/subscriber/foo+bar
-      - name: modifyExample
-        summary: An existing record was changed. The body is the full new state, not a patch.
+      - name: subscriberGroupAdd
+        summary: A new subscriber group, from `/group`.
         payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: modify
-          body:
-            id: foo+bar
-            subscriberId: 0123456789
-            serviceStatus: suspended
-            statusReason: non-payment
-            serviceId: fixedLine
-            serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
-            serviceProfileSuspended: http://localhost:3000/service/fixedLine/profile/suspendedNonPayment
-            _url: /realm/example.org/subscriber/foo+bar
-      - name: deleteExample
-        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: delete
-          body:
-            id: foo+bar
-            _url: /realm/example.org/subscriber/foo+bar
-    subscriberGroupEntry:
-      name: entry
-      title: Subscriber group event
-      contentType: application/json
-      payload:
-        allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/subscriberGroupBody'
-              - $ref: '#/components/schemas/tombstone'
-      examples:
-      - name: presentExample
-        summary: A record that already existed when the stream was opened. Sent during the initial replay.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: present
-          body:
-            id: business-subs
-            policy: business
-            _url: /group/business-subs
-      - name: addExample
-        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          entryUUID: 7a1c3e5f-9b2d-4f6e-8a0c-1d3e5f7a9b2c
           syncOp: add
           body:
             id: business-subs
-            policy: business
+            description: Business subscribers
+            serviceProfile: http://localhost:3000/service/fixedLine/profile/BUSINESS100M
             _url: /group/business-subs
-      - name: modifyExample
-        summary: An existing record was changed. The body is the full new state, not a patch.
+      - name: serviceAdd
+        summary: A new service, from `/service`.
         payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: modify
-          body:
-            id: business-subs
-            policy: business-premium
-            _url: /group/business-subs
-      - name: deleteExample
-        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: delete
-          body:
-            id: business-subs
-            _url: /group/business-subs
-    serviceEntry:
-      name: entry
-      title: Service event
-      contentType: application/json
-      payload:
-        allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/serviceBody'
-              - $ref: '#/components/schemas/tombstone'
-      examples:
-      - name: presentExample
-        summary: A record that already existed when the stream was opened. Sent during the initial replay.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: present
-          body:
-            id: fixedLine
-            _url: /service/fixedLine
-      - name: addExample
-        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          entryUUID: 8b2d4f60-ac3e-4071-9b1d-2e4f60ac3e40
           syncOp: add
           body:
             id: fixedLine
             _url: /service/fixedLine
-      - name: modifyExample
-        summary: An existing record was changed. The body is the full new state, not a patch.
+      - name: serviceProfileAdd
+        summary: A new service profile, from `/service/{serviceId}/profile`.
         payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: modify
-          body:
-            id: fixedLine
-            _url: /service/fixedLine
-      - name: deleteExample
-        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: delete
-          body:
-            id: fixedLine
-            _url: /service/fixedLine
-    serviceProfileEntry:
-      name: entry
-      title: Service profile event
-      contentType: application/json
-      payload:
-        allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/serviceProfileBody'
-              - $ref: '#/components/schemas/tombstone'
-      examples:
-      - name: presentExample
-        summary: A record that already existed when the stream was opened. Sent during the initial replay.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: present
-          body:
-            id: INETG1M
-            _url: /service/fixedLine/profile/INETG1M
-      - name: addExample
-        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          entryUUID: 9c3e5071-bd4f-4182-ac2e-3f5071bd4f51
           syncOp: add
           body:
             id: INETG1M
             _url: /service/fixedLine/profile/INETG1M
-      - name: modifyExample
-        summary: An existing record was changed. The body is the full new state, not a patch.
+      - name: policyAdd
+        summary: A new policy, from `/service/{serviceId}/profile/{profileId}/policy`.
         payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: modify
+          entryUUID: ad4f6182-ce50-4293-bd3f-406182ce5062
+          syncOp: add
           body:
-            id: INETG1M
-            _url: /service/fixedLine/profile/INETG1M
-      - name: deleteExample
-        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: delete
-          body:
-            id: INETG1M
-            _url: /service/fixedLine/profile/INETG1M
-    policyEntry:
-      name: entry
-      title: Policy event
-      contentType: application/json
-      payload:
-        allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/policyBody'
-              - $ref: '#/components/schemas/tombstone'
-      examples:
-      - name: presentExample
-        summary: A record that already existed when the stream was opened. Sent during the initial replay.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: present
-          body:
-            id: allow-high-bw
-            _url: /service/fixedLine/profile/INETG1M/policy/allow-high-bw
+            id: nokia7750
             radiusAttribute: reply.Vendor-Specific.Nokia-SR.Subsc-ID-Str = "%{User-Name}@example.org"
-      - name: addExample
-        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
+            _url: /service/fixedLine/profile/INETG1M/policy/nokia7750
+      - name: clientAdd
+        summary: A new client, from `/client`.
         payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: add
-          body:
-            id: allow-high-bw
-            _url: /service/fixedLine/profile/INETG1M/policy/allow-high-bw
-            radiusAttribute: reply.Vendor-Specific.Nokia-SR.Subsc-ID-Str = "%{User-Name}@example.org"
-      - name: modifyExample
-        summary: An existing record was changed. The body is the full new state, not a patch.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: modify
-          body:
-            id: allow-high-bw
-            _url: /service/fixedLine/profile/INETG1M/policy/allow-high-bw
-            radiusAttribute: reply.Vendor-Specific.Nokia-SR.Subsc-ID-Str = "%{User-Name}@premium.example.org"
-      - name: deleteExample
-        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: delete
-          body:
-            id: allow-high-bw
-            _url: /service/fixedLine/profile/INETG1M/policy/allow-high-bw
-    clientEntry:
-      name: entry
-      title: Client event
-      contentType: application/json
-      payload:
-        allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/clientBody'
-              - $ref: '#/components/schemas/tombstone'
-      examples:
-      - name: presentExample
-        summary: A record that already existed when the stream was opened. Sent during the initial replay.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: present
-          body:
-            id: 192.0.2.1
-            freeradiusClientShortname: edge-bng-01
-            freeradiusClientGroup: BNGs
-            _url: /client/192.0.2.1
-      - name: addExample
-        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          entryUUID: be507293-df61-43a4-ce40-517293df6173
           syncOp: add
           body:
             id: 192.0.2.1
             freeradiusClientShortname: edge-bng-01
             freeradiusClientGroup: BNGs
             _url: /client/192.0.2.1
-      - name: modifyExample
-        summary: An existing record was changed. The body is the full new state, not a patch.
+      - name: clientPortAdd
+        summary: A new physical port, from `/client/{clientId}/port`.
         payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: modify
-          body:
-            id: 192.0.2.1
-            freeradiusClientShortname: edge-bng-01
-            freeradiusClientGroup: BNGs
-            freeradiusClientComment: reprovisioned 2026-05-18
-            _url: /client/192.0.2.1
-      - name: deleteExample
-        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: delete
-          body:
-            id: 192.0.2.1
-            _url: /client/192.0.2.1
-    portPhysicalEntry:
-      name: entry
-      title: Physical port event
-      contentType: application/json
-      payload:
-        allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/portPhysicalBody'
-              - $ref: '#/components/schemas/tombstone'
-      examples:
-      - name: presentExample
-        summary: A record that already existed when the stream was opened. Sent during the initial replay.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: present
-          body:
-            id: 1%2F2%2F3
-            type: physical
-            port: 1/2/3
-            remoteAssociation: http://localhost:3000/accessDevice/dslam-03
-            _url: /client/192.0.2.1/port/1%2F2%2F3
-      - name: addExample
-        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          entryUUID: cf6183a4-e072-44b5-df51-6283a4e07284
           syncOp: add
           body:
             id: 1%2F2%2F3
@@ -765,55 +413,10 @@ components:
             port: 1/2/3
             remoteAssociation: http://localhost:3000/accessDevice/dslam-03
             _url: /client/192.0.2.1/port/1%2F2%2F3
-      - name: modifyExample
-        summary: An existing record was changed. The body is the full new state, not a patch.
+      - name: clientPortQinqAdd
+        summary: A new QinQ tagging, from `/client/{clientId}/port/{portId}/qinq`.
         payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: modify
-          body:
-            id: 1%2F2%2F3
-            type: physical
-            port: 1/2/3
-            remoteAssociation: http://localhost:3000/accessDevice/dslam-04
-            _url: /client/192.0.2.1/port/1%2F2%2F3
-      - name: deleteExample
-        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: delete
-          body:
-            id: 1%2F2%2F3
-            _url: /client/192.0.2.1/port/1%2F2%2F3
-    portQinqEntry:
-      name: entry
-      title: QinQ tagging event
-      contentType: application/json
-      payload:
-        allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/portQinqBody'
-              - $ref: '#/components/schemas/tombstone'
-      examples:
-      - name: presentExample
-        summary: A record that already existed when the stream was opened. Sent during the initial replay.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: present
-          body:
-            id: 100+25
-            type: qinq
-            svlan: 100
-            cvlan: 25
-            remoteAssociation: http://localhost:3000/accessDevice/dslam-03
-            _url: /client/192.0.2.1/port/1%2F2%2F3/qinq/100+25
-      - name: addExample
-        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          entryUUID: d07294b5-f183-45c6-e062-7394b5f18395
           syncOp: add
           body:
             id: 100+25
@@ -822,183 +425,72 @@ components:
             cvlan: 25
             remoteAssociation: http://localhost:3000/accessDevice/dslam-03
             _url: /client/192.0.2.1/port/1%2F2%2F3/qinq/100+25
-      - name: modifyExample
-        summary: An existing record was changed. The body is the full new state, not a patch.
+      - name: clientPortStagAdd
+        summary: A new S-tag tagging, from `/client/{clientId}/port/{portId}/stag`.
         payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: modify
+          entryUUID: e183a5c6-0294-46d7-f173-84a5c60294a6
+          syncOp: add
+          body:
+            id: '100'
+            type: physStag
+            port: 1/2/3
+            svlan: 100
+            remoteAssociation: http://localhost:3000/accessDevice/dslam-03
+            _url: /client/192.0.2.1/port/1%2F2%2F3/stag/100
+      - name: clientGroupAdd
+        summary: A new client group, from `/clientGroup`.
+        payload:
+          entryUUID: f294b6d7-13a5-47e8-0284-95b6d713a5b7
+          syncOp: add
+          body:
+            id: BNGs
+            description: Broadband network gateways
+            _url: /clientGroup/BNGs
+      - name: accessDeviceAdd
+        summary: A new access device, from `/accessDevice`.
+        payload:
+          entryUUID: 03a5c7e8-24b6-48f9-1395-a6c7e824b6c8
+          syncOp: add
+          body:
+            id: dslam-03
+            freeradiusClientShortname: DSLAM03-D6
+            freeradiusClientType: dslam
+            _url: /accessDevice/dslam-03
+      - name: accessDevicePortAdd
+        summary: A new physical port, from `/accessDevice/{accessDeviceId}/port`.
+        payload:
+          entryUUID: 14b6d8f9-35c7-490a-24a6-b7d8f935c7d9
+          syncOp: add
+          body:
+            id: 1%2F2%2F3
+            type: physical
+            port: 1/2/3
+            remoteAssociation: http://localhost:3000/client/192.0.2.1
+            _url: /accessDevice/dslam-03/port/1%2F2%2F3
+      - name: accessDevicePortQinqAdd
+        summary: A new QinQ tagging, from `/accessDevice/{accessDeviceId}/port/{portId}/qinq`.
+        payload:
+          entryUUID: 25c7e90a-46d8-4a1b-35b7-c8e90a46d8ea
+          syncOp: add
           body:
             id: 100+25
             type: qinq
             svlan: 100
             cvlan: 25
-            remoteAssociation: http://localhost:3000/accessDevice/dslam-04
-            _url: /client/192.0.2.1/port/1%2F2%2F3/qinq/100+25
-      - name: deleteExample
-        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
+            remoteAssociation: http://localhost:3000/client/192.0.2.1
+            _url: /accessDevice/dslam-03/port/1%2F2%2F3/qinq/100+25
+      - name: accessDevicePortStagAdd
+        summary: A new S-tag tagging, from `/accessDevice/{accessDeviceId}/port/{portId}/stag`.
         payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: delete
-          body:
-            id: 100+25
-            _url: /client/192.0.2.1/port/1%2F2%2F3/qinq/100+25
-    portStagEntry:
-      name: entry
-      title: S-tag tagging event
-      contentType: application/json
-      payload:
-        allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/portStagBody'
-              - $ref: '#/components/schemas/tombstone'
-      examples:
-      - name: presentExample
-        summary: A record that already existed when the stream was opened. Sent during the initial replay.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: present
-          body:
-            id: '100'
-            type: physStag
-            port: 1/2/3
-            svlan: 100
-            remoteAssociation: http://localhost:3000/accessDevice/dslam-03
-            _url: /client/192.0.2.1/port/1%2F2%2F3/stag/100
-      - name: addExample
-        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
+          entryUUID: 36d8fa1b-57e9-4b2c-46c8-d9fa1b57e9fb
           syncOp: add
           body:
             id: '100'
             type: physStag
             port: 1/2/3
             svlan: 100
-            remoteAssociation: http://localhost:3000/accessDevice/dslam-03
-            _url: /client/192.0.2.1/port/1%2F2%2F3/stag/100
-      - name: modifyExample
-        summary: An existing record was changed. The body is the full new state, not a patch.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: modify
-          body:
-            id: '100'
-            type: physStag
-            port: 1/2/3
-            svlan: 100
-            remoteAssociation: http://localhost:3000/accessDevice/dslam-04
-            _url: /client/192.0.2.1/port/1%2F2%2F3/stag/100
-      - name: deleteExample
-        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: delete
-          body:
-            id: '100'
-            _url: /client/192.0.2.1/port/1%2F2%2F3/stag/100
-    clientGroupEntry:
-      name: entry
-      title: Client group event
-      contentType: application/json
-      payload:
-        allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/clientGroupBody'
-              - $ref: '#/components/schemas/tombstone'
-      examples:
-      - name: presentExample
-        summary: A record that already existed when the stream was opened. Sent during the initial replay.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: present
-          body:
-            id: BNGs
-            _url: /clientGroup/BNGs
-      - name: addExample
-        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: add
-          body:
-            id: BNGs
-            _url: /clientGroup/BNGs
-      - name: modifyExample
-        summary: An existing record was changed. The body is the full new state, not a patch.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: modify
-          body:
-            id: BNGs
-            _url: /clientGroup/BNGs
-      - name: deleteExample
-        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: delete
-          body:
-            id: BNGs
-            _url: /clientGroup/BNGs
-    accessDeviceEntry:
-      name: entry
-      title: Access device event
-      contentType: application/json
-      payload:
-        allOf:
-        - $ref: '#/components/schemas/entryEnvelope'
-        - type: object
-          properties:
-            body:
-              oneOf:
-              - $ref: '#/components/schemas/accessDeviceBody'
-              - $ref: '#/components/schemas/tombstone'
-      examples:
-      - name: presentExample
-        summary: A record that already existed when the stream was opened. Sent during the initial replay.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: present
-          body:
-            id: dslam-03
-            freeradiusClientShortname: DSLAM03-D6
-            freeradiusClientType: dslam
-            _url: /accessDevice/dslam-03
-      - name: addExample
-        summary: A newly created record. The body has the same shape as the corresponding GET response, plus _url.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: add
-          body:
-            id: dslam-03
-            freeradiusClientShortname: DSLAM03-D6
-            freeradiusClientType: dslam
-            _url: /accessDevice/dslam-03
-      - name: modifyExample
-        summary: An existing record was changed. The body is the full new state, not a patch.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: modify
-          body:
-            id: dslam-03
-            freeradiusClientShortname: DSLAM03-D6
-            freeradiusClientType: dslam
-            freeradiusClientComment: rack-swap to row 4
-            _url: /accessDevice/dslam-03
-      - name: deleteExample
-        summary: A record was removed. The body is a tombstone with only id and _url; the original attributes are not replayed.
-        payload:
-          entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: delete
-          body:
-            id: dslam-03
-            _url: /accessDevice/dslam-03
+            remoteAssociation: http://localhost:3000/client/192.0.2.1
+            _url: /accessDevice/dslam-03/port/1%2F2%2F3/stag/100
   schemas:
     entryEnvelope:
       type: object
@@ -1009,33 +501,37 @@ components:
       properties:
         entryUUID:
           type: string
-          description: Stable identifier for the record, persistent across updates.
+          description: Stable identifier of the record, unchanged across updates and renames.
         syncOp:
           type: string
           enum:
-          - present
           - add
           - modify
           - delete
+          - present
           description: |
-            What kind of event this is.
+            The kind of event.
 
-            * `present` is sent for every record that already existed
-              when the stream was opened. Treat as an upsert.
-            * `add` is sent when a new record appears. Treat as an
-              insert.
-            * `modify` is sent when an existing record changes. `body`
-              contains the full new state, not a patch.
-            * `delete` is sent when a record is removed. `body`
-              contains only `id` and `_url`.
+            * `add`: a new record. `body` is the full record. When a
+              stream opens without `Last-Event-ID`, the initial replay
+              also uses `add`.
+            * `modify`: a changed record. `body` is the full new state,
+              not a patch.
+            * `delete`: a removed record. `body` holds only `id` and
+              `_url`.
+            * `present`: a record that still exists and has not changed
+              since the `Last-Event-ID` cookie. `body` holds only `id`
+              and `_url`. The server sends `present` only on a reconnect
+              whose cookie is older than the history that the directory
+              server keeps.
     tombstone:
       type: object
       required:
       - id
       - _url
       description: |
-        Stand-in body for `delete` events. Only enough information to
-        identify which record went away.
+        Body of a `delete` or `present` event. The tombstone holds only
+        enough to identify the record.
       properties:
         id:
           type: string
@@ -1051,9 +547,10 @@ components:
           type: string
           format: uri
           description: |
-            URL of the corresponding REST resource. Not present in
-            normal REST GET responses; added by the stream so clients
-            can hand the event straight to a URL-keyed cache.
+            Path of the REST resource of the record. A REST GET response
+            omits `_url`. The stream adds `_url` so that a client can
+            pass the event to a URL-keyed cache and can select the
+            schema that describes `body`.
     realmBody:
       allOf:
       - $ref: ./ldap-subscriber-api.yaml#/components/schemas/realm
