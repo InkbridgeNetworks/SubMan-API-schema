@@ -3006,6 +3006,15 @@ components:
         id:
           type: string
           description: A unique identifier for the subscriberGroup
+        description:
+          type: string
+          description: A humanly readable description of the subscriberGroup
+          example: Gold tier residential subscribers
+        serviceProfile:
+          type: string
+          format: uri
+          example: http://192.168.0.1/service/fixedLine/profile/INETG1M
+          description: The URI of a serviceProfile object to apply to all subscribers in the subscriberGroup
     client:
       title: client
       x-stoplight:
@@ -3191,6 +3200,16 @@ components:
           type: string
           description: The identifier for the clientGroup
           example: group1
+        description:
+          type: string
+          description: A humanly readable description of the clientGroup
+          example: Nokia 7750 BNGs in the northern region
+        serviceProfile:
+          type: string
+          format: uri
+          example: http://192.168.0.1/service/fixedLine/profile/INETG1M
+          description: The URI of a serviceProfile object to apply to all subscribers who authenticate through a client in
+            the clientGroup
         clients:
           type: array
           description: URIs of the clients that belong to this group
