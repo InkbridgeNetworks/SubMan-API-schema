@@ -8,6 +8,14 @@ info:
   description: |-
     This API runs natively in OpenResty/NGINX to provide a high performance restful layer around an LDAP instance.  It should be mostly object agonistic, but has some special endpoints
 
+    ## Authentication
+
+    Every request except `GET /test` carries a bearer token.  See the `AccessToken` security scheme.  The API verifies the token and derives a directory identity from the claims of the token.  The access controls of the directory then decide what the caller may read and write, so the API defines no OAuth scopes.  A request without a valid token receives `401`.  A request whose token the API verified receives `403` in three cases:
+
+    1. The API derived no directory identity from the claims of the token.
+    2. The directory refuses the identity that the API derived from the token.
+    3. The access controls of the directory deny the operation.
+
     ## URL filter encoding
 
     Several listing endpoints expose `filter_*` query parameters whose value is a URI (for example `filter_serviceProfile`, `filter_portBindingClient`).
@@ -71,9 +79,6 @@ paths:
       operationId: get-realm
       description: Return an array of available realms
       summary: List available realms
-      security:
-      - OIDC:
-        - read:realm
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_serviceProfile'
@@ -105,9 +110,6 @@ paths:
       tags:
       - Realm
       summary: Add a new realm
-      security:
-      - OIDC:
-        - write:realm
       parameters:
       - &id001
         $ref: '#/components/parameters/copy_uri'
@@ -140,9 +142,6 @@ paths:
       operationId: get-realm-realmId
       description: Get metadata for a realm
       summary: Return a specific realm
-      security:
-      - OIDC:
-        - read:realm
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -155,7 +154,7 @@ paths:
         '401':
           $ref: '#/components/responses/onUnauthorized'
         '403':
-          description: Forbidden
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -170,9 +169,6 @@ paths:
       tags:
       - Realm
       summary: Replace a realm
-      security:
-      - OIDC:
-        - write:realm
       parameters:
       - *id001
       - *id002
@@ -206,9 +202,6 @@ paths:
       tags:
       - Realm
       summary: Update a realm
-      security:
-      - OIDC:
-        - write:realm
       parameters:
       - *id001
       - *id002
@@ -218,7 +211,9 @@ paths:
         '200':
           $ref: '#/components/responses/onSuccess'
         '401':
-          description: Unauthorized
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -229,9 +224,6 @@ paths:
       tags:
       - Realm
       summary: Delete a realm
-      security:
-      - OIDC:
-        - write:realm
   /realm/{realmId}/subscriber:
     parameters:
     - $ref: '#/components/parameters/realmId'
@@ -250,14 +242,15 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/subscriber'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '500':
           $ref: '#/components/responses/onInternalServerError'
       operationId: get-realm-realmId-subscriber
       description: Return an array of all subscribers in a realm
       summary: List subscribers in a realm
-      security:
-      - OIDC:
-        - read:subscriber
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_subscriberId'
@@ -277,6 +270,10 @@ paths:
           $ref: '#/components/responses/onCreate'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '409':
           $ref: '#/components/responses/onConflict'
         '500':
@@ -291,9 +288,6 @@ paths:
       - Subscriber
       description: Add a new subscriber
       summary: Add a subscriber to a realm
-      security:
-      - OIDC:
-        - write:subscriber
       parameters:
       - *id001
       - *id002
@@ -314,6 +308,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/subscriber'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -321,9 +319,6 @@ paths:
       operationId: get-realm-realmId-subscriber-compoundSubscriberId
       description: Get specific subscriber for a given realm
       summary: Return a subscriber
-      security:
-      - OIDC:
-        - read:subscriber
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -333,6 +328,10 @@ paths:
           $ref: '#/components/responses/onSuccess'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -347,9 +346,6 @@ paths:
       tags:
       - Subscriber
       summary: Replace a subscriber
-      security:
-      - OIDC:
-        - write:subscriber
       parameters:
       - *id001
       - *id002
@@ -360,6 +356,10 @@ paths:
           $ref: '#/components/responses/onSuccess'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -379,9 +379,6 @@ paths:
 
         Multi-valued attributes will have all values replaced
       summary: Update a subscriber
-      security:
-      - OIDC:
-        - write:subscriber
       parameters:
       - *id001
       - *id002
@@ -390,6 +387,10 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/onSuccess'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -400,9 +401,6 @@ paths:
       parameters:
       - $ref: '#/components/parameters/prune'
       summary: Delete a subscriber
-      security:
-      - OIDC:
-        - write:subscriber
   /group:
     get:
       tags:
@@ -419,14 +417,15 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/subscriberGroup'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '500':
           $ref: '#/components/responses/onInternalServerError'
       operationId: get-group
       description: Return an array of available subscriber groups
       summary: List available subscriberGroups
-      security:
-      - OIDC:
-        - read:subscriber
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
@@ -440,6 +439,10 @@ paths:
           $ref: '#/components/responses/onCreate'
         '400':
           description: Bad Request
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '409':
           description: Conflict
         '500':
@@ -454,9 +457,6 @@ paths:
       tags:
       - Subscriber group
       summary: Add a subscriberGroup
-      security:
-      - OIDC:
-        - write:subscriber
       parameters:
       - *id001
       - *id002
@@ -475,6 +475,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/subscriberGroup'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -483,9 +487,6 @@ paths:
       tags:
       - Subscriber group
       summary: Return a subscriberGroup
-      security:
-      - OIDC:
-        - read:subscriber
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -495,6 +496,10 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -509,9 +514,6 @@ paths:
       tags:
       - Subscriber group
       summary: Replace a subscriberGroup
-      security:
-      - OIDC:
-        - write:subscriber
       parameters:
       - *id001
       - *id002
@@ -520,6 +522,10 @@ paths:
       responses:
         '200':
           description: OK
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
       requestBody:
         content:
           application/json:
@@ -535,9 +541,6 @@ paths:
       tags:
       - Subscriber group
       summary: Update a subscriberGroup
-      security:
-      - OIDC:
-        - write:subscriber
       parameters:
       - *id001
       - *id002
@@ -546,15 +549,16 @@ paths:
       responses:
         '200':
           description: OK
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
       description: Delete a subscriber group
       tags:
       - Subscriber group
       summary: Delete a subscriberGroup
       parameters:
       - $ref: '#/components/parameters/prune'
-      security:
-      - OIDC:
-        - write:subscriber
   /service:
     get:
       responses:
@@ -569,6 +573,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/service'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -578,9 +586,6 @@ paths:
       summary: List available services
       tags:
       - Service
-      security:
-      - OIDC:
-        - read:service
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
@@ -593,6 +598,10 @@ paths:
           $ref: '#/components/responses/onCreate'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '409':
           $ref: '#/components/responses/onConflict'
         '500':
@@ -607,9 +616,6 @@ paths:
       summary: Add a new service
       tags:
       - Service
-      security:
-      - OIDC:
-        - write:service
       parameters:
       - *id001
       - *id002
@@ -627,6 +633,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/service'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -636,9 +646,6 @@ paths:
       summary: Return a service
       tags:
       - Service
-      security:
-      - OIDC:
-        - read:service
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -648,6 +655,10 @@ paths:
           $ref: '#/components/responses/onSuccess'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -662,9 +673,6 @@ paths:
       summary: Replace a service
       tags:
       - Service
-      security:
-      - OIDC:
-        - write:service
       parameters:
       - *id001
       - *id002
@@ -675,6 +683,10 @@ paths:
           $ref: '#/components/responses/onSuccess'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -694,9 +706,6 @@ paths:
       summary: Update a service
       tags:
       - Service
-      security:
-      - OIDC:
-        - write:service
       parameters:
       - *id001
       - *id002
@@ -705,6 +714,10 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/onSuccess'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -714,9 +727,6 @@ paths:
       - $ref: '#/components/parameters/prune'
       tags:
       - Service
-      security:
-      - OIDC:
-        - write:service
   /service/{serviceId}/profile:
     parameters:
     - $ref: '#/components/parameters/serviceId'
@@ -733,6 +743,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/serviceProfile'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -742,9 +756,6 @@ paths:
       summary: List serviceProfiles in a service
       tags:
       - Abstract profile (serviceProfile)
-      security:
-      - OIDC:
-        - read:profile
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
@@ -757,6 +768,10 @@ paths:
           $ref: '#/components/responses/onCreate'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '409':
           $ref: '#/components/responses/onConflict'
         '500':
@@ -771,9 +786,6 @@ paths:
       summary: Add a serviceProfile to a service
       tags:
       - Abstract profile (serviceProfile)
-      security:
-      - OIDC:
-        - write:profile
       parameters:
       - *id001
       - *id002
@@ -792,6 +804,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/serviceProfile'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -801,9 +817,6 @@ paths:
       summary: Return a serviceProfile
       tags:
       - Abstract profile (serviceProfile)
-      security:
-      - OIDC:
-        - read:profile
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -813,6 +826,10 @@ paths:
           $ref: '#/components/responses/onSuccess'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -827,9 +844,6 @@ paths:
       summary: Replace a serviceProfile
       tags:
       - Abstract profile (serviceProfile)
-      security:
-      - OIDC:
-        - write:profile
       parameters:
       - *id001
       - *id002
@@ -840,6 +854,10 @@ paths:
           $ref: '#/components/responses/onSuccess'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -859,9 +877,6 @@ paths:
       summary: Update a serviceProfile
       tags:
       - Abstract profile (serviceProfile)
-      security:
-      - OIDC:
-        - write:profile
       parameters:
       - *id001
       - *id002
@@ -870,6 +885,10 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/onSuccess'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -880,9 +899,6 @@ paths:
       summary: Delete a serviceProfile
       tags:
       - Abstract profile (serviceProfile)
-      security:
-      - OIDC:
-        - write:profile
   /service/{serviceId}/profile/{profileId}/policy:
     parameters:
     - $ref: '#/components/parameters/serviceId'
@@ -900,6 +916,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/freeradiusPolicy'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -910,9 +930,6 @@ paths:
       summary: List freeradiusPolicies in a serviceProfile
       tags:
       - Concrete profile (freeradiusProfile)
-      security:
-      - OIDC:
-        - write:profile
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
@@ -925,6 +942,10 @@ paths:
           $ref: '#/components/responses/onCreate'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '409':
           $ref: '#/components/responses/onConflict'
         '500':
@@ -939,9 +960,6 @@ paths:
       summary: Add a freeradiusProfile to a serviceProfile
       tags:
       - Concrete profile (freeradiusProfile)
-      security:
-      - OIDC:
-        - write:profile
       parameters:
       - *id001
       - *id002
@@ -961,6 +979,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/freeradiusPolicy'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -972,9 +994,6 @@ paths:
       - Concrete profile (freeradiusProfile)
       x-stoplight:
         id: o6if20ghsoepw
-      security:
-      - OIDC:
-        - read:profile
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -984,6 +1003,10 @@ paths:
           $ref: '#/components/responses/onSuccess'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1000,9 +1023,6 @@ paths:
       - Concrete profile (freeradiusProfile)
       x-stoplight:
         id: gdb5vt9e5agqf
-      security:
-      - OIDC:
-        - write:profile
       parameters:
       - *id001
       - *id002
@@ -1013,6 +1033,10 @@ paths:
           $ref: '#/components/responses/onSuccess'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1034,9 +1058,6 @@ paths:
       - Concrete profile (freeradiusProfile)
       x-stoplight:
         id: 3xdc6wqr82nky
-      security:
-      - OIDC:
-        - write:profile
       parameters:
       - *id001
       - *id002
@@ -1045,6 +1066,10 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/onSuccess'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1057,9 +1082,6 @@ paths:
       - $ref: '#/components/parameters/prune'
       x-stoplight:
         id: onq9wcmzdz2df
-      security:
-      - OIDC:
-        - write:profile
   /client:
     get:
       tags:
@@ -1076,6 +1098,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/client'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1083,9 +1109,6 @@ paths:
       operationId: get-client
       description: Return an array of clients
       summary: List clients
-      security:
-      - OIDC:
-        - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_freeradiusClientShortname'
@@ -1100,6 +1123,10 @@ paths:
           $ref: '#/components/responses/onCreate'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '409':
           $ref: '#/components/responses/onConflict'
         '500':
@@ -1114,9 +1141,6 @@ paths:
       tags:
       - Client
       summary: Add a client
-      security:
-      - OIDC:
-        - write:client
       parameters:
       - *id001
       - *id002
@@ -1134,6 +1158,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/client'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1143,9 +1171,6 @@ paths:
       tags:
       - Client
       summary: Return a client
-      security:
-      - OIDC:
-        - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -1155,6 +1180,10 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1169,9 +1198,6 @@ paths:
       tags:
       - Client
       summary: Replace a client
-      security:
-      - OIDC:
-        - write:client
       parameters:
       - *id001
       - *id002
@@ -1182,6 +1208,10 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1201,9 +1231,6 @@ paths:
       tags:
       - Client
       summary: Update a client
-      security:
-      - OIDC:
-        - write:client
       parameters:
       - *id001
       - *id002
@@ -1212,6 +1239,10 @@ paths:
       responses:
         '200':
           description: OK
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1222,9 +1253,6 @@ paths:
       summary: Delete an client
       parameters:
       - $ref: '#/components/parameters/prune'
-      security:
-      - OIDC:
-        - write:client
   /client/{clientId}/port:
     get:
       tags:
@@ -1241,6 +1269,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/portPhysical'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1248,9 +1280,6 @@ paths:
       operationId: get-client-clientId-port
       description: Return an array of ports associated with an client
       summary: List ports associated with a client
-      security:
-      - OIDC:
-        - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_port'
@@ -1265,6 +1294,10 @@ paths:
           $ref: '#/components/responses/onCreate'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '409':
           $ref: '#/components/responses/onConflict'
         '500':
@@ -1279,9 +1312,6 @@ paths:
       tags:
       - Client
       summary: Add a port associated with a client
-      security:
-      - OIDC:
-        - write:client
       parameters:
       - *id001
       - *id002
@@ -1302,6 +1332,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/portPhysical'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1311,9 +1345,6 @@ paths:
       tags:
       - Client
       summary: Return a port associated with a client
-      security:
-      - OIDC:
-        - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -1323,6 +1354,10 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1337,9 +1372,6 @@ paths:
       tags:
       - Client
       summary: Replace a port associated with a client
-      security:
-      - OIDC:
-        - write:client
       parameters:
       - *id001
       - *id002
@@ -1350,6 +1382,10 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1364,9 +1400,6 @@ paths:
       tags:
       - Client
       summary: Update a port associated with a client
-      security:
-      - OIDC:
-        - write:client
       parameters:
       - *id001
       - *id002
@@ -1375,6 +1408,10 @@ paths:
       responses:
         '200':
           description: OK
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1385,9 +1422,6 @@ paths:
       summary: Delete an client
       parameters:
       - $ref: '#/components/parameters/prune'
-      security:
-      - OIDC:
-        - write:client
   /client/{clientId}/port/{portId}/qinq:
     parameters:
     - $ref: '#/components/parameters/clientId'
@@ -1410,13 +1444,14 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/portQinQ'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
@@ -1440,15 +1475,16 @@ paths:
           $ref: '#/components/responses/onCreate'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '409':
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:client
       parameters:
       - *id001
       - *id002
@@ -1473,13 +1509,14 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/portQinQ'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -1499,13 +1536,14 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:client
       parameters:
       - *id001
       - *id002
@@ -1526,13 +1564,14 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:client
       parameters:
       - *id001
       - *id002
@@ -1545,13 +1584,14 @@ paths:
       responses:
         '200':
           description: OK
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:client
   /client/{clientId}/port/{portId}/stag:
     parameters:
     - $ref: '#/components/parameters/clientId'
@@ -1574,13 +1614,14 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/portPhysStag'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
@@ -1604,15 +1645,16 @@ paths:
           $ref: '#/components/responses/onCreate'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '409':
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:client
       parameters:
       - *id001
       - *id002
@@ -1637,13 +1679,14 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/portPhysStag'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -1663,13 +1706,14 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:client
       parameters:
       - *id001
       - *id002
@@ -1690,13 +1734,14 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:client
       parameters:
       - *id001
       - *id002
@@ -1709,13 +1754,14 @@ paths:
       responses:
         '200':
           description: OK
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:client
   /clientGroup:
     get:
       responses:
@@ -1730,6 +1776,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/clientGroup'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           description: Not Found
         '500':
@@ -1739,9 +1789,6 @@ paths:
       tags:
       - Client group
       summary: List clientGroups
-      security:
-      - OIDC:
-        - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/subscribe'
@@ -1754,6 +1801,10 @@ paths:
           description: Created
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '409':
           $ref: '#/components/responses/onConflict'
         '500':
@@ -1768,9 +1819,6 @@ paths:
       tags:
       - Client group
       summary: Add an clientGroup
-      security:
-      - OIDC:
-        - write:client
       parameters:
       - *id001
       - *id002
@@ -1790,6 +1838,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/clientGroup'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1797,9 +1849,6 @@ paths:
       operationId: get-clientGroup-clientGroupId
       description: Return an clientGroup
       summary: Return an clientGroup
-      security:
-      - OIDC:
-        - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -1809,6 +1858,10 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1823,9 +1876,6 @@ paths:
       tags:
       - Client group
       summary: Replace an clientGroup
-      security:
-      - OIDC:
-        - write:client
       parameters:
       - *id001
       - *id002
@@ -1836,6 +1886,10 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1855,9 +1909,6 @@ paths:
       tags:
       - Client group
       summary: Update an clientGroup
-      security:
-      - OIDC:
-        - write:client
       parameters:
       - *id001
       - *id002
@@ -1866,6 +1917,10 @@ paths:
       responses:
         '200':
           description: OK
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1876,9 +1931,6 @@ paths:
       summary: Delete an clientGroup
       parameters:
       - $ref: '#/components/parameters/prune'
-      security:
-      - OIDC:
-        - write:client
   /accessDevice:
     get:
       tags:
@@ -1895,6 +1947,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/accessDevice'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1902,9 +1958,6 @@ paths:
       operationId: get-accessDevice
       description: Return an array of accessDevices
       summary: List accessDevices
-      security:
-      - OIDC:
-        - read:accessDevice
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_freeradiusClientShortname'
@@ -1919,6 +1972,10 @@ paths:
           $ref: '#/components/responses/onCreate'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '409':
           $ref: '#/components/responses/onConflict'
         '500':
@@ -1933,9 +1990,6 @@ paths:
       tags:
       - accessDevice
       summary: Add an accessDevice
-      security:
-      - OIDC:
-        - write:accessDevice
       parameters:
       - *id001
       - *id002
@@ -1953,6 +2007,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/accessDevice'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1962,9 +2020,6 @@ paths:
       tags:
       - accessDevice
       summary: Return an accessDevice
-      security:
-      - OIDC:
-        - read:accessDevice
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -1974,6 +2029,10 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -1988,9 +2047,6 @@ paths:
       tags:
       - accessDevice
       summary: Replace an accessDevice
-      security:
-      - OIDC:
-        - write:accessDevice
       parameters:
       - *id001
       - *id002
@@ -2001,6 +2057,10 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -2020,9 +2080,6 @@ paths:
       tags:
       - accessDevice
       summary: Update an accessDevice
-      security:
-      - OIDC:
-        - write:accessDevice
       parameters:
       - *id001
       - *id002
@@ -2031,6 +2088,10 @@ paths:
       responses:
         '200':
           description: OK
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -2041,9 +2102,6 @@ paths:
       summary: Delete an accessDevice
       parameters:
       - $ref: '#/components/parameters/prune'
-      security:
-      - OIDC:
-        - write:accessDevice
   /accessDevice/{accessDeviceId}/port:
     get:
       tags:
@@ -2060,6 +2118,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/portPhysical'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -2067,9 +2129,6 @@ paths:
       operationId: get-accessDevice-accessDeviceId-port
       description: Return an array of ports associated with an accessDevice
       summary: List ports associated with an accessDevice
-      security:
-      - OIDC:
-        - read:accessDevice
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_port'
@@ -2084,6 +2143,10 @@ paths:
           $ref: '#/components/responses/onCreate'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '409':
           $ref: '#/components/responses/onConflict'
         '500':
@@ -2098,9 +2161,6 @@ paths:
       tags:
       - accessDevice
       summary: Add a port associated with an accessDevice
-      security:
-      - OIDC:
-        - write:accessDevice
       parameters:
       - *id001
       - *id002
@@ -2121,6 +2181,10 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/portPhysical'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -2130,9 +2194,6 @@ paths:
       tags:
       - accessDevice
       summary: Return a port associated with an accessDevice
-      security:
-      - OIDC:
-        - read:client
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -2142,6 +2203,10 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -2156,9 +2221,6 @@ paths:
       tags:
       - accessDevice
       summary: Replace a port associated with an accessDevice
-      security:
-      - OIDC:
-        - write:accessDevice
       parameters:
       - *id001
       - *id002
@@ -2169,6 +2231,10 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -2183,9 +2249,6 @@ paths:
       tags:
       - accessDevice
       summary: Update a port associated with an accessDevice
-      security:
-      - OIDC:
-        - write:accessDevice
       parameters:
       - *id001
       - *id002
@@ -2194,6 +2257,10 @@ paths:
       responses:
         '200':
           description: OK
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
@@ -2204,9 +2271,6 @@ paths:
       summary: Delete a port associated with a client
       parameters:
       - $ref: '#/components/parameters/prune'
-      security:
-      - OIDC:
-        - write:accessDevice
   /accessDevice/{accessDeviceId}/port/{portId}/qinq:
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
@@ -2229,13 +2293,14 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/portQinQ'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - read:accessDevice
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
@@ -2259,15 +2324,16 @@ paths:
           $ref: '#/components/responses/onCreate'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '409':
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:accessDevice
       parameters:
       - *id001
       - *id002
@@ -2292,13 +2358,14 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/portQinQ'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - read:accessDevice
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -2318,13 +2385,14 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:accessDevice
       parameters:
       - *id001
       - *id002
@@ -2345,13 +2413,14 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:accessDevice
       parameters:
       - *id001
       - *id002
@@ -2364,13 +2433,14 @@ paths:
       responses:
         '200':
           description: OK
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:accessDevice
   /accessDevice/{accessDeviceId}/port/{portId}/stag:
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
@@ -2393,13 +2463,14 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/portPhysStag'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - read:accessDevice
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
@@ -2423,15 +2494,16 @@ paths:
           $ref: '#/components/responses/onCreate'
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '409':
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:accessDevice
       parameters:
       - *id001
       - *id002
@@ -2456,13 +2528,14 @@ paths:
             text/event-stream:
               schema:
                 $ref: '#/components/schemas/portPhysStag'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - read:accessDevice
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -2482,13 +2555,14 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:accessDevice
       parameters:
       - *id001
       - *id002
@@ -2509,13 +2583,14 @@ paths:
           description: OK
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:accessDevice
       parameters:
       - *id001
       - *id002
@@ -2528,13 +2603,14 @@ paths:
       responses:
         '200':
           description: OK
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      security:
-      - OIDC:
-        - write:accessDevice
   /bulk:
     post:
       operationId: post-bulk
@@ -2551,7 +2627,7 @@ paths:
         3. As each batch finishes, the server streams its results to the client.  The response is sent incrementally, so a large bulk call does not have to be held in memory in full before the client sees the first result.
         4. When every batch is done, the server appends a `stats` object summarising how many requests were processed and how many succeeded.
 
-        Authorization is enforced per entry, not on the bulk call as a whole.  Each replayed request carries the caller's access token and is checked against the scope its own endpoint requires (for example an entry that does `POST /realm` needs `write:realm`).  An entry the caller is not allowed to make comes back with a `403` in its own result, while the rest of the batch still runs.
+        The directory authorizes each entry, not the bulk call as a whole.  Each replayed request runs as the directory identity of the caller, so the access controls of the directory authorize each entry separately.  An entry that the directory refuses receives a `403` in the result for the entry, and the rest of the batch still runs.
 
         Streaming changes how errors are reported.  Once the server has started writing the response body it can no longer change the HTTP status line, so the HTTP status of a bulk call is almost always `200` even when individual entries fail or the run is aborted.  Clients MUST inspect the `code` field inside each result, and the `stats` object, to determine the real outcome.  If a fatal error happens part way through streaming, the server closes the JSON document early and adds top-level `err_msg` and `code` fields describing the failure.
 
@@ -2740,6 +2816,10 @@ paths:
               description: The new resource URL after rename.
         '400':
           $ref: '#/components/responses/onBadRequest'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '405':
@@ -2798,6 +2878,8 @@ paths:
                     modifyTimestamp: 20260912143423Z
         '401':
           $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
         '404':
           $ref: '#/components/responses/onNotFound'
         '405':
@@ -3919,54 +4001,65 @@ components:
         application/json:
           schema: {}
     onUnauthorized:
-      description: The access token is missing, expired, or invalid.
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-            - error_msg
-            properties:
-              error_msg:
-                type: string
-                x-stoplight:
-                  id: l7wa0zxbbp8cz
-                default: The access token is missing, expired, or invalid
-                description: A description of the authentication error.
+      description: |
+        The request carries no token, or the API could not verify the token.  The API fails to verify a token in the following cases:
+
+        1. The token is malformed.
+        2. The token has expired.
+        3. The token is signed with a key that the key set of the issuer does not contain.
+        4. The token is signed with an algorithm that the deployment does not list for the issuer.
+        5. The token names an issuer that the deployment does not list.
+        6. The token names an audience that the deployment does not list for the issuer.
+
+        The `WWW-Authenticate` challenge (RFC 6750 section 3) and `error_msg` carry the reason for the refusal.
       headers:
         WWW-Authenticate:
           schema:
             type: string
-          description: Bearer realm="api", error="invalid_token", error_description="The access token is missing or invalid"
-    onForbidden:
-      description: Example response
+          example: Bearer realm="subman", error="invalid_token", error_description="Token has expired"
       content:
         application/json:
           schema:
             type: object
             required:
             - error_msg
-            - required_scope
+            - code
             properties:
               error_msg:
                 type: string
-                x-stoplight:
-                  id: lzfbavpxancjo
-                default: The token does not have the required scope to access this resource
-                description: Description of the error
-              required_scope:
-                type:
-                - array
-                x-stoplight:
-                  id: 3153skj4zfh0q
-                description: What scope would have been required to access this resource
-                deprecated: true
-                items:
-                  x-stoplight:
-                    id: ml311rivgj4eg
-                  type: string
-                  example: read:realm
-                readOnly: true
+                description: The reason that the API refused the request.
+                example: Token has expired
+              code:
+                type: integer
+                description: The HTTP status, repeated in the body.
+                example: 401
+    onForbidden:
+      description: |
+        The API verified the token, but the API or the directory refused the request.  The following cases produce a `403`:
+
+        1. The API derived no directory identity from the claims of the token.  `ldap_code` is absent.
+        2. The directory refused the identity that the API derived from the token.  `ldap_code` is 123 (`authorizationDenied`).
+        3. The access controls of the directory denied the operation.  `ldap_code` is 50 (`insufficientAccessRights`).
+      content:
+        application/json:
+          schema:
+            type: object
+            required:
+            - error_msg
+            - code
+            properties:
+              error_msg:
+                type: string
+                description: The reason that the API or the directory refused the request.
+                example: Insufficient access at cn=example.org,ou=realms,dc=example,dc=org
+              code:
+                type: integer
+                description: The HTTP status, repeated in the body.
+                example: 403
+              ldap_code:
+                type: integer
+                description: The LDAP result code (RFC 4511 section 4.1.9) when the directory refused the request.  `ldap_code` is absent when the API refused the request before the request reached the directory.
+                example: 50
   examples: {}
   requestBodies: {}
   securitySchemes:
@@ -3975,26 +4068,11 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: |
-        The client sends a bearer access token as `Authorization: Bearer <token>`.  A GET may carry the token in the `access_token` query parameter instead of the `Authorization` header.  See the `access_token` parameter for the conditions.
-    OIDC:
-      type: oauth2
-      flows:
-        authorizationCode:
-          authorizationUrl: https://idp.example.com/oauth2/authorize
-          tokenUrl: https://idp.example.com/oauth2/token
-          scopes:
-            read:realm: Read realms
-            write:realm: Modify realms
-            read:subscriber: Read subscribers and subscriberGroups
-            write:subscriber: Modify subscribers and subscriberGroups
-            read:service: Read services
-            write:service: Modify services
-            read:profile: Read profiles, and policies
-            write:profile: Modify profiles, and policies
-            read:client: Read clients and clientGroups
-            write:client: Write clients and clientGroups
-            read:accessDevice: Read access devices
-            write:accessDevice: Modify access devices
+        A JSON Web Token (JWT) that an OpenID Connect identity provider issues.  The deployment lists the trusted issuers.  For each issuer, the deployment lists the accepted audiences and signing algorithms.  The API verifies the signature against the key set of the issuer and checks the `iss`, `aud`, `exp`, and `nbf` claims.  The API defines no OAuth scopes.  The API derives a directory identity from the claims of the token.  The access controls of the directory decide what the caller may read and write.
+
+        A browser client obtains the token with the Authorization Code flow with Proof Key for Code Exchange (PKCE).  A machine client obtains the token with the `client_credentials` grant.  The API treats both tokens the same way.
+
+        The client sends the token as `Authorization: Bearer <token>`.  A GET may carry the token in the `access_token` query parameter instead of the `Authorization` header.  See the `access_token` parameter for the conditions under which a GET may use the query parameter.
 tags:
 - name: Abstract profile (serviceProfile)
   description: Endpoints for managing service definitions, i.e. speed tiers or bandwidth caps.
@@ -4020,5 +4098,4 @@ tags:
 - name: Subscriber group
   description: Endpoints for managing groups of subscribers.
 security:
-- OIDC: []
 - AccessToken: []
