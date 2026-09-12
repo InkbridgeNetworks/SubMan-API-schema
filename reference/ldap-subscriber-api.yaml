@@ -2751,27 +2751,79 @@ paths:
     parameters: []
   /:
     get:
-      summary: Global parameters and headers
-      responses:
-        '200':
-          $ref: '#/components/responses/permissionsResponse'
+      summary: Read the directory base entry
       operationId: get-root
       x-stoplight:
         id: awyakbe5d2ujc
+      tags:
+      - Health
+      description: |
+        The server returns the base entry of the directory, the root of the tree that the API manages, as an object of LDAP attributes.  The request needs a bearer token, and the server reads one entry from the directory.  A 200 therefore proves that the API is running, that the token is valid, and that the directory answers.  Use `GET /` as the readiness probe.
+
+        With `operational=true` the server also returns the operational attributes of the entry, including `contextCSN`, the replication watermark.  After a write, read `contextCSN` from the replication provider.  Then wait for each replication consumer to report a `contextCSN` at or past the value from the provider.
+
+        The server accepts `GET` and `OPTIONS` only, and returns 405 for any other method.
       parameters:
       - $ref: '#/components/parameters/timestamps'
-      - schema:
-          type: boolean
-          example: true
-        in: header
-        name: x-permissions
-        description: If true, returns endpoints directly under the current path that the user can access, and their permissions.  Returns
-          "permissionsResponse"
-      description: "This endpoint demonstrates certain operations which apply globally to all endpoints.  \nThe OpenAPI specification\
-        \ is not flexible enough to represent this.\n\nGlobal endpoints are triggered by using a specific header or query\
-        \ parameter.\n\nThe documentation for those parameters states the response type that'll be received."
+      - $ref: '#/components/parameters/operational'
+      responses:
+        '200':
+          description: The base entry.  The keys of the object are the LDAP attribute names of the entry.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+              examples:
+                base entry:
+                  value:
+                    dc: example
+                    o: example
+                    objectClass:
+                    - top
+                    - dcObject
+                    - organization
+                base entry with operational attributes:
+                  value:
+                    dc: example
+                    o: example
+                    objectClass:
+                    - top
+                    - dcObject
+                    - organization
+                    entryDN: dc=example,dc=org
+                    entryUUID: cabadd8e-4302-1041-94d7-eb772a0d2ad3
+                    contextCSN: 20260912143953.381092Z#000000#000#000000
+                    createTimestamp: 20260912143423Z
+                    modifyTimestamp: 20260912143423Z
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '404':
+          $ref: '#/components/responses/onNotFound'
+        '405':
+          description: Method not allowed.  On the base entry, the server accepts `GET` and `OPTIONS` only.
+        '500':
+          $ref: '#/components/responses/onInternalServerError'
+    parameters: []
+  /test:
+    get:
+      summary: Liveness probe
+      operationId: get-test
       tags:
-      - Global
+      - Health
+      security: []
+      description: |
+        The server returns "Testing 123" as `text/plain` without authentication and without reading the directory.  A 200 proves only that nginx and the API code are running.  Use `GET /test` as the liveness probe, for example from a load balancer that holds no credentials.  Use `GET /` as the readiness probe.
+
+        The server returns the same response for every method and for every path below `/test`.
+      responses:
+        '200':
+          description: The API is running.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: Testing 123
     parameters: []
 components:
   schemas:
@@ -3621,6 +3673,15 @@ components:
         default: false
       description: |
         If true, include the LDAP `createTimestamp` and `modifyTimestamp` operational attributes on each returned object.  Values are RFC 4517 GeneralizedTime in zulu form (`YYYYMMDDHHMMSSZ`, e.g. `20240519143012Z`) and are passed through unchanged from the directory.
+    operational:
+      name: operational
+      in: query
+      required: false
+      schema:
+        type: boolean
+        default: false
+      description: |
+        If true, the server includes every operational attribute of each returned object, such as `entryUUID`, `entryCSN`, `entryDN`, and, on the base entry, `contextCSN`.  The server passes the attribute values through from the directory unchanged.
     accessDeviceId:
       name: accessDeviceId
       in: path
@@ -3857,61 +3918,6 @@ components:
       content:
         application/json:
           schema: {}
-    permissionsResponse:
-      description: "This response shows permisssions for children of this endpoint.  \n\nIt only shows permissions for namespaces,\
-        \ i.e. fixed objects, it does not show permissions for\nuser created objects.  Permissions should be assumed to apply\
-        \ to all user created objects beneath\nthe returned endpoint."
-      content:
-        application/json:
-          schema:
-            type: object
-            additionalProperties:
-              x-stoplight:
-                id: sejmivgbh3y7g
-              type: array
-              minItems: 1
-              maxItems: 2
-              uniqueItems: true
-              items:
-                x-stoplight:
-                  id: e7yz6nsdxgkln
-                enum:
-                - read
-                - write
-                readOnly: true
-              readOnly: true
-            readOnly: true
-          examples:
-            Permissions for '/':
-              value:
-                /realm:
-                - read
-                - write
-                /client:
-                - read
-            Permissions for '/realm/example':
-              value:
-                /realm/example/subscriber:
-                - read
-        text/event-stream:
-          schema:
-            type: object
-            additionalProperties:
-              x-stoplight:
-                id: sejmivgbh3y7g
-              type: array
-              minItems: 1
-              maxItems: 2
-              uniqueItems: true
-              items:
-                x-stoplight:
-                  id: e7yz6nsdxgkln
-                enum:
-                - read
-                - write
-                readOnly: true
-              readOnly: true
-            readOnly: true
     onUnauthorized:
       description: The access token is missing, expired, or invalid.
       content:
@@ -4003,6 +4009,8 @@ tags:
   description: Endpoints for managing concrete profiles, i.e. sets of attributes which will be returned to the NAS.
 - name: Global
   description: Top-level metadata endpoints not scoped to a single resource type.
+- name: Health
+  description: Endpoints that a monitor or a load balancer probes.  `GET /test` is the liveness probe, and proves that the API code is running.  `GET /` is the readiness probe, and proves that the API can read the directory.
 - name: Realm
   description: Endpoints for managing realms.  Groups of subscribers based on virtual service.
 - name: Service
