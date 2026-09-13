@@ -16,20 +16,20 @@ info:
     ```js
     const es = new EventSource('/realm/example.org/subscriber?subscribe=1&access_token=' + token);
 
-    es.addEventListener('ready', () => {
-      // The server has finished replaying the initial state. Every later
-      // `entry` is a live change.
+    es.addEventListener('ready', (e) => {
+      // The server has finished replaying the existing records. Every later
+      // `entry` is a live change. On a reconnect, `reload` means that the
+      // server could not replay the deletions made while the client was
+      // disconnected.
+      if (JSON.parse(e.data).reload) reloadList();
     });
 
     es.addEventListener('entry', (e) => {
       const { entryUUID, syncOp, body } = JSON.parse(e.data);
       switch (syncOp) {
-        case 'add':                                 // new record, full body
-        case 'modify':  applyUpsert(body); break;   // changed record, full body
-        case 'delete':  applyDelete(body); break;   // removed record, only id and _url
-        case 'present':                             // unchanged record, only id and _url
-          if (!haveRecord(body._url)) fetchRecord(body._url);
-          break;
+        case 'add':                                          // new record, full body
+        case 'modify':  applyUpsert(body); break;            // changed record, full body
+        case 'delete':  applyDelete(entryUUID, body); break; // removed record, `id` and `_url`, or no `body` on a resumed stream
       }
     });
     ```
@@ -38,8 +38,10 @@ info:
 
     * The server sends `ready` once, when the initial replay of existing
       records is complete. Every later `entry` is a live change. The
-      payload is an empty object, and the `id:` line carries the resume
-      cookie for the end of the replay.
+      payload is an empty object. The payload is `{"reload": true}` when
+      the server could not replay the deletions made while the client
+      was disconnected. See 'Resuming a dropped stream'. The `id:` line
+      carries the resume cookie for the end of the replay.
     * The server sends `entry` once per record. `syncOp` names the kind
       of change, and `body` carries the record. Every record includes
       `_url`, the path of the REST resource of the record.
@@ -63,9 +65,9 @@ info:
     The server runs one directory search per open stream, and the
     directory server checks every write against every open search. The
     number of open searches is the cost of streaming. The number of
-    connections is not a cost. The API serves HTTP/2, so a browser holds
-    every stream on one connection. Open the fewest streams that cover
-    the records you need. The widest streams are the subtree streams of
+    connections is not a cost when the server offers HTTP/2, which the
+    standard deployment does: a browser then holds every stream on one
+    connection. Open the fewest streams that cover the records you need. The widest streams are the subtree streams of
     the six top-level collections:
 
     | Stream | Records carried |
@@ -126,15 +128,21 @@ info:
     The server accepts a cookie of 1024 bytes or fewer with no control
     characters, and answers any other cookie with 400 Bad Request.
 
-    On a reconnect, the server replays only the changes since the
-    cookie, as long as the directory server still holds history back to
-    the cookie. When the cookie is older than the history that the
-    directory server keeps, the server instead sends one `present` event
-    for every record that still exists and has not changed. Each
-    `present` event carries `id` and `_url` only. The server then sends
-    the changes. A `present` event means that the record still exists
-    and has not changed since the cookie. Keep the copy you have, and
-    fetch `_url` if you have none.
+    On a reconnect, the server replays only the changes since the cookie
+    in `Last-Event-ID`. The replay needs the directory server to still
+    hold history back to the cookie. A record deleted while the client
+    was disconnected arrives as an `entry` event with `syncOp` `delete`
+    and no `body`. The record no longer exists in the directory, so the
+    server has no URL for the record. Remove the copy of the record that
+    carries the same `entryUUID`.
+
+    A cookie in `Last-Event-ID` can be older than the history that the
+    directory server keeps. The directory server then cannot report the
+    records deleted while the client was disconnected. The server then
+    replays the records that changed, and sends `ready` with
+    `{"reload": true}`. Reload the list from the REST API when `ready`
+    carries `reload`, because the copy of the list that the client holds
+    may contain records that no longer exist.
 
     ## Authentication
 
@@ -148,8 +156,8 @@ info:
     ## Where the events come from
 
     A syncrepl persistent search (RFC 4533) on the LDAP directory drives
-    the stream. The `syncOp` values (`present`, `add`, `modify`,
-    `delete`) and the `entryUUID` field come from syncrepl. Using the
+    the stream. The `syncOp` values (`add`, `modify`, `delete`) and the
+    `entryUUID` field come from syncrepl. Using the
     stream requires no knowledge of LDAP. The events describe REST
     resources, and `body` contains the JSON shape that the GET endpoint
     of the resource returns.
@@ -279,10 +287,20 @@ components:
       payload:
         type: object
         additionalProperties: false
+        properties:
+          reload:
+            type: boolean
+            const: true
+            description: |
+              The server sends `ready` with `reload` on a reconnect whose `Last-Event-ID` cookie is older than the history that the directory server keeps. The server could not replay the deletions made while the client was disconnected, so reload the list from the REST API.
       examples:
       - name: readyExample
         summary: The server sends `ready` once, after the initial replay. The SSE `id:` line carries the resume cookie.
         payload: {}
+      - name: readyReloadExample
+        summary: The server sends `ready` with `reload` on a reconnect when the server could not replay the deletions made while the client was disconnected.
+        payload:
+          reload: true
     entry:
       name: entry
       title: Record event
@@ -337,14 +355,11 @@ components:
           body:
             id: example.org
             _url: /realm/example.org
-      - name: realmPresent
-        summary: A realm that still exists and has not changed since the `Last-Event-ID` cookie. The server sends `present` only on a reconnect whose cookie is older than the history that the directory server keeps. `body` has only `id` and `_url`.
+      - name: realmDeleteOnResume
+        summary: A realm deleted while the client was disconnected. The server reports the deletion on a resumed stream without a `body`, and `entryUUID` identifies the record.
         payload:
           entryUUID: 2c8e1f3a-7b46-4d6f-9a4d-92ad1e1f4ab2
-          syncOp: present
-          body:
-            id: example.org
-            _url: /realm/example.org
+          syncOp: delete
       - name: subscriberAdd
         summary: A new subscriber, from `/realm/{realmId}/subscriber`.
         payload:
@@ -497,7 +512,6 @@ components:
       required:
       - entryUUID
       - syncOp
-      - body
       properties:
         entryUUID:
           type: string
@@ -508,7 +522,6 @@ components:
           - add
           - modify
           - delete
-          - present
           description: |
             The kind of event.
 
@@ -518,20 +531,15 @@ components:
             * `modify`: a changed record. `body` is the full new state,
               not a patch.
             * `delete`: a removed record. `body` holds only `id` and
-              `_url`.
-            * `present`: a record that still exists and has not changed
-              since the `Last-Event-ID` cookie. `body` holds only `id`
-              and `_url`. The server sends `present` only on a reconnect
-              whose cookie is older than the history that the directory
-              server keeps.
+              `_url`. A `delete` event on a resumed stream has no `body`,
+              because the record no longer has a URL. Match the event to
+              the stored record by `entryUUID`.
     tombstone:
       type: object
-      required:
-      - id
-      - _url
       description: |
-        Body of a `delete` or `present` event. The tombstone holds only
-        enough to identify the record.
+        Body of a `delete` event. The tombstone holds only `id` and
+        `_url`. A `delete` event on a resumed stream has no `body`, and
+        the `entryUUID` of the event identifies the record.
       properties:
         id:
           type: string
