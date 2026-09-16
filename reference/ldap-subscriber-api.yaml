@@ -2611,6 +2611,66 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+  /config/database:
+    get:
+      operationId: get-config-database
+      summary: List the databases of the directory with the access controls of each
+      tags:
+      - Directory configuration
+      description: |
+        The server returns every database of the directory that holds a suffix, with the access controls of each database, as one array.  `acl` holds the `olcAccess` values in the order that the directory evaluates the rules, without the `{n}` prefixes.  The directory evaluates the `OPTIONS` verb probes against the access controls, so a client that caches the verbs opens a stream on this endpoint with `subscribe=1` and re-probes when a `modify` event arrives.
+
+        The endpoints under `/config` are read only.  The server declares no `POST`, and the directory refuses every write from the server with `insufficientAccessRights`, which the server returns as 403.
+      parameters:
+      - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/subscribe'
+      - $ref: '#/components/parameters/access_token'
+      responses:
+        '200':
+          description: The databases of the directory that hold a suffix.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/directoryDatabase'
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/directoryDatabase'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
+        '500':
+          $ref: '#/components/responses/onInternalServerError'
+    parameters: []
+  /config/database/{databaseId}:
+    parameters:
+    - $ref: '#/components/parameters/databaseId'
+    get:
+      operationId: get-config-database-databaseId
+      summary: Return one database of the directory with the access controls of the database
+      tags:
+      - Directory configuration
+      description: |
+        The server returns the database named by `databaseId`, with the access controls of the database.  The id is the name as `cn=config` orders it, braces included, so the client percent-encodes the braces: `%7B2%7Dmdb` for `{2}mdb`.
+      parameters:
+      - $ref: '#/components/parameters/timestamps'
+      responses:
+        '200':
+          description: The database.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/directoryDatabase'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
+        '404':
+          $ref: '#/components/responses/onNotFound'
+        '500':
+          $ref: '#/components/responses/onInternalServerError'
   /bulk:
     post:
       operationId: post-bulk
@@ -2909,6 +2969,31 @@ paths:
     parameters: []
 components:
   schemas:
+    directoryDatabase:
+      title: directoryDatabase
+      type: object
+      description: A database of the directory, with the access controls of the database.  The object carries nothing else from the configuration entry.
+      required:
+      - id
+      - suffix
+      - acl
+      properties:
+        id:
+          type: string
+          description: Name of the database as `cn=config` orders it.
+          example: '{2}mdb'
+        suffix:
+          type: string
+          description: Suffix of the database, the base distinguished name (DN) of the tree that the database holds.
+          example: dc=example,dc=org
+        acl:
+          type: array
+          description: The `olcAccess` rules of the database, in the order that the directory evaluates the rules, each without the `{n}` prefix.
+          items:
+            type: string
+          example:
+          - to attrs=entry,children by group.exact="cn=subman-admins,ou=groups,dc=example,dc=org" write by * none
+          - to * by group.exact="cn=subman-admins,ou=groups,dc=example,dc=org" write by * read
     realm:
       title: realm
       x-stoplight:
@@ -3707,6 +3792,14 @@ components:
         type: string
         example: myFirstNas
       description: Identifier for a concrete class of service profile
+    databaseId:
+      name: databaseId
+      in: path
+      required: true
+      schema:
+        type: string
+        example: '{2}mdb'
+      description: Name of the database as `cn=config` orders it, percent-encoded.
     realmId:
       name: realmId
       in: path
@@ -4085,6 +4178,8 @@ tags:
   description: Endpoints for managing groups or categories of client.
 - name: Concrete profile (freeradiusProfile)
   description: Endpoints for managing concrete profiles, i.e. sets of attributes which will be returned to the NAS.
+- name: Directory configuration
+  description: Read-only endpoints that return the configuration of the directory, such as the access controls of each database.
 - name: Global
   description: Top-level metadata endpoints not scoped to a single resource type.
 - name: Health
