@@ -4086,13 +4086,48 @@ components:
           schema: {}
     onBadRequest:
       description: |
-        Can be any of the following:
-        - The requested path doesn’t correspond to the schema.
-        - Missing or invalid data for POST or PUT operations. Data should always be valid JSON.
-        - If data contains URL to another resource, the host part of the URL must be identical to the host data being created/modified.
+        The API or the directory rejected the request.  The API rejects a request before the request reaches the directory in the following cases.  `ldap_code` is absent in each case:
+
+        1. The path of the request is not a path that the API defines.
+        2. The body of a POST or PUT is missing, is not valid JSON, or does not match the request body that the endpoint defines.
+        3. The body holds a URL to another resource, and the host of the URL differs from the host of the request.
+
+        The directory rejects a request that violates the state of the entry, the schema of the directory, or the syntax of a distinguished name (DN).  `ldap_code` carries the result code.  `error_msg` carries the diagnostic text of the directory.  The diagnostic text names the attribute or the value.  The following result codes produce a `400`:
+
+        1. `protocolError` (2): An attribute in an add operation has no values.  An empty list in the body of a POST produces an attribute with no values.
+        2. `noSuchAttribute` (16): The entry does not hold the attribute or the value that the request removes.
+        3. `undefinedAttributeType` (17): The schema of the directory does not define the attribute.
+        4. `attributeOrValueExists` (20): The entry already holds the attribute or the value that the request adds.
+        5. `invalidAttributeSyntax` (21): A value does not conform to the syntax of the attribute.
+        6. `invalidDNSyntax` (34): The name of the entry does not conform to the DN syntax.
+        7. `namingViolation` (64): After the request, the attributes of the entry do not hold the value that names the entry.
+        8. `objectClassViolation` (65): The entry holds an attribute that the object classes of the entry do not allow, or the entry lacks an attribute that the object classes require.
+        9. `notAllowedOnRDN` (67): The request removes the value that names the entry.
+        10. `objectClassModsProhibited` (69): The request changes the structural object class of the entry.
       content:
         application/json:
-          schema: {}
+          schema:
+            type: object
+            required:
+            - error_msg
+            - code
+            properties:
+              error_msg:
+                type: string
+                description: The reason that the API or the directory rejected the request.
+                example: 'Attribute is not in the schema at cn=example.org,ou=realms,dc=example,dc=org: notarealfield: attribute type undefined'
+              code:
+                type: integer
+                description: The HTTP status, repeated in the body.
+                example: 400
+              ldap_code:
+                type: integer
+                description: The LDAP result code (RFC 4511 section 4.1.9) when the directory rejected the request.  `ldap_code` is absent when the API rejected the request before the request reached the directory.
+                example: 17
+              ldap_error:
+                type: string
+                description: The name of the LDAP result code (RFC 4511 appendix A).  `ldap_error` is present whenever `ldap_code` is present.
+                example: undefinedAttributeType
     onUnauthorized:
       description: |
         The request carries no token, or the API could not verify the token.  The API fails to verify a token in the following cases:
