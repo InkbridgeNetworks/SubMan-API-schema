@@ -64,11 +64,13 @@ info:
 
     The server runs one directory search per open stream, and the
     directory server checks every write against every open search. The
-    number of open searches is the cost of streaming. The number of
-    connections is not a cost when the server offers HTTP/2, which the
-    standard deployment does: a browser then holds every stream on one
-    connection. Open the fewest streams that cover the records you need. The widest streams are the subtree streams of
-    the six top-level collections:
+    number of open searches is the cost of streaming. A browser that
+    reaches the API over HTTP/2 carries every stream on one connection, so
+    the number of connections is not a cost. The section 'HTTP/2 and the
+    TLS terminator' describes how a browser reaches the API over HTTP/2.
+    Open the fewest streams that cover the records that you need. The
+    widest streams are the subtree streams of the six top-level
+    collections:
 
     | Stream | Records carried |
     |--------|-----------------|
@@ -78,6 +80,38 @@ info:
     | `/client?subscribe=1&scope=subtree` | clients and the ports and taggings of the clients |
     | `/clientGroup?subscribe=1&scope=subtree` | client groups |
     | `/accessDevice?subscribe=1&scope=subtree` | access devices and the ports and taggings of the access devices |
+
+    ## HTTP/2 and the TLS terminator
+
+    The API serves HTTP/2 on the TLS listener and HTTP/1.1 on the plain
+    listener, because a browser negotiates HTTP/2 only over TLS. A
+    browser opens a small fixed number of HTTP/1.1 connections to one
+    origin (scheme, host, and port). Every open stream holds one of the
+    connections. A page with several streams open over HTTP/1.1
+    therefore cannot fetch anything else from the API. A browser must
+    reach the API over TLS.
+
+    A deployment that places a TLS terminator in front of the API must
+    meet four requirements for the stream:
+
+    1. The terminator serves HTTP/2 to the browser. The browser then
+       carries every stream and every other request on one connection.
+    2. The terminator passes each event to the browser as the API writes
+       the event. The API sets `X-Accel-Buffering: no` and
+       `Cache-Control: no-cache` on a stream response. A terminator built
+       on nginx honours `X-Accel-Buffering`. On any other terminator,
+       turn response buffering off for `text/event-stream`.
+    3. The terminator keeps an idle stream open. A stream does not carry
+       any data between two changes to the directory. The read timeout
+       and the idle timeout of the terminator must therefore exceed the
+       longest expected quiet period. A browser reconnects with
+       `Last-Event-ID` when a terminator closes the stream, and
+       'Resuming a dropped stream' describes the replay that follows the
+       reconnect.
+    4. The terminator passes the `Host` header through unchanged, unless
+       `url_root` is set in the configuration of the API. The API builds
+       every URL in a response from `Host` unless `url_root` sets the
+       prefix.
 
     ## The event body
 
