@@ -3768,6 +3768,31 @@ components:
             the remote end of the link.
           example: http://localhost:3000/accessDevice/dslam-03
           format: uri
+    errorResponse:
+      title: errorResponse
+      description: |
+        The body of every error response.  `error_msg` and `code` are always present.  `ldap_code` is present when a directory operation caused the error, and absent when the API refused the request before the request reached the directory.  `ldap_error` is present when `ldap_code` is present and `ldap_code` is not negative.
+      type: object
+      required:
+      - error_msg
+      - code
+      properties:
+        error_msg:
+          type: string
+          description: The reason that the API or the directory refused the request.  The text is for a person, not for a program.  The text may name a distinguished name (DN), an attribute in the lowercase form that the directory reports, or a value from the request.  A client must not match on the text.
+          example: 'Attribute is not in the schema at cn=example.org,ou=realms,dc=example,dc=org: notarealfield: attribute type undefined'
+        code:
+          type: integer
+          description: The HTTP status of the response.  The API repeats the status in the body because an error that ends a streamed collection arrives after the API sent status `200`.  The body is then the only place that carries the status of the error.
+          example: 400
+        ldap_code:
+          type: integer
+          description: The directory result code (RFC 4511 section 4.1.9) that caused the error.  The OpenLDAP client library produces a negative value for a lost connection or a timeout.  RFC 4511 defines no name for a negative value.
+          example: 17
+        ldap_error:
+          type: string
+          description: The name that RFC 4511 appendix A assigns to the result code in `ldap_code`.  `ldap_error` is present whenever `ldap_code` is present and `ldap_code` is not negative.  To dispatch on the result code, match on `ldap_error`.
+          example: undefinedAttributeType
   parameters:
     serviceId:
       name: serviceId
@@ -4056,16 +4081,18 @@ components:
             type: string
           description: The URI of the resource that was just created
     onInternalServerError:
-      description: An internal error has occurred while talking to one of the backend (LDAP or Postgres). For instance, an
-        attribute was missing when creating an object
+      description: |
+        A `500` is a defect in the API or in the deployment, not a mistake in the request.  The following cases produce a `500`:
+
+        1. The API failed.
+        2. The directory returned a result code that the API does not map to another status.  `ldap_code` and `ldap_error` are present.
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              error_msg:
-                type: string
-                description: Raw error string from the service element which experienced the error
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            error_msg: 'LDAP search failed after 3 attempts: Can''t contact LDAP server'
+            code: 500
     onSuccess:
       description: Response sent on a successful operation which did not create an object
       content:
@@ -4074,23 +4101,42 @@ components:
         text/event-stream:
           schema: {}
     onNotFound:
-      description: Specified resource not found
+      description: |
+        The path of the request does not name an entry.  The following cases produce a `404`:
+
+        1. The path is not a path that the API defines.  `ldap_code` is absent.
+        2. The directory does not hold an entry at the distinguished name (DN) that the path names.  `ldap_code` is 32 (`noSuchObject`).
       content:
         application/json:
-          schema: {}
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            error_msg: LDAP object not found at cn=missing,ou=realms,dc=example,dc=org
+            code: 404
+            ldap_code: 32
+            ldap_error: noSuchObject
     onConflict:
-      description: The requested operation conflicts with an existing resource (for instance, trying to create a duplicate
-        resource) or you are trying to delete a node that has children
+      description: |
+        The request conflicts with the state of the directory.  The following result codes produce a `409`:
+
+        1. `constraintViolation` (19): A value violates a uniqueness constraint of the directory, for example a second subscriber holds the same `portBindingIdentifier` as an existing subscriber.
+        2. `notAllowedOnNonLeaf` (66): The request deletes an entry that has child entries.
+        3. `entryAlreadyExists` (68): The request creates an entry at a distinguished name (DN) where the directory already holds an entry.
       content:
         application/json:
-          schema: {}
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            error_msg: LDAP object already exists at cn=example.org,ou=realms,dc=example,dc=org
+            code: 409
+            ldap_code: 68
+            ldap_error: entryAlreadyExists
     onBadRequest:
       description: |
         The API or the directory rejected the request.  The API rejects a request before the request reaches the directory in the following cases.  `ldap_code` is absent in each case:
 
-        1. The path of the request is not a path that the API defines.
-        2. The body of a POST or PUT is missing, is not valid JSON, or does not match the request body that the endpoint defines.
-        3. The body holds a URL to another resource, and the host of the URL differs from the host of the request.
+        1. The body of a POST or PUT is missing, is not valid JSON, or does not match the request body that the endpoint defines.
+        2. The body holds a URL to another resource, and the host of the URL differs from the host of the request.
 
         The directory rejects a request that violates the state of the entry, the schema of the directory, or the syntax of a distinguished name (DN).  `ldap_code` carries the result code.  `error_msg` carries the diagnostic text of the directory.  The diagnostic text names the attribute or the value.  The following result codes produce a `400`:
 
@@ -4107,27 +4153,12 @@ components:
       content:
         application/json:
           schema:
-            type: object
-            required:
-            - error_msg
-            - code
-            properties:
-              error_msg:
-                type: string
-                description: The reason that the API or the directory rejected the request.
-                example: 'Attribute is not in the schema at cn=example.org,ou=realms,dc=example,dc=org: notarealfield: attribute type undefined'
-              code:
-                type: integer
-                description: The HTTP status, repeated in the body.
-                example: 400
-              ldap_code:
-                type: integer
-                description: The LDAP result code (RFC 4511 section 4.1.9) when the directory rejected the request.  `ldap_code` is absent when the API rejected the request before the request reached the directory.
-                example: 17
-              ldap_error:
-                type: string
-                description: The name of the LDAP result code (RFC 4511 appendix A).  `ldap_error` is present whenever `ldap_code` is present.
-                example: undefinedAttributeType
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            error_msg: 'Attribute is not in the schema at cn=example.org,ou=realms,dc=example,dc=org: notarealfield: attribute type undefined'
+            code: 400
+            ldap_code: 17
+            ldap_error: undefinedAttributeType
     onUnauthorized:
       description: |
         The request carries no token, or the API could not verify the token.  The API fails to verify a token in the following cases:
@@ -4148,46 +4179,27 @@ components:
       content:
         application/json:
           schema:
-            type: object
-            required:
-            - error_msg
-            - code
-            properties:
-              error_msg:
-                type: string
-                description: The reason that the API refused the request.
-                example: Token has expired
-              code:
-                type: integer
-                description: The HTTP status, repeated in the body.
-                example: 401
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            error_msg: Token has expired
+            code: 401
     onForbidden:
       description: |
-        The API verified the token, but the API or the directory refused the request.  The following cases produce a `403`:
+        The API or the directory refused the request.  The following cases produce a `403`:
 
-        1. The API derived no directory identity from the claims of the token.  `ldap_code` is absent.
-        2. The directory refused the identity that the API derived from the token.  `ldap_code` is 123 (`authorizationDenied`).
-        3. The access controls of the directory denied the operation.  `ldap_code` is 50 (`insufficientAccessRights`).
+        1. A Cross-Origin Resource Sharing (CORS) preflight carries an `Origin` header with a value that the deployment does not allow.  `ldap_code` is absent.
+        2. The API verified the bearer token of the request, but did not derive a directory identity from the claims of the token.  `ldap_code` is absent.
+        3. The directory refused the identity that the API derived from the token.  `ldap_code` is 123 (`authorizationDenied`).
+        4. The access controls of the directory denied the operation.  `ldap_code` is 50 (`insufficientAccessRights`).
       content:
         application/json:
           schema:
-            type: object
-            required:
-            - error_msg
-            - code
-            properties:
-              error_msg:
-                type: string
-                description: The reason that the API or the directory refused the request.
-                example: Insufficient access at cn=example.org,ou=realms,dc=example,dc=org
-              code:
-                type: integer
-                description: The HTTP status, repeated in the body.
-                example: 403
-              ldap_code:
-                type: integer
-                description: The LDAP result code (RFC 4511 section 4.1.9) when the directory refused the request.  `ldap_code` is absent when the API refused the request before the request reached the directory.
-                example: 50
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            error_msg: Access denied at cn=example.org,ou=realms,dc=example,dc=org
+            code: 403
+            ldap_code: 50
+            ldap_error: insufficientAccessRights
   examples: {}
   requestBodies: {}
   securitySchemes:
