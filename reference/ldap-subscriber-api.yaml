@@ -159,7 +159,7 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      description: Update realm metadata by replacing all the fields of the current object with the new values
+      description: Update realm metadata by replacing all the fields of the current object with the new values.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
           application/json:
@@ -342,7 +342,7 @@ paths:
             schema:
               $ref: '#/components/schemas/subscriberReplace'
         description: New definition of the subscriber
-      description: Replace an existing subscriber in a given realm
+      description: Replace an existing subscriber in a given realm.  A field set to null is removed, the same as a field left out.
       tags:
       - Subscriber
       summary: Replace a subscriber
@@ -510,7 +510,7 @@ paths:
             schema:
               $ref: '#/components/schemas/subscriberGroupReplace'
         description: New definition of the subscriber
-      description: Replace subscriber group metadata.  Will not affect group membership
+      description: Replace subscriber group metadata.  Will not affect group membership.  A field set to null is removed, the same as a field left out.
       tags:
       - Subscriber group
       summary: Replace a subscriberGroup
@@ -663,7 +663,7 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      description: Replace service metadata
+      description: Replace service metadata.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
           application/json:
@@ -834,7 +834,7 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      description: Replace a serviceProfile
+      description: Replace a serviceProfile.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
           application/json:
@@ -1011,7 +1011,7 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      description: Replace a freeradiusPolicy
+      description: Replace a freeradiusPolicy.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
           application/json:
@@ -1188,7 +1188,7 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      description: Replace an client
+      description: Replace an client.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
           application/json:
@@ -1362,7 +1362,7 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      description: Replace a port
+      description: Replace a port.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
           application/json:
@@ -1523,7 +1523,7 @@ paths:
       tags:
       - Client
       summary: Replace a QinQ tagging
-      description: Replace a QinQ tagging on a physical port
+      description: Replace a QinQ tagging on a physical port.  A field set to null is removed, the same as a field left out.
       operationId: put-client-clientId-port-portId-qinq-qinqId
       requestBody:
         description: New definition of the QinQ tagging
@@ -1693,7 +1693,7 @@ paths:
       tags:
       - Client
       summary: Replace a S-tag tagging
-      description: Replace a S-tag tagging on a physical port
+      description: Replace a S-tag tagging on a physical port.  A field set to null is removed, the same as a field left out.
       operationId: put-client-clientId-port-portId-stag-svlan
       requestBody:
         description: New definition of the S-tag tagging
@@ -1866,7 +1866,7 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      description: Replace an clientGroup metadata and profiles.  Does not affect group membership
+      description: Replace an clientGroup metadata and profiles.  Does not affect group membership.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
           application/json:
@@ -2037,7 +2037,7 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      description: Replace an accessDevice
+      description: Replace an accessDevice.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
           application/json:
@@ -2211,7 +2211,7 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
-      description: Replace a port
+      description: Replace a port.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
           application/json:
@@ -2372,7 +2372,7 @@ paths:
       tags:
       - accessDevice
       summary: Replace a QinQ tagging
-      description: Replace a QinQ tagging on a physical port
+      description: Replace a QinQ tagging on a physical port.  A field set to null is removed, the same as a field left out.
       operationId: put-accessDevice-accessDeviceId-port-portId-qinq-qinqId
       requestBody:
         description: New definition of the QinQ tagging
@@ -2542,7 +2542,7 @@ paths:
       tags:
       - accessDevice
       summary: Replace a S-tag tagging
-      description: Replace a S-tag tagging on a physical port
+      description: Replace a S-tag tagging on a physical port.  A field set to null is removed, the same as a field left out.
       operationId: put-accessDevice-accessDeviceId-port-portId-stag-svlan
       requestBody:
         description: New definition of the S-tag tagging
