@@ -76,6 +76,8 @@ paths:
           $ref: '#/components/responses/onForbidden'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-realm
       description: Return an array of available realms
       summary: List available realms
@@ -100,6 +102,8 @@ paths:
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Add a new realm
       requestBody:
         content:
@@ -139,6 +143,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-realm-realmId
       description: Get metadata for a realm
       summary: Return a specific realm
@@ -159,6 +165,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Update realm metadata by replacing all the fields of the current object with the new values.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
@@ -187,6 +195,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: |-
         Update realm metdata by replacing only the provided attributes.
 
@@ -218,6 +228,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/prune'
       description: Delete a realm.  The prune param must be true if the realm contains subscribers
@@ -248,6 +260,8 @@ paths:
           $ref: '#/components/responses/onForbidden'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-realm-realmId-subscriber
       description: Return an array of all subscribers in a realm
       summary: List subscribers in a realm
@@ -278,6 +292,8 @@ paths:
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       requestBody:
         content:
           application/json:
@@ -316,6 +332,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-realm-realmId-subscriber-compoundSubscriberId
       description: Get specific subscriber for a given realm
       summary: Return a subscriber
@@ -336,6 +354,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       requestBody:
         content:
           application/json:
@@ -364,6 +384,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       requestBody:
         content:
           application/json:
@@ -395,6 +417,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Delete a subscriber in a given realm
       tags:
       - Subscriber
@@ -423,6 +447,8 @@ paths:
           $ref: '#/components/responses/onForbidden'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-group
       description: Return an array of available subscriber groups
       summary: List available subscriberGroups
@@ -483,6 +509,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Get a subscriber group definition
       tags:
       - Subscriber group
@@ -504,6 +532,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       requestBody:
         content:
           application/json:
@@ -581,6 +611,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-service
       description: Return an array of available services
       summary: List available services
@@ -606,6 +638,8 @@ paths:
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Add a new service
       requestBody:
         content:
@@ -641,6 +675,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-service-serviceId
       description: Get service metadata
       summary: Return a service
@@ -663,6 +699,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Replace service metadata.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
@@ -691,6 +729,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       requestBody:
         content:
           application/json:
@@ -722,6 +762,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Delete a service
       parameters:
       - $ref: '#/components/parameters/prune'
@@ -751,6 +793,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-service-serviceId-profile
       description: Return an array of available serviceProfiles (abstract profiles) for a given service
       summary: List serviceProfiles in a service
@@ -776,6 +820,8 @@ paths:
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Add a new serviceProfile (abstract profile)
       requestBody:
         content:
@@ -812,6 +858,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-service-serviceId-profile-profileId
       description: Return a serviceProfile i.e. an abstract profile describing a class of service
       summary: Return a serviceProfile
@@ -834,6 +882,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Replace a serviceProfile.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
@@ -862,6 +912,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: |-
         Update a serviceProfile by replacing only the provided attributes.
 
@@ -893,6 +945,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Delete a serviceProfile
       parameters:
       - $ref: '#/components/parameters/prune'
@@ -924,6 +978,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-service-serviceId-profile-profileId-policy
       description: Return an array of policies (concrete profiles containing FreeRADIUS attributes) associated with a serviceProfile
         (an abstract profile)
@@ -950,6 +1006,8 @@ paths:
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Definition of a policy (concrete profile) to add
       requestBody:
         content:
@@ -987,6 +1045,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-service-serviceId-profile-profileId-policy-policyId
       description: Return a freeradiusPolicy (a concrete profile)
       summary: Return a freeradiusProfile associated with a serviceProfile
@@ -1011,6 +1071,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Replace a freeradiusPolicy.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
@@ -1041,6 +1103,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: |-
         Update a freeradiusPolicy by replacing only the provided attributes.
 
@@ -1074,6 +1138,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Delete a freeradiusPolicy
       summary: Delete a freeradiusProfile
       tags:
@@ -1106,6 +1172,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-client
       description: Return an array of clients
       summary: List clients
@@ -1131,6 +1199,8 @@ paths:
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Add a new client
       requestBody:
         content:
@@ -1166,6 +1236,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-client-clientId
       description: Return an client
       tags:
@@ -1188,6 +1260,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Replace an client.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
@@ -1216,6 +1290,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: |-
         Update an client replacing only the provided attributes.
 
@@ -1247,6 +1323,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Delete a client
       tags:
       - Client
@@ -1277,6 +1355,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-client-clientId-port
       description: Return an array of ports associated with an client
       summary: List ports associated with a client
@@ -1302,6 +1382,8 @@ paths:
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Add a new client
       requestBody:
         content:
@@ -1340,6 +1422,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-client-clientId-port-portId
       description: Return a port associated with an access deivce
       tags:
@@ -1362,6 +1446,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Replace a port.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
@@ -1390,6 +1476,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Update a port
       requestBody:
         content:
@@ -1416,6 +1504,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Delete a port
       tags:
       - Client
@@ -1452,6 +1542,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
@@ -1485,6 +1577,8 @@ paths:
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - *id001
       - *id002
@@ -1517,6 +1611,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -1544,6 +1640,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - *id001
       - *id002
@@ -1572,6 +1670,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - *id001
       - *id002
@@ -1592,6 +1692,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
   /client/{clientId}/port/{portId}/stag:
     parameters:
     - $ref: '#/components/parameters/clientId'
@@ -1622,6 +1724,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
@@ -1655,6 +1759,8 @@ paths:
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - *id001
       - *id002
@@ -1687,6 +1793,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -1714,6 +1822,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - *id001
       - *id002
@@ -1742,6 +1852,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - *id001
       - *id002
@@ -1762,6 +1874,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
   /clientGroup:
     get:
       responses:
@@ -1809,6 +1923,8 @@ paths:
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Add a new clientGroup
       requestBody:
         content:
@@ -1846,6 +1962,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-clientGroup-clientGroupId
       description: Return an clientGroup
       summary: Return an clientGroup
@@ -1866,6 +1984,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Replace an clientGroup metadata and profiles.  Does not affect group membership.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
@@ -1894,6 +2014,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: |-
         Update an clientGroup replacing only the provided attributes.
 
@@ -1925,6 +2047,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Delete an clientGroup
       tags:
       - Client group
@@ -1955,6 +2079,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-accessDevice
       description: Return an array of accessDevices
       summary: List accessDevices
@@ -1980,6 +2106,8 @@ paths:
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Add a new accessDevice
       requestBody:
         content:
@@ -2015,6 +2143,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-accessDevice-accessDeviceId
       description: Return an accessDevice
       tags:
@@ -2037,6 +2167,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Replace an accessDevice.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
@@ -2065,6 +2197,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: |-
         Update an accessDevice replacing only the provided attributes.
 
@@ -2096,6 +2230,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Delete an accessDevice
       tags:
       - accessDevice
@@ -2126,6 +2262,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-accessDevice-accessDeviceId-port
       description: Return an array of ports associated with an accessDevice
       summary: List ports associated with an accessDevice
@@ -2151,6 +2289,8 @@ paths:
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Add a new accessDevice
       requestBody:
         content:
@@ -2189,6 +2329,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-accessDevice-accessDeviceId-port-portId
       description: Return a port associated with an access deivce
       tags:
@@ -2211,6 +2353,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Replace a port.  A field set to null is removed, the same as a field left out.
       requestBody:
         content:
@@ -2239,6 +2383,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Update a port
       requestBody:
         content:
@@ -2265,6 +2411,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       description: Delete a port
       tags:
       - accessDevice
@@ -2301,6 +2449,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
@@ -2334,6 +2484,8 @@ paths:
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - *id001
       - *id002
@@ -2366,6 +2518,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -2393,6 +2547,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - *id001
       - *id002
@@ -2421,6 +2577,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - *id001
       - *id002
@@ -2441,6 +2599,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
   /accessDevice/{accessDeviceId}/port/{portId}/stag:
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
@@ -2471,6 +2631,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
       - $ref: '#/components/parameters/filter_remoteAssociation'
@@ -2504,6 +2666,8 @@ paths:
           $ref: '#/components/responses/onConflict'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - *id001
       - *id002
@@ -2536,6 +2700,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
     put:
@@ -2563,6 +2729,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - *id001
       - *id002
@@ -2591,6 +2759,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - *id001
       - *id002
@@ -2611,6 +2781,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
   /config/database:
     get:
       operationId: get-config-database
@@ -2643,6 +2815,8 @@ paths:
           $ref: '#/components/responses/onForbidden'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
     parameters: []
   /config/database/{databaseId}:
     parameters:
@@ -2671,6 +2845,8 @@ paths:
           $ref: '#/components/responses/onNotFound'
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
   /bulk:
     post:
       operationId: post-bulk
@@ -2834,6 +3010,8 @@ paths:
           description: Method not allowed.  The bulk endpoint accepts `POST` only.
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       tags:
       - Global
     parameters: []
@@ -2886,6 +3064,8 @@ paths:
           description: Method not allowed.  Returned when the request verb is not `POST`, when the `url` or `id` field is missing from the body, or when the resolved path is a collection rather than a single object.
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
       tags:
       - Global
     parameters: []
@@ -2946,6 +3126,8 @@ paths:
           description: Method not allowed.  On the base entry, the server accepts `GET` and `OPTIONS` only.
         '500':
           $ref: '#/components/responses/onInternalServerError'
+        '503':
+          $ref: '#/components/responses/onServiceUnavailable'
     parameters: []
   /test:
     get:
@@ -4093,6 +4275,16 @@ components:
           example:
             error_msg: 'LDAP search failed after 3 attempts: Can''t contact LDAP server'
             code: 500
+    onServiceUnavailable:
+      description: |
+        The API could not connect to the directory.  `ldap_code` and `ldap_error` are absent, because no directory operation ran.  Retry the request once the directory is reachable.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorResponse'
+          example:
+            error_msg: Failed to get LDAP connection
+            code: 503
     onSuccess:
       description: Response sent on a successful operation which did not create an object
       content:
