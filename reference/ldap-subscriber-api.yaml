@@ -3954,6 +3954,8 @@ components:
       title: errorResponse
       description: |
         The body of every error response.  `error_msg` and `code` are always present.  `ldap_code` is present when a directory operation caused the error, and absent when the API refused the request before the request reached the directory.  `ldap_error` is present when `ldap_code` is present and `ldap_code` is not negative.
+
+        The API streams the array for a GET on a collection page by page, and reports an error as the last element of the array.  Every entry that the directory sent before the error precedes the error object, including the entries of the page on which the error arrived.  A client distinguishes the error object from an entry by the `error_msg` field.  An attribute description (RFC 4512 section 2.5) is a keystring or a numeric object identifier.  A keystring holds only letters, digits, and hyphens (section 1.4), and a numeric object identifier holds only digits and dots.  An entry therefore cannot have a field named `error_msg`, because the name holds an underscore.  An error on the first page also sets the HTTP status of the response.  An error on a later page arrives after the API sent status `200`.  The `code` field of the error object is then the only place where the client receives the status.  `ldap_error` is `sizeLimitExceeded` or `adminLimitExceeded` when the directory stopped the search at the size limit or the administrative limit.  The entries before the error object are then the first entries of a longer list.
       type: object
       required:
       - error_msg
@@ -4329,6 +4331,8 @@ components:
 
         1. The body of a POST or PUT is missing, is not valid JSON, or does not match the request body that the endpoint defines.
         2. The body holds a URL to another resource, and the host of the URL differs from the host of the request.
+
+        One case produces a `400` with `ldap_code` present.  A copy (`?copy_uri=`) names a source object that the directory does not hold.  `ldap_code` is 32 (`noSuchObject`).  The response is a `400`, although `noSuchObject` produces a `404` on every other request.
 
         The directory rejects a request that violates the state of the entry, the schema of the directory, or the syntax of a distinguished name (DN).  `ldap_code` carries the result code.  `error_msg` carries the diagnostic text of the directory.  The diagnostic text names the attribute or the value.  The following result codes produce a `400`:
 
