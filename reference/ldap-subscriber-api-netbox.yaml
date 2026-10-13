@@ -7,11 +7,10 @@ info:
   description: API overlay to allow automatic allocation of static IP addresses using Netbox.
   contact:
     name: Network RADIUS
-    url: https://suppor.networkradius.com
+    url: https://support.networkradius.com
     email: support@networkradius.com
   license:
-    name: Proprietary
-    url: https://freeradius.org
+    name: Proprietary, Copyright 12952386 Canada Inc.
 servers:
 - url: http://localhost:3000
 paths:

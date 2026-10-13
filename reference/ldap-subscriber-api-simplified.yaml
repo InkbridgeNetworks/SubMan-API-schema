@@ -11,8 +11,7 @@ info:
     url: http://www.networkradius.com
     email: support@networkradius.com
   license:
-    name: Proprietary
-    url: https://freeradius.org
+    name: Proprietary, Copyright 12952386 Canada Inc.
 servers:
 - url: http://localhost:3000
 paths:
