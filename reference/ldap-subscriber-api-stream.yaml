@@ -187,6 +187,19 @@ info:
     then appears in the URL, so the response to a GET with
     `access_token` carries `Cache-Control: private`.
 
+    A stream does not outlive the token of the stream. The server checks
+    the token when the stream opens, and ends the stream when the token
+    expires. The response ends with no further event, because the server
+    has already sent the status line and the headers. No event reports
+    the expiry.
+
+    Reconnect with a fresh token and the last `id:` that the stream
+    delivered. The server then resumes the stream from the last `id:`.
+    `EventSource` reconnects automatically, so a browser client renews
+    the token before the token expires. A browser client can instead
+    handle the `error` event of `EventSource` by obtaining a fresh token
+    and opening the stream again.
+
     ## Where the events come from
 
     A syncrepl persistent search (RFC 4533) on the LDAP directory drives

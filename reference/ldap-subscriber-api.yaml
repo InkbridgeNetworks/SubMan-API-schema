@@ -4267,7 +4267,7 @@ components:
         type: boolean
         default: false
       description: |
-        When `subscribe` is true, the server sends the response as a Server-Sent Events stream (media type `text/event-stream`).  The stream delivers the initial state of the collection as events, then one event per change, and stays open until the client closes the stream.  `ldap-subscriber-api-stream.yaml` documents the events.  Only a listing endpoint provides the stream.  A single-object endpoint ignores `subscribe`.
+        When `subscribe` is true, the server sends the response as a Server-Sent Events stream (media type `text/event-stream`).  The stream delivers the initial state of the collection as events, then one event per change.  The stream stays open until the client closes the stream, or until the bearer token of the request expires.  `ldap-subscriber-api-stream.yaml` documents the events.  Only a listing endpoint provides the stream.  A single-object endpoint ignores `subscribe`.
     scope:
       name: scope
       in: query
