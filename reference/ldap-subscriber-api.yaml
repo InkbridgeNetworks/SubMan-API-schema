@@ -4439,6 +4439,50 @@ components:
       properties:
         id:
           type: string
+        tacacsCommand:
+          allOf:
+          - $ref: '#/components/schemas/multiValuedString'
+          example: show
+          description: Command that the `cmd` attribute of a TACACS+ authorization request names.  The freeradiusPolicy that
+            carries `tacacsCommand` holds the attributes of the command.  The server creates an entry of the `tacacsCommandProfile`
+            object class when the request body carries `tacacsCommand`, and another freeradiusPolicy holds the entry.  The
+            section 'A policy under a policy' describes a policy that holds a policy.
+        tacacsService:
+          allOf:
+          - $ref: '#/components/schemas/multiValuedString'
+          example: shell
+          description: Service that the `authen_service` attribute of a TACACS+ authentication or authorization request names.
+            The freeradiusPolicy that carries `tacacsService` holds the attributes of the service.  The server creates an entry
+            of the `tacacsServiceProfile` object class when the request body carries `tacacsService`.
+        tacacsAttribute:
+          allOf:
+          - $ref: '#/components/schemas/multiValuedString'
+          example: priv-lvl := 15
+          description: TACACS+ attribute in the form `[<list>.]<attr> <op> <value>`.
+        tacacsProfilePriority:
+          type: string
+          example: '10'
+          description: Priority that orders the freeradiusPolicy when several policies apply.  The directory holds the value
+            as an integer, and the server returns the value as a string.
+        tacacsProfileCondition:
+          allOf:
+          - $ref: '#/components/schemas/multiValuedString'
+          description: Condition under which the TACACS service applies the freeradiusPolicy.
+        tacacsProfileFallthrough:
+          allOf:
+          - $ref: '#/components/schemas/multiValuedString'
+          description: Condition under which the TACACS service applies further policies after the TACACS service applies the
+            freeradiusPolicy.
+    multiValuedString:
+      title: multiValuedString
+      description: Value of an attribute of the directory that holds one value or more.  The server returns a string for one
+        value, and an array for two values or more.  A request body sends a string for one value, and an array for two values
+        or more.
+      oneOf:
+      - type: string
+      - type: array
+        items:
+          type: string
     portQinQ:
       title: portQinQ
       x-stoplight:
