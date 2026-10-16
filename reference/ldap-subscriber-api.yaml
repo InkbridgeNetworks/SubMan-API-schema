@@ -3573,6 +3573,10 @@ components:
           description: Shared key the TACACS client uses to communicate with the TACACS service.  Providing this makes the
             client TACACS-capable; removing it (a PUT without it, or a PATCH setting it to null) removes TACACS capability.
           format: password
+        tacacsClientSingleConnectionMode:
+          type: boolean
+          description: Whether the TACACS client keeps one connection open for many requests (single connection mode) instead
+            of one connection per request.
     accessDevice:
       title: accessDevice
       description: An accessDevice known to the RADIUS service.  Identical to clients but cannot communicate directly with
