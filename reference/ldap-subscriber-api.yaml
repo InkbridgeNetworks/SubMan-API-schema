@@ -69,6 +69,22 @@ info:
 
     The request body of a `POST` that creates a nested policy decides the protocol, and no segment of the URL names a protocol.  An object class is the Lightweight Directory Access Protocol (LDAP) type of an entry.  The server reads the attributes of the request body and selects the object classes of the new entry from the attributes.  The server creates an entry of the `tacacsCommandProfile` object class when the request body carries `tacacsCommand`, and the `id` of the nested policy names the command.
 
+    ## Searching across every value of a path segment
+
+    A path segment of `*` alone is a wildcard.  A wildcard names every value of the `id` at that level, so `GET /realm/*/subscriber` returns the subscribers of every realm.  A path may hold a wildcard at more than one level: `GET /service/*/profile/*/policy` returns the policies of every profile of every service.  The `paths` map of this document declares a fixed list of URLs, and a wildcard stands at any level of any path.  The `paths` map therefore declares no path that holds a wildcard.
+
+    The search covers every entry below the level that the segment before the first wildcard names.  The server returns the entries of the endpoint that the path names and no other entry.  `GET /realm/*/subscriber` therefore returns the subscribers and no realm.  Two subscribers of the same `id` below two realms hold the same fields, and only `_url` tells the two subscribers apart.  Every object of a search that holds a wildcard therefore holds `_url`, the URL of the entry that the object came from, whether or not the request sends `url=1`.  A `filter_` parameter narrows the search in the same way as a `filter_` parameter on any other collection, as in `GET /realm/*/subscriber?filter_serviceStatus=suspended`.
+
+    The following rules govern a path that holds a wildcard:
+
+    1. The path must name a collection.  `GET /realm/*` names one realm, and `GET /realm/*/subscriber/123456789+fixedLine` names one subscriber below a realm that the wildcard leaves unnamed.  The server returns `400` for both, because a wildcard supplies no value for the level that the wildcard stands at.  Name the collection and a `filter_` parameter instead.
+    2. `GET` is the only verb that returns entries.  A write names the entry that the write changes, so the server returns `405` for `POST`, `PUT`, `PATCH`, and `DELETE`.
+    3. The server returns the same `Allow` header to every caller, `Allow: GET, OPTIONS`, because the path names no entry for the server to ask the directory about.
+    4. A path that holds a wildcard opens no stream.  Open the collection with `subscribe=1&scope=subtree` instead, which the `subscribe` and `scope` parameters describe.
+    5. The access controls of the directory apply to each entry, so the search returns the entries that the caller may read and no other entry.
+
+    Send a value of `*` alone as `%2A`.  `GET /realm/%2A` returns the realm whose `id` is `*`.  A segment is a wildcard only when `*` is the whole segment, so a value that holds `*` among other characters needs no escape.  `GET /realm/a*b.example.org` returns the realm whose `id` is `a*b.example.org`.  The `encodeURIComponent` function of a browser does not escape `*`.  A client that builds `/realm/${encodeURIComponent(id)}` from an `id` of `*` therefore requests every realm, not the realm whose `id` is `*`.  Send `url=1` and follow `_url`, which the server escapes, or replace a value of `*` with `%2A`.
+
   contact:
     name: ' Network RADIUS support'
     url: http://www.networkradius.com
@@ -108,6 +124,7 @@ paths:
       summary: List available realms
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/filter_serviceProfile'
       - $ref: '#/components/parameters/subscribe'
       - $ref: '#/components/parameters/scope'
@@ -191,6 +208,7 @@ paths:
       summary: Return a specific realm
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
     put:
       operationId: put-realm-realmId
       responses:
@@ -324,6 +342,7 @@ paths:
       summary: List subscribers in a realm
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/filter_subscriberId'
       - $ref: '#/components/parameters/filter_serviceStatus'
       - $ref: '#/components/parameters/filter_serviceId'
@@ -412,6 +431,7 @@ paths:
       summary: Return a subscriber
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
     put:
       operationId: put-realm-realmId-subscriber-compoundSubscriberId
       responses:
@@ -543,6 +563,7 @@ paths:
       summary: List available subscriberGroups
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/subscribe'
       - $ref: '#/components/parameters/scope'
       - $ref: '#/components/parameters/access_token'
@@ -622,6 +643,7 @@ paths:
       summary: Return a subscriberGroup
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
     put:
       operationId: put-group-subscriberGroupId
       responses:
@@ -741,6 +763,7 @@ paths:
       - Service
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/subscribe'
       - $ref: '#/components/parameters/scope'
       - $ref: '#/components/parameters/access_token'
@@ -821,6 +844,7 @@ paths:
       - Service
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
     put:
       operationId: put-service-serviceId
       responses:
@@ -955,6 +979,7 @@ paths:
       - Abstract profile (serviceProfile)
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/subscribe'
       - $ref: '#/components/parameters/scope'
       - $ref: '#/components/parameters/access_token'
@@ -1036,6 +1061,7 @@ paths:
       - Abstract profile (serviceProfile)
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
     put:
       operationId: put-service-serviceId-profile-profileId
       responses:
@@ -1173,6 +1199,7 @@ paths:
       - Concrete profile (freeradiusProfile)
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/subscribe'
       - $ref: '#/components/parameters/scope'
       - $ref: '#/components/parameters/access_token'
@@ -1257,6 +1284,7 @@ paths:
         id: o6if20ghsoepw
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
     put:
       operationId: put-service-serviceId-profile-profileId-policy-policyId
       responses:
@@ -1396,6 +1424,7 @@ paths:
       summary: List clients
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/filter_freeradiusClientShortname'
       - $ref: '#/components/parameters/filter_freeradiusClientGroup'
       - $ref: '#/components/parameters/subscribe'
@@ -1478,6 +1507,7 @@ paths:
       summary: Return a client
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
     put:
       operationId: put-client-clientId
       responses:
@@ -1611,6 +1641,7 @@ paths:
       summary: List ports associated with a client
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/filter_port'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
@@ -1696,6 +1727,7 @@ paths:
       summary: Return a port associated with a client
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
     put:
       operationId: put-client-clientId-port-portId
       responses:
@@ -1827,6 +1859,7 @@ paths:
           $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
       - $ref: '#/components/parameters/scope'
@@ -1912,6 +1945,7 @@ paths:
           $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
     put:
       tags:
       - Client
@@ -2041,6 +2075,7 @@ paths:
           $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
       - $ref: '#/components/parameters/scope'
@@ -2126,6 +2161,7 @@ paths:
           $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
     put:
       tags:
       - Client
@@ -2250,6 +2286,7 @@ paths:
       summary: List clientGroups
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/subscribe'
       - $ref: '#/components/parameters/scope'
       - $ref: '#/components/parameters/access_token'
@@ -2330,6 +2367,7 @@ paths:
       summary: Return an clientGroup
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
     put:
       operationId: put-clientGroup-clientGroupId
       responses:
@@ -2463,6 +2501,7 @@ paths:
       summary: List accessDevices
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/filter_freeradiusClientShortname'
       - $ref: '#/components/parameters/filter_freeradiusClientType'
       - $ref: '#/components/parameters/subscribe'
@@ -2545,6 +2584,7 @@ paths:
       summary: Return an accessDevice
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
     put:
       operationId: put-accessDevice-accessDeviceId
       responses:
@@ -2678,6 +2718,7 @@ paths:
       summary: List ports associated with an accessDevice
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/filter_port'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
@@ -2763,6 +2804,7 @@ paths:
       summary: Return a port associated with an accessDevice
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
     put:
       operationId: put-accessDevice-accessDeviceId-port-portId
       responses:
@@ -2894,6 +2936,7 @@ paths:
           $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
       - $ref: '#/components/parameters/scope'
@@ -2979,6 +3022,7 @@ paths:
           $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
     put:
       tags:
       - accessDevice
@@ -3108,6 +3152,7 @@ paths:
           $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/filter_remoteAssociation'
       - $ref: '#/components/parameters/subscribe'
       - $ref: '#/components/parameters/scope'
@@ -3193,6 +3238,7 @@ paths:
           $ref: '#/components/responses/onServiceUnavailable'
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
     put:
       tags:
       - accessDevice
@@ -3300,6 +3346,7 @@ paths:
         The endpoints under `/config` are read only.  The server declares no `POST`, and the directory refuses every write from the server with `insufficientAccessRights`, which the server returns as 403.
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       - $ref: '#/components/parameters/subscribe'
       - $ref: '#/components/parameters/access_token'
       responses:
@@ -3351,6 +3398,7 @@ paths:
         The server returns the database named by `databaseId`, with the access controls of the database.  The id is the name as `cn=config` orders it, braces included, so the client percent-encodes the braces: `%7B2%7Dmdb` for `{2}mdb`.
       parameters:
       - $ref: '#/components/parameters/timestamps'
+      - $ref: '#/components/parameters/url'
       responses:
         '200':
           description: The database.
@@ -3864,6 +3912,8 @@ components:
       description: All realm fields, with no required constraints. The realm, realmCreate, realmReplace and realmPatch schemas
         add the per-method required lists.
       properties:
+        _url:
+          $ref: '#/components/schemas/_url'
         id:
           type: string
           description: The realm ID.  This may map directly with the domain portion in a user's NAI, and can be used to separate
@@ -3928,6 +3978,8 @@ components:
       description: All subscriber fields, with no required constraints. The subscriber, subscriberCreate, subscriberReplace
         and subscriberPatch schemas add the per-method required lists.
       properties:
+        _url:
+          $ref: '#/components/schemas/_url'
         id:
           type: string
           description: Must be set to the combination of subscriberID '+' serviceId.  This uniquely identifies a subscriber
@@ -4070,6 +4122,8 @@ components:
       description: All subscriberGroup fields, with no required constraints. The subscriberGroup, subscriberGroupCreate, subscriberGroupReplace
         and subscriberGroupPatch schemas add the per-method required lists.
       properties:
+        _url:
+          $ref: '#/components/schemas/_url'
         id:
           type: string
           description: A unique identifier for the subscriberGroup
@@ -4123,6 +4177,8 @@ components:
       description: All client fields, with no required constraints. The client, clientCreate, clientReplace and clientPatch
         schemas add the per-method required lists.
       properties:
+        _url:
+          $ref: '#/components/schemas/_url'
         id:
           type: string
           example: 192.0.2.1
@@ -4215,6 +4271,8 @@ components:
       description: All accessDevice fields, with no required constraints. The accessDevice, accessDeviceCreate, accessDeviceReplace
         and accessDevicePatch schemas add the per-method required lists.
       properties:
+        _url:
+          $ref: '#/components/schemas/_url'
         id:
           type: string
           example: 192.0.2.1
@@ -4267,6 +4325,8 @@ components:
       description: All clientGroup fields, with no required constraints. The clientGroup, clientGroupCreate, clientGroupReplace
         and clientGroupPatch schemas add the per-method required lists.
       properties:
+        _url:
+          $ref: '#/components/schemas/_url'
         id:
           type: string
           description: The identifier for the clientGroup
@@ -4340,6 +4400,8 @@ components:
       description: All service fields, with no required constraints. The service, serviceCreate, serviceReplace and servicePatch
         schemas add the per-method required lists.
       properties:
+        _url:
+          $ref: '#/components/schemas/_url'
         id:
           type: string
           description: Globally unique identifier for a service
@@ -4382,6 +4444,8 @@ components:
       description: All serviceProfile fields, with no required constraints. The serviceProfile, serviceProfileCreate, serviceProfileReplace
         and serviceProfilePatch schemas add the per-method required lists.
       properties:
+        _url:
+          $ref: '#/components/schemas/_url'
         id:
           type: string
           example: INET1M
@@ -4437,6 +4501,8 @@ components:
       description: All freeradiusPolicy fields, with no required constraints. The freeradiusPolicy, freeradiusPolicyCreate,
         freeradiusPolicyReplace and freeradiusPolicyPatch schemas add the per-method required lists.
       properties:
+        _url:
+          $ref: '#/components/schemas/_url'
         id:
           type: string
         tacacsCommand:
@@ -4473,6 +4539,12 @@ components:
           - $ref: '#/components/schemas/multiValuedString'
           description: Condition under which the TACACS service applies further policies after the TACACS service applies the
             freeradiusPolicy.
+    _url:
+      title: _url
+      type: string
+      format: uri-reference
+      readOnly: true
+      description: URL of the entry that the object came from.  The server includes `_url` when the request sends `url=1`, and on every object of a search whose path holds a `*` segment.  `_url` is an absolute-path reference (RFC 3986 section 4.2), so `_url` holds the path prefix of the deployment and no scheme or host.
     multiValuedString:
       title: multiValuedString
       description: Value of an attribute of the directory that holds one value or more.  The server returns a string for one
@@ -4520,6 +4592,8 @@ components:
       description: All portQinQ fields, with no required constraints. The portQinQ, portQinQCreate, portQinQReplace and portQinQPatch
         schemas add the per-method required lists.
       properties:
+        _url:
+          $ref: '#/components/schemas/_url'
         id:
           type: string
           description: Identifier of this QinQ tagging, in the form `<svlan>+<cvlan>`.
@@ -4578,6 +4652,8 @@ components:
       description: All portPhysical fields, with no required constraints. The portPhysical, portPhysicalCreate, portPhysicalReplace
         and portPhysicalPatch schemas add the per-method required lists.
       properties:
+        _url:
+          $ref: '#/components/schemas/_url'
         id:
           type: string
           description: Identifier of this physical port. URL-encoded port name as it appears in the path.
@@ -4625,6 +4701,8 @@ components:
       description: All portPhysStag fields, with no required constraints. The portPhysStag, portPhysStagCreate, portPhysStagReplace
         and portPhysStagPatch schemas add the per-method required lists.
       properties:
+        _url:
+          $ref: '#/components/schemas/_url'
         id:
           type: string
           description: Identifier of this S-tag tagging. The S-VLAN as a decimal string.
@@ -4766,6 +4844,17 @@ components:
         default: false
       description: |
         If true, the server includes every operational attribute of each returned object, such as `entryUUID`, `entryCSN`, `entryDN`, and, on the base entry, `contextCSN`.  The server passes the attribute values through from the directory unchanged.
+    url:
+      name: url
+      in: query
+      required: false
+      schema:
+        type: boolean
+        default: false
+      description: |
+        If true, the server includes `_url` on each returned object.  `_url` is the URL of the entry that the object came from.  Resolving the URL of an entry costs more than every other step that the server runs over an object.  A collection pays the cost once per entry, so the server includes `_url` only when the request sends `url=1`.
+
+        A path segment of `*` alone is a wildcard, and a wildcard search returns entries below more than one parent.  The server includes `_url` on every object of a wildcard search, whether or not the request sends `url=1`.  The section 'Searching across every value of a path segment' describes the wildcard search.
     accessDeviceId:
       name: accessDeviceId
       in: path
