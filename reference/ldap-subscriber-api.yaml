@@ -4980,8 +4980,9 @@ components:
       schema:
         type: string
         pattern: ^\d+\+\d+$
-      description: QinQ tagging identifier in the form `<svlan>+<cvlan>`. The `+` must be URI-encoded as `%2B` in the request
-        URL.
+      description: QinQ tagging identifier in the form `<svlan>+<cvlan>`. The `+` joins the two components of the
+        identifier, so the `+` stays literal in the path of a request. A `+` inside a value travels as `%2B`, and a `+`
+        in a query parameter travels as `%2B` as well, because a query string reads a literal `+` as a space.
       example: 100+25
     svlan:
       name: svlan
