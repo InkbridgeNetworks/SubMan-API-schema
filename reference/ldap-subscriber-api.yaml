@@ -3149,6 +3149,57 @@ paths:
                 type: string
               example: Testing 123
     parameters: []
+  /whoami:
+    get:
+      operationId: get-whoami
+      summary: Identity of the caller
+      tags:
+      - Global
+      description: |
+        The server returns the directory identity that the server derives from the bearer token of the request.  `authz_id` is the LDAP authorization identity of the caller, an authzId (RFC 4513, section 5.2.1.8) of the form `dn:<dn>` or `u:<id>`.  The directory authorizes every operation of the request as the identity in `authz_id`.  `issuer` and `sub` are the `iss` and `sub` claims of the token.  A browser client calls `/whoami` to show the signed-in user.
+
+        On a deployment without authentication the server returns `{"authz_id": null}` with no `issuer` and no `sub`.
+
+        The server accepts `GET` and `OPTIONS` only, and returns 405 for any other method.
+      responses:
+        '200':
+          description: The identity of the caller.
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - authz_id
+                properties:
+                  authz_id:
+                    type:
+                    - string
+                    - 'null'
+                    description: The LDAP authorization identity of the caller, or null when the deployment has no authentication.
+                  issuer:
+                    type: string
+                    description: The `iss` claim of the token.
+                  sub:
+                    type: string
+                    description: The `sub` claim of the token.
+              examples:
+                authenticated:
+                  value:
+                    authz_id: u:alice
+                    issuer: https://login.example.com/realms/subman
+                    sub: alice
+                no authentication:
+                  value:
+                    authz_id: null
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
+        '405':
+          description: Method not allowed.  The server accepts `GET` and `OPTIONS` only.
+        '500':
+          $ref: '#/components/responses/onInternalServerError'
+    parameters: []
 components:
   schemas:
     directoryDatabase:
