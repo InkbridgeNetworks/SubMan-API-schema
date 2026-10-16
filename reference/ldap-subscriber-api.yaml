@@ -60,6 +60,15 @@ info:
     1. `Allow` omits a verb only when the directory refused the question for that verb.  A question that does not reach the access control checks leaves the verb of the question in `Allow`.  The directory then refuses a later request that uses the verb, and the caller receives `403`.
     2. An `OPTIONS` request discloses no entry that a `GET` hides.  A caller whose identity the directory refuses receives `403`, and a caller who asks about an entry that the directory hides receives `404`.
     3. The directory decides access per attribute, not per verb.  The question for `PUT` and `PATCH` writes the attribute that names the entry.  An access control that grants write on other attributes, but not on the attribute that names the entry, leaves `PUT` and `PATCH` out of `Allow`.
+
+    ## A policy under a policy
+
+    A policy holds a policy, and one `policy/{policyId}` pair in a URL names one level.  `/service/{serviceId}/profile/{profileId}/policy/{policyId}/policy/{policyId}` names a policy that another policy holds, and the `policy/{policyId}` pair repeats to any number of levels.  The `paths` map of an OpenAPI document lists every URL in full.  The `paths` map cannot express a URL that repeats a pair of segments without limit.  The `paths` map of this document therefore declares one level only.  Every operation that the `paths` map declares for the one level applies at every level, and the object at every level is a `freeradiusPolicy`.
+
+    A nested policy carries the attributes of a protocol that selects attributes by a second identifier.  The second identifier sits below the identifier of the policy.  Terminal Access Controller Access-Control System Plus (TACACS+) selects attributes by the command of an authorization request, so a policy holds one nested policy per command.
+
+    The request body of a `POST` that creates a nested policy decides the protocol, and no segment of the URL names a protocol.  An object class is the Lightweight Directory Access Protocol (LDAP) type of an entry.  The server reads the attributes of the request body and selects the object classes of the new entry from the attributes.  The server creates an entry of the `tacacsCommandProfile` object class when the request body carries `tacacsCommand`, and the `id` of the nested policy names the command.
+
   contact:
     name: ' Network RADIUS support'
     url: http://www.networkradius.com
@@ -1158,7 +1167,7 @@ paths:
           $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-service-serviceId-profile-profileId-policy
       description: Return an array of policies (concrete profiles containing FreeRADIUS attributes) associated with a serviceProfile
-        (an abstract profile)
+        (an abstract profile).  A policy holds a policy, so a `GET` on `/service/{serviceId}/profile/{profileId}/policy/{policyId}/policy` returns the policies that the policy of that URL holds.  The section 'A policy under a policy' describes a policy that holds a policy.
       summary: List freeradiusPolicies in a serviceProfile
       tags:
       - Concrete profile (freeradiusProfile)
@@ -1184,7 +1193,7 @@ paths:
           $ref: '#/components/responses/onInternalServerError'
         '503':
           $ref: '#/components/responses/onServiceUnavailable'
-      description: Definition of a policy (concrete profile) to add
+      description: Definition of a policy (concrete profile) to add.  A `POST` to `/service/{serviceId}/profile/{profileId}/policy/{policyId}/policy` creates a policy under a policy.  The server selects the object classes of the new entry from the attributes of the request body.  The section 'A policy under a policy' describes a policy that holds a policy.
       requestBody:
         content:
           application/json:
@@ -1240,7 +1249,7 @@ paths:
         '503':
           $ref: '#/components/responses/onServiceUnavailable'
       operationId: get-service-serviceId-profile-profileId-policy-policyId
-      description: Return a freeradiusPolicy (a concrete profile)
+      description: Return a freeradiusPolicy (a concrete profile).  A policy holds a policy, so a URL repeats the `policy/{policyId}` pair once per level.  The section 'A policy under a policy' describes a policy that holds a policy.
       summary: Return a freeradiusProfile associated with a serviceProfile
       tags:
       - Concrete profile (freeradiusProfile)
@@ -4389,7 +4398,7 @@ components:
       x-stoplight:
         id: ebjv3rkkgvqou
       description: |-
-        A set of FreeRADIUS attributes and assignment rules which modify attributes in the current request.  A freeradiusPolicy is the "concrete" implementation of a serviceProfile for one clientGroup, and its id is the id of that clientGroup.  A freeradiusPolicy exists only as a child of a serviceProfile.  A subscriber, a subscriberGroup, or a realm references a serviceProfile through its serviceProfile field, and the freeradiusPolicy that matches the client the subscriber connects through applies.
+        A set of FreeRADIUS attributes and assignment rules which modify attributes in the current request.  A freeradiusPolicy is the "concrete" implementation of a serviceProfile for one clientGroup, and its id is the id of that clientGroup.  A freeradiusPolicy exists only as a child of a serviceProfile or of another freeradiusPolicy.  A subscriber, a subscriberGroup, or a realm references a serviceProfile through its serviceProfile field, and the freeradiusPolicy that matches the client the subscriber connects through applies.  A freeradiusPolicy also holds a freeradiusPolicy, and the section 'A policy under a policy' describes a policy that holds a policy.
 
         Note: The attributes listed in the definition of the object are a subset of the attributes available.
 
