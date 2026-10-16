@@ -44,6 +44,22 @@ info:
     ```
 
     Use the double-encoded form when the URI itself contains a percent-encoded character that you need to preserve (for example a literal `+` inside an RDN value, encoded as `%2B` in the URI). The double encoding survives the outer query-string decode, and the inner decode then yields the original URI with the `%2B` intact.
+
+    ## Verbs that a caller may use
+
+    Every endpoint answers `OPTIONS`, and the answer is `204` with no body.  The server sends one of two answers, and the headers of the request decide which answer the server sends.
+
+    A Cross-Origin Resource Sharing (CORS) preflight, which carries `Origin` and `Access-Control-Request-Method`, receives the headers that CORS defines.  `Access-Control-Allow-Methods` then lists the verbs that the endpoint declares, and the list does not depend on the caller.  The browser sends the preflight without a script asking for the preflight, and a script reads nothing from the answer.
+
+    Every other `OPTIONS` request receives an `Allow` header.  When the request carries a bearer token, `Allow` lists the verbs that the access controls of the directory permit the caller.  The access controls of the directory decide per caller and per object, so two callers receive two different lists for one URL.  When the request carries no token, `Allow` lists the verbs that the endpoint declares.  `Access-Control-Expose-Headers` names `Allow`, so a script in a browser reads `Allow`.
+
+    The server derives the `Allow` list by asking the directory one question per verb, under the identity of the caller.  For `GET`, the server searches for the entry that the URL names.  For `POST`, `PUT`, `PATCH`, and `DELETE`, the server sends the write under the No-Op control of OpenLDAP.  The No-Op control runs the write through every check, aborts the transaction, and returns a result code.  The directory commits nothing.
+
+    Three properties follow from asking the directory one question per verb, and a client that renders a user interface from `Allow` depends on each property:
+
+    1. `Allow` omits a verb only when the directory refused the question for that verb.  A question that does not reach the access control checks leaves the verb of the question in `Allow`.  The directory then refuses a later request that uses the verb, and the caller receives `403`.
+    2. An `OPTIONS` request discloses no entry that a `GET` hides.  A caller whose identity the directory refuses receives `403`, and a caller who asks about an entry that the directory hides receives `404`.
+    3. The directory decides access per attribute, not per verb.  The question for `PUT` and `PATCH` writes the attribute that names the entry.  An access control that grants write on other attributes, but not on the attribute that names the entry, leaves `PUT` and `PATCH` out of `Allow`.
   contact:
     name: ' Network RADIUS support'
     url: http://www.networkradius.com
@@ -119,6 +135,22 @@ paths:
         $ref: '#/components/parameters/copy_uri'
       - &id002
         $ref: '#/components/parameters/copy_recursive'
+    options:
+      operationId: options-realm
+      summary: Verbs that the caller may use
+      tags:
+      - Realm
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /realm/{realmId}:
     parameters:
     - $ref: '#/components/parameters/realmId'
@@ -236,6 +268,22 @@ paths:
       tags:
       - Realm
       summary: Delete a realm
+    options:
+      operationId: options-realm-realmId
+      summary: Verbs that the caller may use
+      tags:
+      - Realm
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /realm/{realmId}/subscriber:
     parameters:
     - $ref: '#/components/parameters/realmId'
@@ -307,6 +355,22 @@ paths:
       parameters:
       - *id001
       - *id002
+    options:
+      operationId: options-realm-realmId-subscriber
+      summary: Verbs that the caller may use
+      tags:
+      - Subscriber
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /realm/{realmId}/subscriber/{compoundSubscriberId}:
     parameters:
     - $ref: '#/components/parameters/realmId'
@@ -425,6 +489,22 @@ paths:
       parameters:
       - $ref: '#/components/parameters/prune'
       summary: Delete a subscriber
+    options:
+      operationId: options-realm-realmId-subscriber-compoundSubscriberId
+      summary: Verbs that the caller may use
+      tags:
+      - Subscriber
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /group:
     get:
       tags:
@@ -486,6 +566,22 @@ paths:
       parameters:
       - *id001
       - *id002
+    options:
+      operationId: options-group
+      summary: Verbs that the caller may use
+      tags:
+      - Subscriber group
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /group/{subscriberGroupId}:
     parameters:
     - $ref: '#/components/parameters/subscriberGroupId'
@@ -589,6 +685,22 @@ paths:
       summary: Delete a subscriberGroup
       parameters:
       - $ref: '#/components/parameters/prune'
+    options:
+      operationId: options-group-subscriberGroupId
+      summary: Verbs that the caller may use
+      tags:
+      - Subscriber group
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /service:
     get:
       responses:
@@ -653,6 +765,22 @@ paths:
       parameters:
       - *id001
       - *id002
+    options:
+      operationId: options-service
+      summary: Verbs that the caller may use
+      tags:
+      - Service
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /service/{serviceId}:
     parameters:
     - $ref: '#/components/parameters/serviceId'
@@ -769,6 +897,22 @@ paths:
       - $ref: '#/components/parameters/prune'
       tags:
       - Service
+    options:
+      operationId: options-service-serviceId
+      summary: Verbs that the caller may use
+      tags:
+      - Service
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /service/{serviceId}/profile:
     parameters:
     - $ref: '#/components/parameters/serviceId'
@@ -835,6 +979,22 @@ paths:
       parameters:
       - *id001
       - *id002
+    options:
+      operationId: options-service-serviceId-profile
+      summary: Verbs that the caller may use
+      tags:
+      - Abstract profile (serviceProfile)
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /service/{serviceId}/profile/{profileId}:
     parameters:
     - $ref: '#/components/parameters/serviceId'
@@ -953,6 +1113,22 @@ paths:
       summary: Delete a serviceProfile
       tags:
       - Abstract profile (serviceProfile)
+    options:
+      operationId: options-service-serviceId-profile-profileId
+      summary: Verbs that the caller may use
+      tags:
+      - Abstract profile (serviceProfile)
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /service/{serviceId}/profile/{profileId}/policy:
     parameters:
     - $ref: '#/components/parameters/serviceId'
@@ -1021,6 +1197,22 @@ paths:
       parameters:
       - *id001
       - *id002
+    options:
+      operationId: options-service-serviceId-profile-profileId-policy
+      summary: Verbs that the caller may use
+      tags:
+      - Concrete profile (freeradiusProfile)
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /service/{serviceId}/profile/{profileId}/policy/{policyId}:
     parameters:
     - $ref: '#/components/parameters/serviceId'
@@ -1148,6 +1340,22 @@ paths:
       - $ref: '#/components/parameters/prune'
       x-stoplight:
         id: onq9wcmzdz2df
+    options:
+      operationId: options-service-serviceId-profile-profileId-policy-policyId
+      summary: Verbs that the caller may use
+      tags:
+      - Concrete profile (freeradiusProfile)
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /client:
     get:
       tags:
@@ -1214,6 +1422,22 @@ paths:
       parameters:
       - *id001
       - *id002
+    options:
+      operationId: options-client
+      summary: Verbs that the caller may use
+      tags:
+      - Client
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /client/{clientId}:
     parameters:
     - $ref: '#/components/parameters/clientId'
@@ -1331,6 +1555,22 @@ paths:
       summary: Delete an client
       parameters:
       - $ref: '#/components/parameters/prune'
+    options:
+      operationId: options-client-clientId
+      summary: Verbs that the caller may use
+      tags:
+      - Client
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /client/{clientId}/port:
     get:
       tags:
@@ -1399,6 +1639,22 @@ paths:
       - *id002
     parameters:
     - $ref: '#/components/parameters/clientId'
+    options:
+      operationId: options-client-clientId-port
+      summary: Verbs that the caller may use
+      tags:
+      - Client
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /client/{clientId}/port/{portId}:
     parameters:
     - $ref: '#/components/parameters/clientId'
@@ -1512,6 +1768,22 @@ paths:
       summary: Delete an client
       parameters:
       - $ref: '#/components/parameters/prune'
+    options:
+      operationId: options-client-clientId-port-portId
+      summary: Verbs that the caller may use
+      tags:
+      - Client
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /client/{clientId}/port/{portId}/qinq:
     parameters:
     - $ref: '#/components/parameters/clientId'
@@ -1582,6 +1854,22 @@ paths:
       parameters:
       - *id001
       - *id002
+    options:
+      operationId: options-client-clientId-port-portId-qinq
+      summary: Verbs that the caller may use
+      tags:
+      - Client
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /client/{clientId}/port/{portId}/qinq/{qinqId}:
     parameters:
     - $ref: '#/components/parameters/clientId'
@@ -1694,6 +1982,22 @@ paths:
           $ref: '#/components/responses/onInternalServerError'
         '503':
           $ref: '#/components/responses/onServiceUnavailable'
+    options:
+      operationId: options-client-clientId-port-portId-qinq-qinqId
+      summary: Verbs that the caller may use
+      tags:
+      - Client
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /client/{clientId}/port/{portId}/stag:
     parameters:
     - $ref: '#/components/parameters/clientId'
@@ -1764,6 +2068,22 @@ paths:
       parameters:
       - *id001
       - *id002
+    options:
+      operationId: options-client-clientId-port-portId-stag
+      summary: Verbs that the caller may use
+      tags:
+      - Client
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /client/{clientId}/port/{portId}/stag/{svlan}:
     parameters:
     - $ref: '#/components/parameters/clientId'
@@ -1876,6 +2196,22 @@ paths:
           $ref: '#/components/responses/onInternalServerError'
         '503':
           $ref: '#/components/responses/onServiceUnavailable'
+    options:
+      operationId: options-client-clientId-port-portId-stag-svlan
+      summary: Verbs that the caller may use
+      tags:
+      - Client
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /clientGroup:
     get:
       responses:
@@ -1938,6 +2274,22 @@ paths:
       parameters:
       - *id001
       - *id002
+    options:
+      operationId: options-clientGroup
+      summary: Verbs that the caller may use
+      tags:
+      - Client group
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /clientGroup/{clientGroupId}:
     parameters:
     - $ref: '#/components/parameters/clientGroupId'
@@ -2055,6 +2407,22 @@ paths:
       summary: Delete an clientGroup
       parameters:
       - $ref: '#/components/parameters/prune'
+    options:
+      operationId: options-clientGroup-clientGroupId
+      summary: Verbs that the caller may use
+      tags:
+      - Client group
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /accessDevice:
     get:
       tags:
@@ -2121,6 +2489,22 @@ paths:
       parameters:
       - *id001
       - *id002
+    options:
+      operationId: options-accessDevice
+      summary: Verbs that the caller may use
+      tags:
+      - accessDevice
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /accessDevice/{accessDeviceId}:
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
@@ -2238,6 +2622,22 @@ paths:
       summary: Delete an accessDevice
       parameters:
       - $ref: '#/components/parameters/prune'
+    options:
+      operationId: options-accessDevice-accessDeviceId
+      summary: Verbs that the caller may use
+      tags:
+      - accessDevice
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /accessDevice/{accessDeviceId}/port:
     get:
       tags:
@@ -2306,6 +2706,22 @@ paths:
       - *id002
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
+    options:
+      operationId: options-accessDevice-accessDeviceId-port
+      summary: Verbs that the caller may use
+      tags:
+      - accessDevice
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /accessDevice/{accessDeviceId}/port/{portId}:
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
@@ -2419,6 +2835,22 @@ paths:
       summary: Delete a port associated with a client
       parameters:
       - $ref: '#/components/parameters/prune'
+    options:
+      operationId: options-accessDevice-accessDeviceId-port-portId
+      summary: Verbs that the caller may use
+      tags:
+      - accessDevice
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /accessDevice/{accessDeviceId}/port/{portId}/qinq:
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
@@ -2489,6 +2921,22 @@ paths:
       parameters:
       - *id001
       - *id002
+    options:
+      operationId: options-accessDevice-accessDeviceId-port-portId-qinq
+      summary: Verbs that the caller may use
+      tags:
+      - accessDevice
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /accessDevice/{accessDeviceId}/port/{portId}/qinq/{qinqId}:
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
@@ -2601,6 +3049,22 @@ paths:
           $ref: '#/components/responses/onInternalServerError'
         '503':
           $ref: '#/components/responses/onServiceUnavailable'
+    options:
+      operationId: options-accessDevice-accessDeviceId-port-portId-qinq-qinqId
+      summary: Verbs that the caller may use
+      tags:
+      - accessDevice
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /accessDevice/{accessDeviceId}/port/{portId}/stag:
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
@@ -2671,6 +3135,22 @@ paths:
       parameters:
       - *id001
       - *id002
+    options:
+      operationId: options-accessDevice-accessDeviceId-port-portId-stag
+      summary: Verbs that the caller may use
+      tags:
+      - accessDevice
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /accessDevice/{accessDeviceId}/port/{portId}/stag/{svlan}:
     parameters:
     - $ref: '#/components/parameters/accessDeviceId'
@@ -2783,6 +3263,22 @@ paths:
           $ref: '#/components/responses/onInternalServerError'
         '503':
           $ref: '#/components/responses/onServiceUnavailable'
+    options:
+      operationId: options-accessDevice-accessDeviceId-port-portId-stag-svlan
+      summary: Verbs that the caller may use
+      tags:
+      - accessDevice
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /config/database:
     get:
       operationId: get-config-database
@@ -2818,6 +3314,22 @@ paths:
         '503':
           $ref: '#/components/responses/onServiceUnavailable'
     parameters: []
+    options:
+      operationId: options-config-database
+      summary: Verbs that the caller may use
+      tags:
+      - Directory configuration
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /config/database/{databaseId}:
     parameters:
     - $ref: '#/components/parameters/databaseId'
@@ -2847,6 +3359,22 @@ paths:
           $ref: '#/components/responses/onInternalServerError'
         '503':
           $ref: '#/components/responses/onServiceUnavailable'
+    options:
+      operationId: options-config-database-databaseId
+      summary: Verbs that the caller may use
+      tags:
+      - Directory configuration
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /bulk:
     post:
       operationId: post-bulk
@@ -3015,6 +3543,22 @@ paths:
       tags:
       - Global
     parameters: []
+    options:
+      operationId: options-bulk
+      summary: Verbs that the caller may use
+      tags:
+      - Global
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /rename:
     post:
       operationId: post-rename
@@ -3069,6 +3613,22 @@ paths:
       tags:
       - Global
     parameters: []
+    options:
+      operationId: options-rename
+      summary: Verbs that the caller may use
+      tags:
+      - Global
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /:
     get:
       summary: Read the directory base entry
@@ -3129,6 +3689,22 @@ paths:
         '503':
           $ref: '#/components/responses/onServiceUnavailable'
     parameters: []
+    options:
+      operationId: options-root
+      summary: Verbs that the caller may use
+      tags:
+      - Health
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
   /test:
     get:
       summary: Liveness probe
@@ -3200,6 +3776,22 @@ paths:
         '500':
           $ref: '#/components/responses/onInternalServerError'
     parameters: []
+    options:
+      operationId: options-whoami
+      summary: Verbs that the caller may use
+      tags:
+      - Global
+      description: The server answers with the verbs that the caller may use on the object that the URL names.  A request that carries a bearer token receives the verbs that the access controls of the directory permit that caller, and a Cross-Origin Resource Sharing (CORS) preflight receives the verbs that the endpoint declares.  The section 'Verbs that a caller may use' describes both answers.
+      security:
+      - {}
+      - AccessToken: []
+      responses:
+        '204':
+          $ref: '#/components/responses/onOptions'
+        '401':
+          $ref: '#/components/responses/onUnauthorized'
+        '403':
+          $ref: '#/components/responses/onForbidden'
 components:
   schemas:
     directoryDatabase:
@@ -4309,6 +4901,26 @@ components:
       description: When combined with `copy_uri`, copy the source object and all of its descendants into the target subtree.
         Has no effect if `copy_uri` is not set.
   responses:
+    onOptions:
+      description: |
+        The server answers with the verbs that the caller may use on the object that the URL names.  The headers of the request decide which answer the server sends:
+
+        1. A request that carries a bearer token receives `Allow`.  `Allow` lists the verbs that the access controls of the directory permit the caller.
+        2. A request that carries no token receives `Allow`.  `Allow` lists the verbs that the endpoint declares.
+        3. A Cross-Origin Resource Sharing (CORS) preflight receives `Access-Control-Allow-Methods` in place of `Allow`.
+
+        The section 'Verbs that a caller may use' describes each answer.
+      headers:
+        Allow:
+          description: The server lists the verbs that the caller may use on the object that the URL names, separated by a comma and a space.
+          schema:
+            type: string
+            example: GET, PUT, PATCH, OPTIONS
+        Access-Control-Expose-Headers:
+          description: The server names the headers that a script in a browser may read, including `Allow`.
+          schema:
+            type: string
+            example: Allow, Location
     onCreate:
       description: Response on creating a new object
       content:
