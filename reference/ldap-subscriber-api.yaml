@@ -85,6 +85,19 @@ info:
 
     Send a value of `*` alone as `%2A`.  `GET /realm/%2A` returns the realm whose `id` is `*`.  A segment is a wildcard only when `*` is the whole segment, so a value that holds `*` among other characters needs no escape.  `GET /realm/a*b.example.org` returns the realm whose `id` is `a*b.example.org`.  The `encodeURIComponent` function of a browser does not escape `*`.  A client that builds `/realm/${encodeURIComponent(id)}` from an `id` of `*` therefore requests every realm, not the realm whose `id` is `*`.  Send `url=1` and follow `_url`, which the server escapes, or replace a value of `*` with `%2A`.
 
+    ## Identifiers
+
+    The `id` that the server returns for an object holds the values that name the object, as the directory stores the values, with no escaping.  Most objects are named by one value, and the `id` of such an object is a string.  A subscriber is named by a `subscriberId` and a `serviceId`, and a QinQ tagging by an `svlan` and a `cvlan`.  The `id` of such an object is an array of the values in that order, such as `["123456789", "fixedLine"]`.  `_url` holds the URL of the object, in which the server escapes each value.
+
+    The `id` of a `POST` body, and of a rename, takes one of two forms:
+
+    1. An array of strings, one per value, in the order above, for an object that two values name.  The server stores each value as the array holds the value.
+    2. A string, read as a segment of a URL path.  `+` separates the values, and the server decodes each `%XX` escape in a value.  A `+` or a `%` inside a value therefore travels as `%2B` or `%25`, so `123456789+fixedLine` names the same subscriber as `["123456789", "fixedLine"]`.  Earlier releases accept only this form.
+
+    The server returns `400` for an `id` of any other type, for an array that holds a value other than a string, and for an array whose length differs from the number of values that name the object.
+
+    The `filter_id` parameter of a listing, and the `id` parameter of a stream, take the string form.
+
   contact:
     name: ' Network RADIUS support'
     url: http://www.networkradius.com
@@ -3640,8 +3653,11 @@ paths:
                   description: Resource path of the object to rename.
                   example: /realm/example.org
                 id:
-                  type: string
-                  description: The new leaf identifier for the resource.  May be URL-encoded; multi-valued RDNs use `value1+value2`.
+                  description: The new identifier of the resource, as an array of strings for an object that two values
+                    name, or as a string in the form of a URL path segment.  See "Identifiers" in the API description.
+                  oneOf:
+                  - $ref: '#/components/schemas/compoundId'
+                  - type: string
                   example: example.com
       responses:
         '200':
@@ -3947,6 +3963,9 @@ components:
         - subscriberId
         - serviceStatus
         - serviceId
+        properties:
+          id:
+            $ref: '#/components/schemas/compoundId'
     subscriberCreate:
       title: subscriberCreate
       description: Subscriber definition for POST requests. subscriberId and serviceId may be omitted, the server derives
@@ -3981,10 +4000,16 @@ components:
         _url:
           $ref: '#/components/schemas/_url'
         id:
-          type: string
-          description: Must be set to the combination of subscriberID '+' serviceId.  This uniquely identifies a subscriber
-            object for a particular type of service, e.g. fixedLine vs wireless
-          example: 123456789+fixedLine
+          description: The subscriberId and the serviceId, which together identify a subscriber object for one type of
+            service, e.g. fixedLine vs wireless.  A response holds an array.  A request may send the array, or the string
+            `<subscriberId>+<serviceId>`; see "Identifiers" in the API description.
+          oneOf:
+          - $ref: '#/components/schemas/compoundId'
+          - type: string
+            example: 123456789+fixedLine
+          example:
+          - '123456789'
+          - fixedLine
         subscriberId:
           type: string
           description: A unique (within a realm) identifier for a subscriber
@@ -4545,6 +4570,18 @@ components:
       format: uri-reference
       readOnly: true
       description: URL of the entry that the object came from.  The server includes `_url` when the request sends `url=1`, and on every object of a search whose path holds a `*` segment.  `_url` is an absolute-path reference (RFC 3986 section 4.2), so `_url` holds the path prefix of the deployment and no scheme or host.
+    compoundId:
+      title: compoundId
+      type: array
+      description: The two values that name a subscriber or a QinQ tagging, in the order that the URL of the object gives
+        them, as the directory stores them, with no escaping.  See "Identifiers" in the API description.
+      items:
+        type: string
+      minItems: 2
+      maxItems: 2
+      example:
+      - '123456789'
+      - fixedLine
     multiValuedString:
       title: multiValuedString
       description: Value of an attribute of the directory that holds one value or more.  The server returns a string for one
@@ -4565,6 +4602,9 @@ components:
       - type: object
         required:
         - id
+        properties:
+          id:
+            $ref: '#/components/schemas/compoundId'
     portQinQCreate:
       title: portQinQCreate
       description: portQinQ definition for POST requests. svlan and cvlan may be omitted, the server derives svlan and cvlan
@@ -4595,9 +4635,15 @@ components:
         _url:
           $ref: '#/components/schemas/_url'
         id:
-          type: string
-          description: Identifier of this QinQ tagging, in the form `<svlan>+<cvlan>`.
-          example: 100+25
+          description: The svlan and the cvlan of this QinQ tagging.  A response holds an array.  A request may send the
+            array, or the string `<svlan>+<cvlan>`; see "Identifiers" in the API description.
+          oneOf:
+          - $ref: '#/components/schemas/compoundId'
+          - type: string
+            example: 100+25
+          example:
+          - '100'
+          - '25'
         svlan:
           type: integer
           maximum: 4096

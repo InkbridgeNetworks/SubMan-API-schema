@@ -307,7 +307,8 @@ operations:
                 on a GET only.
             id:
               type: string
-              description: Narrows the stream to the record whose `id` equals the value.
+              description: Narrows the stream to the record whose `id` equals the value, given in the string form that
+                `ldap-subscriber-api.yaml` describes under "Identifiers".
           additionalProperties:
             type: string
             description: |
@@ -412,12 +413,14 @@ components:
           entryUUID: 4f0d2b91-3c5e-4a7b-8d21-6e9f0a1b2c3d
           syncOp: add
           body:
-            id: foo+bar
-            subscriberId: 0123456789
+            id:
+            - '0123456789'
+            - fixedLine
+            subscriberId: '0123456789'
             serviceStatus: enabled
             serviceId: fixedLine
             serviceProfile: http://localhost:3000/service/fixedLine/profile/INETG1M
-            _url: /realm/example.org/subscriber/foo+bar
+            _url: /realm/example.org/subscriber/0123456789+fixedLine
       - name: subscriberGroupAdd
         summary: A new subscriber group, from `/group`.
         payload:
@@ -480,7 +483,9 @@ components:
           entryUUID: d07294b5-f183-45c6-e062-7394b5f18395
           syncOp: add
           body:
-            id: 100+25
+            id:
+            - '100'
+            - '25'
             type: qinq
             svlan: 100
             cvlan: 25
@@ -534,7 +539,9 @@ components:
           entryUUID: 25c7e90a-46d8-4a1b-35b7-c8e90a46d8ea
           syncOp: add
           body:
-            id: 100+25
+            id:
+            - '100'
+            - '25'
             type: qinq
             svlan: 100
             cvlan: 25
@@ -588,7 +595,12 @@ components:
         the `entryUUID` of the event identifies the record.
       properties:
         id:
-          type: string
+          description: The `id` of the record, in the form that the record held, a string or an array of strings.
+          oneOf:
+          - type: string
+          - type: array
+            items:
+              type: string
         _url:
           type: string
           format: uri
