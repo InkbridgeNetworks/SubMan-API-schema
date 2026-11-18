@@ -96,7 +96,7 @@ info:
 
     The server returns `400` for an `id` of any other type, for an array that holds a value other than a string, and for an array whose length differs from the number of values that name the object.
 
-    The `filter_id` parameter of a listing, and the `id` parameter of a stream, take the string form.
+    The `filter_id` parameter of a listing and of a stream takes the string form.
 
   contact:
     name: ' Network RADIUS support'
