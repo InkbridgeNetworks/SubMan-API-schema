@@ -51,11 +51,12 @@ info:
     A stream is a listing GET that stays open, so the stream accepts
     the same query parameters as the listing GET:
 
-    * The `id` parameter and the `filter_*` parameters of the listing
-      endpoint narrow the stream to the records that match the
-      parameters. `ldap-subscriber-api.yaml` documents the parameters
-      per endpoint. `/realm/example.org/subscriber?subscribe=1&id=alice`
-      follows one subscriber.
+    * The `filter_*` parameters of the listing endpoint narrow the
+      stream to the records that match the parameters.
+      `ldap-subscriber-api.yaml` documents the parameters per endpoint.
+      `/realm/example.org/subscriber?subscribe=1&filter_id=alice`
+      follows one subscriber. A bare `id` parameter does not narrow
+      the stream.
     * `scope=subtree` widens the stream to every record below the
       collection, at any depth. Each event describes the record's own
       resource, so a subtree stream on `/realm` carries realm events
@@ -149,13 +150,17 @@ info:
 
     ## Resuming a dropped stream
 
-    The `ready` event and every `entry` event carry an SSE `id:` line
-    holding an opaque resume cookie. `EventSource` records the most
-    recent cookie and sends the cookie back as `Last-Event-ID` when
-    `EventSource` reconnects, so a browser client needs no extra code.
-    A client that does not use `EventSource` resumes in two steps:
+    The `ready` event and every live `entry` event carry an SSE `id:`
+    line holding an opaque resume cookie. An `entry` event of the
+    replay before `ready` can carry no `id:` line. On a resumed stream,
+    an `entry` event of the replay can repeat the cookie of the
+    request. `EventSource` records the most recent cookie and sends the
+    cookie back as `Last-Event-ID` when `EventSource` reconnects, so a
+    browser client needs no extra code. A client that does not use
+    `EventSource` resumes in two steps:
 
-    1. Remember the last `id:` value received.
+    1. Remember the last `id:` value received, and keep it when an
+       event carries no `id:` line.
     2. On reconnect, send the remembered value in `Last-Event-ID` on
        the new request.
 
@@ -221,7 +226,7 @@ servers:
     description: |
       The host that serves the REST API. A stream is a GET of any
       listing endpoint of `ldap-subscriber-api.yaml` with `?subscribe=1`
-      appended, plus the `scope`, `id`, and `filter_*` query parameters
+      appended, plus the `scope` and `filter_*` query parameters
       that the endpoint accepts.
     security:
     - $ref: '#/components/securitySchemes/bearer'
@@ -233,7 +238,7 @@ channels:
     description: |
       Changes to the records that the listing endpoint at `listPath`
       returns. Every listing endpoint of `ldap-subscriber-api.yaml`
-      provides the stream. The `scope`, `id`, and `filter_*` query
+      provides the stream. The `scope` and `filter_*` query
       parameters select the records. The `receive` operation documents
       the parameters.
     parameters:
@@ -305,16 +310,15 @@ operations:
                 Bearer token, for a client that cannot set the
                 `Authorization` header. The server accepts `access_token`
                 on a GET only.
-            id:
-              type: string
-              description: Narrows the stream to the record whose `id` equals the value, given in the string form that
-                `ldap-subscriber-api.yaml` describes under "Identifiers".
           additionalProperties:
             type: string
             description: |
               Any `filter_*` parameter that the listing endpoint accepts.
               `ldap-subscriber-api.yaml` documents the `filter_*`
-              parameters of each endpoint.
+              parameters of each endpoint. `filter_id` narrows the
+              stream to the record whose `id` equals the value, given in
+              the string form that `ldap-subscriber-api.yaml` describes
+              under "Identifiers".
 components:
   securitySchemes:
     bearer:
